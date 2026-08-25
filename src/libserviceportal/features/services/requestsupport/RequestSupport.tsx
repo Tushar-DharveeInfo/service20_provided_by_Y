@@ -18,7 +18,6 @@ import { SidebarContainer } from '../../../appcontainer/sidebarcontainer/Sidebar
 import { handleContainerKeyDown } from '../../../shared/allcommon/basic/FnHandleContainerKeyDown';
 import { ContactUsNotes } from '../../appqa/contectus/ContactUs';
 import { RequestSupportForm } from './RequestSupportForm';
-import '../../../appcontainer/allcss/ExplorerContainer.css';
 import './RequestSupport.css';
 
 interface IRequestSupportProps {
@@ -144,6 +143,10 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
         }
     };
 
+    function handleSelectNote(item: Record<string, any>): void {
+        setSelectedNoteItem(item as INoteItems);
+    }
+
     return (
         <div key={uniqueName} id="FeatureContainer" className="nz-explorer-container nz-request-support-container" tabIndex={1} onKeyDown={handleContainerKeyDown}>
             <div className="nz-w-100 nz-h-100" style={{ display: "flex", flexDirection: "column" }}>
@@ -184,7 +187,7 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
                             <ContactUsNotes
                                 uniqueName={`${uniqueName}-notes`}
                                 selectedNode={activeSelectedNode}
-                                onSelectNote={setSelectedNoteItem}
+                                onSelectNote={handleSelectNote}
                                 selectedNoteItem={selectedNoteItem}
                             />
                         </SplitterPanel>

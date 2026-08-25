@@ -5,7 +5,7 @@ import { Notes } from "@n20a/libavnotes"
 import type { INote } from "@n20a/libavnotes"
 import { Delete24x24, Info24x24 } from "@n20a/libicon"
 import './AppQaContactUs.css'
-import '../allcss/FqaNotes.css'
+import '../../../shared/sidebar/notes/FqaNotes.css'
 import '@n20a/libavnotes/style.css'
 import { Label } from "../../../shared/basic/label/Label.tsx"
 import { FnGetCssVariable } from "../../../appcontainer/allcommon/FnGetCssVariable.ts"
