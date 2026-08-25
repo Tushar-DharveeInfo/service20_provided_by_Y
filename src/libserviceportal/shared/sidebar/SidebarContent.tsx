@@ -25,7 +25,7 @@ interface ISidebarContent {
 }
 
 // import { DeviceModel } from './devicemodel/DeviceModel'
-import { ForensicLog } from './forensiclog/ForensicLog'
+import { ForensicLog } from '../../features/profile/myactivities/forensiclog/ForensicLog'
 // import { DiagnosticLogContainer } from './diagnosticlogcontainer/DiagnosticLogContainer'
 import { FqaNotes } from './notes/FqaNotes'
 import { Key } from 'rc-tree/lib/interface'
@@ -212,7 +212,7 @@ const SidebarContent = (sidebarProps: ISidebarContent) => {
                     isAllowCustomAction={false}
                     selectedNodeMenu={sidebarProps.selectedNodeMenu}
                     entityTables={propertyFormPackage.entityTables}
-                    kebabMenuData={propertyFormPackage.kebabMenuData}
+                    // kebabMenuData={propertyFormPackage.kebabMenuData}
                     handleValueChange={sidebarProps.apValueChange}
                     handleRefreshUpdatedRecord={(
                         newAddedId: string,

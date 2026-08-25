@@ -16,6 +16,17 @@ import { FnConvertBase64Blob } from '../../allcommon/sidebar/FnConvertBase64Blob
 import { ITreeNode } from '../../allinterface/tree/ITreeControl'
 import { YesNoFormContainer } from '../../basic/yesnoformcontainer/YesNoFormContainer'
 import { ActionImage } from '../../basic/actionimage/ActionImage'
+import { Label } from '../../basic/label/Label'
+import { UploadAudio } from './UploadAudio'
+import { UploadVideo } from './UploadVideo'
+import { InfoMessage } from './InfoMessage'
+import { Video } from './Video'
+import { Image } from '../../basic/image/Image'
+import { Audio } from './Audio'
+import { Attach24x24, Delete24x24, Download24x24, Info24x24, Mic24x24, Video24x24 } from '@n20a/libicon';
+import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable';
+import { ISession } from '../../context/allinterface/ISession';
+import notesSampleData from '../../../../serviceSampledata/sidebar/NotesSampleData.json';
 
 interface IFqaNotes {
 	uniqueName: string; // A unique identifier for notes
@@ -36,18 +47,6 @@ interface INoteItems {
 	video?: unknown;
 	FileUID?: string;
 }
-import { Label } from '../../basic/label/Label'
-import { UploadAudio } from './UploadAudio'
-import { UploadVideo } from './UploadVideo'
-import { InfoMessage } from './InfoMessage'
-import { Video } from './Video'
-import { Image } from '../../basic/image/Image'
-import { Audio } from './Audio'
-import { Attach24x24, Delete24x24, Download24x24, Info24x24, Mic24x24, Video24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable';
-import { ISession } from '../../context/allinterface/ISession';
-import notesSampleData from '../../../../serviceSampledata/sidebar/NotesSampleData.json';
-
 const {
 	sampleNotesEntityRecordsResponse,
 	sampleNotesFileProfileResponse,
@@ -92,12 +91,8 @@ const FqaNotes = (props: IFqaNotes) => {
 				avNotesRecord.Value !== ""
 				? avNotesRecord.Value
 				: avNotesRecord.DefaultAPValue;
-		return (
-			value === "1" ||
-			value === 1 ||
-			value === true ||
-			value?.toString()?.toLowerCase() === "true"
-		);
+		const strValue = String(value ?? "").trim().toLowerCase();
+		return strValue === "1" || strValue === "true";
 	}, [mainAppContext?.apRecords]);
 
 
