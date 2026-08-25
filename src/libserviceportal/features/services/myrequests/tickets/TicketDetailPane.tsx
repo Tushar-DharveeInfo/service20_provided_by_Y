@@ -2,12 +2,12 @@ import { useMemo } from 'react'
 import { Label } from '../../../../shared/basic/label/Label'
 import { IControl } from '../../../../shared/allinterface/settingsform/ISettingsLibForm'
 import { SettingsLibForm } from '../../../../shared/settingsform/settingslibform/SettingsLibForm'
-import type { ITicket } from './ITicket'
+import type { ITicketRecord } from './ITicket'
 import { FnFormatTicketDate } from '../../../../shared/allcommon/tree/FnFormatTicketDate'
 
 interface ITicketDetailPane {
     uniqueName: string
-    ticket: ITicket | null
+    ticket: ITicketRecord | null
 }
 
 /**
@@ -30,26 +30,26 @@ interface ITicketDetailPane {
 
 
 const TICKET_FIELD_DEFS: {
-    ticketKey: string; //keyof ITicket
+    ticketKey: keyof ITicketRecord
     formName: string
     label: string
     displayControl: string
     sortOrder: number
     formatAsDate?: boolean
 }[] = [
-        { ticketKey: 'ticketid', formName: 'Ticket', label: 'Ticket', displayControl: 'TextControl', sortOrder: 1 },
-        { ticketKey: 'status', formName: 'Status', label: 'Status', displayControl: 'TextControl', sortOrder: 2 },
-        { ticketKey: 'business', formName: 'Business', label: 'Business', displayControl: 'TextControl', sortOrder: 3 },
-        { ticketKey: 'contact', formName: 'Contact', label: 'Contact', displayControl: 'TextControl', sortOrder: 4 },
-        { ticketKey: 'email', formName: 'Email', label: 'Email', displayControl: 'TextControl', sortOrder: 5 },
-        { ticketKey: 'subscription', formName: 'Subscription', label: 'Subscription', displayControl: 'TextControl', sortOrder: 6 },
-        { ticketKey: 'mfg', formName: 'Mfg', label: 'Mfg', displayControl: 'TextControl', sortOrder: 7 },
-        { ticketKey: 'eqtype', formName: 'EqType', label: 'Eq Type', displayControl: 'TextControl', sortOrder: 8 },
-        { ticketKey: 'prodno', formName: 'ProdNo', label: 'Prod No', displayControl: 'TextControl', sortOrder: 9 },
-        { ticketKey: 'moreinfo', formName: 'MoreInfo', label: 'More Info', displayControl: 'TextareaControl', sortOrder: 10 },
-        { ticketKey: 'daterequested', formName: 'RequestedOn', label: 'Date Requested', displayControl: 'TextControl', sortOrder: 11, formatAsDate: true },
-        { ticketKey: 'datereleased', formName: 'ReleasedOn', label: 'Date Released', displayControl: 'TextControl', sortOrder: 12, formatAsDate: true },
-        { ticketKey: 'lastupdated', formName: 'UpdatedOn', label: 'Last Updated', displayControl: 'TextControl', sortOrder: 13, formatAsDate: true },
+        { ticketKey: "Ticket", formName: "Ticket", label: "Ticket", displayControl: "TextControl", sortOrder: 1 },
+        { ticketKey: "Status", formName: "Status", label: "Status", displayControl: "TextControl", sortOrder: 2 },
+        { ticketKey: "Business", formName: "Business", label: "Business", displayControl: "TextControl", sortOrder: 3 },
+        { ticketKey: "Contact", formName: "Contact", label: "Contact", displayControl: "TextControl", sortOrder: 4 },
+        { ticketKey: "Email", formName: "Email", label: "Email", displayControl: "TextControl", sortOrder: 5 },
+        { ticketKey: "Subscription", formName: "Subscription", label: "Subscription", displayControl: "TextControl", sortOrder: 6 },
+        { ticketKey: "Mfg", formName: "Mfg", label: "Mfg", displayControl: "TextControl", sortOrder: 7 },
+        { ticketKey: "EqType", formName: "EqType", label: "Eq Type", displayControl: "TextControl", sortOrder: 8 },
+        { ticketKey: "ProdNo", formName: "ProdNo", label: "Prod No", displayControl: "TextControl", sortOrder: 9 },
+        { ticketKey: "MoreInfo", formName: "MoreInfo", label: "More Info", displayControl: "TextareaControl", sortOrder: 10 },
+        { ticketKey: "DateRequested", formName: "RequestedOn", label: "Date Requested", displayControl: "TextControl", sortOrder: 11, formatAsDate: true },
+        { ticketKey: "DateReleased", formName: "ReleasedOn", label: "Date Released", displayControl: "TextControl", sortOrder: 12, formatAsDate: true },
+        { ticketKey: "LastUpdated", formName: "UpdatedOn", label: "Last Updated", displayControl: "TextControl", sortOrder: 13, formatAsDate: true },
     ]
 
 function toProfileValue(field: (typeof TICKET_FIELD_DEFS)[number], value: unknown): string {
@@ -121,16 +121,16 @@ const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
     return (
         <div className="nz-wh-100" style={{ overflow: 'auto' }}>
             <SettingsLibForm
-                key={`${uniqueName}-${ticket.ticketid}-${ticket.prodno}`}
+                key={`${uniqueName}-${ticket.Ticket}-${ticket.ProdNo}`}
                 uniqueName={`${uniqueName}-form`}
                 controls={ticketFormControls}
                 profileString={profileString}
                 allowShowHeader={true}
                 allowShowSectionHeader={true}
-                headerText={`${ticket.ticketid} -> ${ticket.prodno}`}
+                headerText={`${ticket.Ticket} -> ${ticket.ProdNo}`}
                 isDisableForm={true}
                 isAutoSave={false}
-                id={ticket.prodno}
+                id={ticket.ProdNo}
             />
         </div>
     )

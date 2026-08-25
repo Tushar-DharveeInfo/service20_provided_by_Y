@@ -1,80 +1,23 @@
 import { useFirestore, type IQueryGroupRequest, type ICreateDocumentRequest, type IUpdateDocumentRequest, type IDeleteDocumentRequest, type IFirestoreWriteResult } from '@n20a/libfsdb';
 import { useState, useCallback, useRef } from 'react';
-import type { ITicket, TicketId, TicketStatus } from './ITicket';
+import type { ITicketRecord, TicketId, TicketStatus } from './ITicket';
 import sampleTicketsJson from '../../../../../serviceSampledata/ticket/sampletickets.json';
 
-function parseDateValue(v: unknown): Date {
-    if (!v) return new Date();
-    if (v instanceof Date) {
-        return isNaN(v.getTime()) ? new Date() : v;
-    }
-    if (typeof v === 'object' && v !== null) {
-        const obj = v as { toDate?: () => Date; seconds?: number; _seconds?: number };
-        if (typeof obj.toDate === 'function') {
-            try {
-                const d = obj.toDate();
-                if (!isNaN(d.getTime())) return d;
-            } catch {}
-        }
-        if (typeof obj.seconds === 'number') {
-            return new Date(obj.seconds * 1000);
-        }
-        if (typeof obj._seconds === 'number') {
-            return new Date(obj._seconds * 1000);
-        }
-    }
-    if (typeof v === 'number') {
-        const d = new Date(v < 1e11 ? v * 1000 : v);
-        if (!isNaN(d.getTime())) return d;
-    }
-    if (typeof v === 'string') {
-        const trimmed = v.trim();
-        if (trimmed) {
-            const d = new Date(trimmed);
-            if (!isNaN(d.getTime())) return d;
-        }
-    }
-    return new Date();
-}
-
-function getField(raw: Record<string, unknown>, ...keys: string[]): unknown {
-    for (const key of keys) {
-        if (raw[key] !== undefined && raw[key] !== null && raw[key] !== '') {
-            return raw[key];
-        }
-    }
-    for (const key of keys) {
-        const lower = key.toLowerCase();
-        for (const [k, v] of Object.entries(raw)) {
-            if (k.toLowerCase() === lower && v !== undefined && v !== null && v !== '') {
-                return v;
-            }
-        }
-    }
-    return undefined;
-}
-
-function normalizeTicket(raw: Record<string, unknown>): ITicket {
-    const rawDateRequested = getField(raw, 'daterequested', 'DateRequested', 'dateRequested', 'requesteddate', 'RequestedDate', 'date_requested', 'createdat', 'createdAt', 'CreatedAt', 'created_at', 'requestDate', 'RequestDate', 'date', 'Date');
-    const rawDateReleased = getField(raw, 'datereleased', 'DateReleased', 'dateReleased', 'releaseddate', 'ReleasedDate', 'date_released', 'releasedDate');
-    const rawLastUpdated = getField(raw, 'lastupdated', 'LastUpdated', 'lastUpdated', 'updatedat', 'updatedAt', 'updated_at');
-
-    return {
-        ticketid: String(getField(raw, 'ticketid', 'Ticket', 'ticketId', 'TicketId', 'id', 'ID', 'key') || 'T-0'),
-        business: String(getField(raw, 'business', 'Business', 'bname', 'company') || ''),
-        contact: String(getField(raw, 'contact', 'Contact', 'cname', 'user') || ''),
-        email: String(getField(raw, 'email', 'Email', 'useremail') || ''),
-        subscription: String(getField(raw, 'subscription', 'Subscription', 'subId') || ''),
-        mfg: String(getField(raw, 'mfg', 'Mfg', 'Manufacturer', 'manufacturer') || 'Unknown Mfg'),
-        eqtype: String(getField(raw, 'eqtype', 'EqType', 'equipmentType', 'EquipmentType', 'type') || ''),
-        prodno: String(getField(raw, 'prodno', 'ProdNo', 'prodNo', 'productNumber', 'ProductNumber', 'name', 'Name') || ''),
-        moreinfo: String(getField(raw, 'moreinfo', 'MoreInfo', 'description', 'Description', 'info') || ''),
-        status: String(getField(raw, 'status', 'Status') || 'Pending'),
-        daterequested: parseDateValue(rawDateRequested),
-        datereleased: parseDateValue(rawDateReleased),
-        lastupdated: parseDateValue(rawLastUpdated),
-    };
-}
+const normalizeTicket = (data: Record<string, unknown>): ITicketRecord => ({
+  Business: String(data.Business ?? ""),
+  Contact: String(data.Contact ?? ""),
+  Email: String(data.Email ?? ""),
+  Subscription: String(data.Subscription ?? ""),
+  Ticket: String(data.Ticket ?? "") as TicketId,
+  Mfg: String(data.Mfg ?? ""),
+  EqType: String(data.EqType ?? ""),
+  ProdNo: String(data.ProdNo ?? ""),
+  MoreInfo: String(data.MoreInfo ?? ""),
+  Status: String(data.Status ?? "Pending") as TicketStatus,
+  DateRequested: new Date(String(data.DateRequested ?? "")),
+  DateReleased: new Date(String(data.DateReleased ?? "")),
+  LastUpdated: new Date(String(data.LastUpdated ?? "")),
+});
 
 /*
 Usage in a component under FirestoreProvider:
@@ -98,7 +41,7 @@ function MyComponent() {
 */
 export function useFetchTickets() {
   const { queryDocumentsGroup } = useFirestore();
-  const [tickets, setTickets] = useState<ITicket[]>([]);
+  const [tickets, setTickets] = useState<ITicketRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const fetchIdRef = useRef(0);

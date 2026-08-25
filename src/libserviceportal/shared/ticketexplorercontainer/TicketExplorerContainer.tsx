@@ -4,8 +4,8 @@ import { Splitter, SplitterPanel } from 'primereact/splitter'
 import './TicketExplorerContainer.css';
 import { sampleTickets } from './TicketSampleData'
 import {
-    buildTicketTree,
     findFirstTicketLeaf,
+    FnBuildTicketTree,
     getAncestorKeys,
 } from '../allcommon/tree/FnBuildTicketTree'
 import { FnSearchKeywordInLocalTree } from '../allcommon/tree/FnSearchKeywordInLocalTree'
@@ -100,14 +100,13 @@ const TicketExplorerContainer = (ticketExplorerContainerProps: ITicketExplorerCo
     }
 
     const setTicketTree = (filter: ITicketFilterValues) => {
-        const nodes = buildTicketTree(
+        const nodes = FnBuildTicketTree(
             sampleTickets,
             filter,
             featureTreeProps,
             ticketExplorerContainerProps.featureId ?? 'ticket-explorer'
         )
         setTreeData(nodes)
-
         const firstLeaf = findFirstTicketLeaf(nodes)
         if (firstLeaf) {
             const ancestors = getAncestorKeys(nodes, firstLeaf.key)

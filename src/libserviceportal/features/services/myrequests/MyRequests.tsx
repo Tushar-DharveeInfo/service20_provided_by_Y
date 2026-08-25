@@ -3,7 +3,7 @@ import { Key } from 'rc-tree/lib/interface'
 import { Splitter, SplitterPanel } from 'primereact/splitter'
 import './MyRequests.css';
 import { useFetchTickets } from './tickets/Tickets'
-import {buildTicketTree, findFirstTicketLeaf, getAncestorKeys} from './tickets/FnBuildTicketTree'
+import { FnBuildTicketTree, findFirstTicketLeaf, getAncestorKeys } from './tickets/FnBuildTicketTree'
 
 import { FnSearchKeywordInLocalTree } from '../../../shared/allcommon/tree/FnSearchKeywordInLocalTree'
 import { ISelectedNodeInfo, ITreeNode } from '../../../shared/allinterface/tree/ITreeControl'
@@ -11,8 +11,9 @@ import { SearchControl } from '../../../shared/searchfilter/searchcontrol/Search
 import { TreeControl } from '../../../shared/tree/treecontrol/TreeControl'
 import { TicketDetailPane } from './tickets/TicketDetailPane'
 import { TicketFilterForm, type ITicketFilterValues } from './tickets/TicketFilterForm'
-import type { ITicket } from './tickets/ITicket'
 import { Label } from '../../../shared/basic/label/Label';
+import { sampleTickets } from '../../../shared/ticketexplorercontainer/TicketSampleData';
+import { ITicketRecord } from './tickets/ITicket';
 
 interface IFeatureTree {
     hideKebabMenu?: boolean;// if true kebab menu on node will not show
@@ -69,8 +70,8 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     const [defaultExpandedKeys, setDefaultExpandedKeys] = useState<Key[]>([])
     const [defaultSelectedKeys, setDefaultSelectedKeys] = useState<Key[]>([])
     const [defaultSelectedNodeInfo, setDefaultSelectedNodeInfo] = useState<ISelectedNodeInfo | null>(null)
-    
-    const [selectedTicket, setSelectedTicket] = useState<ITicket | null>(null)
+
+    const [selectedTicket, setSelectedTicket] = useState<ITicketRecord | null>(null)
     const [searchText, setSearchText] = useState('')
     const [searchHistory, setSearchHistory] = useState<string[]>([])
     const [isShowFilterForm, setIsShowFilterForm] = useState(false)
@@ -94,19 +95,18 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         }
         setDefaultSelectedKeys([node.key])
         setDefaultSelectedNodeInfo(info)
-        setSelectedTicket((node.ticketRecord as ITicket) ?? null)
+        setSelectedTicket((node.ticketRecord as ITicketRecord) ?? null)
 
     }
 
     const setTicketTree = (filter: ITicketFilterValues) => {
-        const nodes = buildTicketTree(
+        const nodes = FnBuildTicketTree(
             tickets,
             filter,
             featureTreeProps,
             myRequestsProps.featureId ?? 'ticket-explorer'
         )
         setTreeData(nodes)
-
         const firstLeaf = findFirstTicketLeaf(nodes)
         if (firstLeaf) {
             const ancestors = getAncestorKeys(nodes, firstLeaf.key)
@@ -181,12 +181,11 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         info: ISelectedNodeInfo,
         expandedNodeKeys?: Key[]
     ) => {
-
-      console.log('handleNodeSelect called with info:', info, 'selectedKeys:', selectedKeys);
+        console.log('handleNodeSelect called with info:', info, 'selectedKeys:', selectedKeys);
         setDefaultSelectedKeys(selectedKeys)
         setDefaultSelectedNodeInfo(info)
-        if (info.node.NodeType === 'prodno' && info.node.ticketRecord) {
-            setSelectedTicket(info.node.ticketRecord as ITicket)    //selectedTicket
+        if (info.node.NodeType?.toLowerCase() === 'prodno' && info.node.ticketRecord) {
+            setSelectedTicket(info.node.ticketRecord as ITicketRecord)    //selectedTicket
         } else {
             setSelectedTicket(null)
         }
@@ -202,7 +201,7 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         if (foundedNode?.foundNode) {
             const parentKeys = foundedNode.parentNodes?.map((node) => node.key) ?? []
             setDefaultExpandedKeys(parentKeys)
-            if (foundedNode.foundNode.NodeType === 'prodno') {
+            if (foundedNode.foundNode.NodeType?.toLowerCase() === 'prodno') {
                 selectLeaf(foundedNode.foundNode, parentKeys, treeData, 'found-select')
             } else {
                 setDefaultSelectedKeys([foundedNode.foundNode.key])

@@ -3,17 +3,17 @@ export type TicketId = `T-${number}`;
 
 export interface ITicket {
   Business: string;
-  contact: string;
+  Contact: string;
   Email: string;
-  subscription: string;
+  Subscription: string;
   Ticket: TicketId;
   Mfg: string;
   EqType: string;
   ProdNo: string;
   MoreInfo: string;
   Status: TicketStatus;
-  dateRequested: Date;
-  dateReleased: Date;
+  DateRequested: Date;
+  DateReleased: Date;
   LastUpdated: Date;
 }
 
