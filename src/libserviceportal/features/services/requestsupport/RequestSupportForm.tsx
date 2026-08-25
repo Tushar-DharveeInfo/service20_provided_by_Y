@@ -9,6 +9,7 @@ import './RequestSupport.css';
 interface IRequestSupportFormData {
     UserName: string;
     LastUpdated: string;
+    Status?: string;
     NotesType: string;
     EntityName: string;
     NodeType: string;
@@ -22,15 +23,22 @@ interface IRequestSupportFormProps {
     onSave?: (savedData: IRequestSupportFormData) => void;
 }
 
+const isClosedStatus = (status?: string | null): boolean => {
+    if (!status) return false;
+    return status.trim().toLowerCase() === 'closed';
+};
+
 const createSupportControl = (
     name: string,
     label: string,
     sortOrder: number,
     displayControl: DisplayControlEnums,
     displayGroupControl: string = 'Request Details',
-    isRequired: number = 0
+    isEditable: boolean = false,
+    isRequired: number = 0,
+    options?: { label: string; value: string }[]
 ): IControl => ({
-    CanChange: 1,
+    CanChange: isEditable ? 1 : 0,
     IsRequired: isRequired,
     GroupName: 'RequestSupport',
     GroupNameDesc: displayGroupControl,
@@ -57,30 +65,41 @@ const createSupportControl = (
     LastUpdated: '',
     EntityName: 'ContactUs',
     Name: name,
-    disabled: false,
-    IsReadOnly: false,
+    disabled: !isEditable,
+    IsReadOnly: !isEditable,
+    Options: options,
 });
 
-const requestSupportControls: IControl[] = [
-    createSupportControl('UserName', 'User Name', 1, DisplayControlEnums.EditTextControl),
-    createSupportControl('LastUpdated', 'Date / Time', 2, DisplayControlEnums.EditTextControl),
-    createSupportControl('NotesType', 'Note Type', 3, DisplayControlEnums.EditTextControl),
-    createSupportControl('EntityName', 'Entity Name', 4, DisplayControlEnums.EditTextControl),
-    createSupportControl('NodeType', 'Node Type', 5, DisplayControlEnums.EditTextControl),
-    createSupportControl('NotesMAX', 'Notes / Description', 6, DisplayControlEnums.TextareaControl),
-];
+const buildSupportControls = (status?: string | null): IControl[] => {
+    const isClosed = isClosedStatus(status);
+    const allowEditNotes = !isClosed;
+
+    return [
+        createSupportControl('UserName', 'User Name', 1, DisplayControlEnums.TextControl, 'Request Details', false),
+        createSupportControl('LastUpdated', 'Date / Time', 2, DisplayControlEnums.TextControl, 'Request Details', false),
+        createSupportControl('Status', 'Status', 3, DisplayControlEnums.TextControl, 'Request Details', false),
+        createSupportControl('NotesType', 'Note Type', 4, DisplayControlEnums.TextControl, 'Request Details', false),
+        createSupportControl('EntityName', 'Entity Name', 5, DisplayControlEnums.TextControl, 'Request Details', false),
+        createSupportControl('NodeType', 'Node Type', 6, DisplayControlEnums.TextControl, 'Request Details', false),
+        createSupportControl('NotesMAX', 'Notes / Description', 7, DisplayControlEnums.TextareaControl, 'Request Details', allowEditNotes),
+    ];
+};
 
 const RequestSupportForm = ({
     uniqueName = 'request-support-form',
     selectedNote,
     onSave,
 }: IRequestSupportFormProps) => {
+    const isClosed = isClosedStatus(selectedNote?.Status);
+    const controls = useMemo(() => buildSupportControls(selectedNote?.Status), [selectedNote?.Status]);
+
     // Converts selected card from left side pane into profile JSON string
     const profileString = useMemo(() => {
         if (!selectedNote) return '';
         const profileData: IRequestSupportFormData = {
             UserName: selectedNote.UserName ?? '',
             LastUpdated: selectedNote.LastUpdated ?? '',
+            Status: selectedNote.Status ?? 'Accepted',
             NotesType: selectedNote.NotesType ?? 'Message',
             EntityName: selectedNote.EntityName ?? 'ContactUs',
             NodeType: selectedNote.NodeType ?? 'ContactUs',
@@ -118,20 +137,21 @@ const RequestSupportForm = ({
     }
 
     const noteId = `${selectedNote.LastUpdated ?? ''}-${selectedNote.UserName ?? ''}`;
-    const headerTitle = `Details: ${selectedNote.NotesType || 'Note'} - ${selectedNote.UserName || 'User'}`;
+    const statusSuffix = selectedNote.Status ? ` [${selectedNote.Status}]` : '';
+    const headerTitle = `Details (${selectedNote.UserName || 'demo.user'})${statusSuffix}`;
 
     return (
         <div className="nz-request-support-form-container nz-wh-100" key={uniqueName}>
             <SettingsLibForm
-                key={`${uniqueName}-${noteId}`}
+                key={`${uniqueName}-${noteId}-${isClosed ? 'closed' : 'open'}`}
                 id={noteId}
                 uniqueName={`${uniqueName}-fc`}
-                controls={requestSupportControls}
+                controls={controls}
                 profileString={profileString}
                 allowShowHeader={true}
                 allowShowSectionHeader={true}
                 headerText={headerTitle}
-                isDisableForm={false}
+                isDisableForm={isClosed}
                 isAutoSave={false}
                 handleSaveForm={handleSaveForm}
             />
@@ -139,6 +159,6 @@ const RequestSupportForm = ({
     );
 };
 
-export { RequestSupportForm, requestSupportControls };
+export { RequestSupportForm, buildSupportControls };
 export type { IRequestSupportFormData, IRequestSupportFormProps };
 export default RequestSupportForm;

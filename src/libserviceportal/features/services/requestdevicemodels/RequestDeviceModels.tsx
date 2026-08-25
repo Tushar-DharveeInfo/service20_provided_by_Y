@@ -7,6 +7,7 @@ import { ITreeNode } from '../../../shared/allinterface/tree/ITreeControl';
 import { Helptip } from '../../appqa/help/Help';
 import { useHelpTipContext } from '../../../shared/context/hooks/HelptipHooks';
 import { RequestShapeFormContainer } from '../requestshapeformcontainer/RequestShapeFormContainer';
+import { Label } from '../../../shared/basic/label/Label';
 export interface IRequestShapeFormData {
     searchText: string;
     AndOr: "AND" | "OR";
@@ -20,6 +21,7 @@ export interface IRequestShape {
     formData: IRequestShapeFormData;
     uniqueName?: string;
     featureId?: string;
+    headerText?: string;
     helpTipText?: string;
     isShowHelptip?: boolean;
     onBack?: () => void;
@@ -49,7 +51,10 @@ const EMPTY_SELECTED_NODE: ITreeNode = {
 };
 
 const RequestDeviceModels = (props: IRequestShape) => {
-
+    const rawHeaderText = props.headerText ?? 'Request Device Models';
+    const headerTitle = rawHeaderText.startsWith('[')
+        ? rawHeaderText
+        : `[Services] ${rawHeaderText}`
     const uniqueName = props.uniqueName ?? 'request-visio-stencils';
     const featureId = props.featureId ?? ServicesEnums.RequestDeviceModels;
     const showHelptip = props.isShowHelptip !== false;
@@ -68,6 +73,15 @@ const RequestDeviceModels = (props: IRequestShape) => {
 
     return (
         <div className="nz-request-visio-stencils nz-wh-100 nz-d-flex-column" id={uniqueName}>
+            <div className="nz-sub-header">
+                <div className="nz-d-flex-row nz-align-center">
+                    <Label
+                        uniqueName={`${uniqueName}-main-header`}
+                        label={headerTitle}
+                        fontWeight="600"
+                    />
+                </div>
+            </div>
             {showHelptip && (
                 <div className="nz-request-visio-helptip-div">
                     <Helptip

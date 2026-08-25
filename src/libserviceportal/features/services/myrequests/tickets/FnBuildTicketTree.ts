@@ -97,16 +97,28 @@ function daySortKey(value: Date | string | null | undefined): number {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
 }
 
-// Finds the first ProdNo ticket leaf.
+// Finds the node to select: expands single-child nodes and selects the first child when multiple children are found.
 export function findFirstTicketLeaf(nodes: ITreeNode[]): ITreeNode | null {
-    for (const node of nodes) {
-        if (node.NodeType?.toLowerCase() === "prodno" && node.ticketRecord) return node
-        if (node.children?.length) {
-            const found = findFirstTicketLeaf(node.children)
-            if (found) return found
+    if (!nodes || nodes.length === 0) {
+        return null
+    }
+
+    if (nodes.length > 1) {
+        return nodes[0]
+    }
+
+    let current: ITreeNode = nodes[0]
+
+    while (current.children && current.children.length > 0) {
+        if (current.children.length === 1) {
+            current = current.children[0]
+        } else {
+            current = current.children[0]
+            break
         }
     }
-    return null
+
+    return current
 }
 
 // Returns all ancestor keys from root to the specified leaf, excluding the leaf.

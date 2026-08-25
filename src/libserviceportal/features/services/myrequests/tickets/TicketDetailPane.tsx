@@ -36,6 +36,7 @@ const TICKET_FIELD_DEFS: {
     displayControl: string
     sortOrder: number
     formatAsDate?: boolean
+    editableIfUnlocked?: boolean
 }[] = [
         { ticketKey: "Ticket", formName: "Ticket", label: "Ticket", displayControl: "TextControl", sortOrder: 1 },
         { ticketKey: "Status", formName: "Status", label: "Status", displayControl: "TextControl", sortOrder: 2 },
@@ -43,14 +44,20 @@ const TICKET_FIELD_DEFS: {
         { ticketKey: "Contact", formName: "Contact", label: "Contact", displayControl: "TextControl", sortOrder: 4 },
         { ticketKey: "Email", formName: "Email", label: "Email", displayControl: "TextControl", sortOrder: 5 },
         { ticketKey: "Subscription", formName: "Subscription", label: "Subscription", displayControl: "TextControl", sortOrder: 6 },
-        { ticketKey: "Mfg", formName: "Mfg", label: "Mfg", displayControl: "TextControl", sortOrder: 7 },
-        { ticketKey: "EqType", formName: "EqType", label: "Eq Type", displayControl: "TextControl", sortOrder: 8 },
-        { ticketKey: "ProdNo", formName: "ProdNo", label: "Prod No", displayControl: "TextControl", sortOrder: 9 },
-        { ticketKey: "MoreInfo", formName: "MoreInfo", label: "More Info", displayControl: "TextareaControl", sortOrder: 10 },
+        { ticketKey: "Mfg", formName: "Mfg", label: "Mfg", displayControl: "EditTextControl", sortOrder: 7, editableIfUnlocked: true },
+        { ticketKey: "EqType", formName: "EqType", label: "Eq Type", displayControl: "EditTextControl", sortOrder: 8, editableIfUnlocked: true },
+        { ticketKey: "ProdNo", formName: "ProdNo", label: "Prod No", displayControl: "EditTextControl", sortOrder: 9, editableIfUnlocked: true },
+        { ticketKey: "MoreInfo", formName: "MoreInfo", label: "More Info", displayControl: "TextareaControl", sortOrder: 10, editableIfUnlocked: true },
         { ticketKey: "DateRequested", formName: "RequestedOn", label: "Date Requested", displayControl: "TextControl", sortOrder: 11, formatAsDate: true },
         { ticketKey: "DateReleased", formName: "ReleasedOn", label: "Date Released", displayControl: "TextControl", sortOrder: 12, formatAsDate: true },
         { ticketKey: "LastUpdated", formName: "UpdatedOn", label: "Last Updated", displayControl: "TextControl", sortOrder: 13, formatAsDate: true },
     ]
+
+const isStatusLocked = (status?: string | null): boolean => {
+    if (!status) return false;
+    const normalized = status.trim().toLowerCase();
+    return normalized === 'accepted' || normalized === 'closed';
+};
 
 function toProfileValue(field: (typeof TICKET_FIELD_DEFS)[number], value: unknown): string {
     if (field.formatAsDate) {
@@ -59,44 +66,49 @@ function toProfileValue(field: (typeof TICKET_FIELD_DEFS)[number], value: unknow
     return value == null ? '' : String(value)
 }
 
-function buildTicketControls(): IControl[] {
-    return TICKET_FIELD_DEFS.map((field) => ({
-        CanChange: 0,
-        IsRequired: 0,
-        GroupName: 'TicketDetails',
-        GroupNameDesc: '',
-        SubGroupEntID: '',
-        SubGroupName: 'FormControl',
-        SubGroupNameDesc: '',
-        _AP: field.formName,
-        PropertyLabel: field.label,
-        NameDesc: field.label,
-        DefaultAPValue: '',
-        Value: '',
-        ValueDesc: '',
-        SortOrder: field.sortOrder,
-        MaxInstances: 0,
-        InputMask: '',
-        RegEx: '',
-        DisplayGroupControl: 'Ticket Details',
-        DisplayControl: field.displayControl,
-        ChangeEvent: '',
-        Secured: false,
-        IsNZ: false,
-        EntID: field.formName,
-        RecID: field.formName,
-        LastUpdated: '',
-        EntityName: 'Ticket',
-        Name: field.formName,
-        disabled: true,
-        IsReadOnly: true,
-    }))
+function buildTicketControls(status?: string | null): IControl[] {
+    const isLocked = isStatusLocked(status);
+    return TICKET_FIELD_DEFS.map((field) => {
+        const isEditable = !isLocked && Boolean(field.editableIfUnlocked);
+        return {
+            CanChange: isEditable ? 1 : 0,
+            IsRequired: 0,
+            GroupName: 'TicketDetails',
+            GroupNameDesc: '',
+            SubGroupEntID: '',
+            SubGroupName: 'FormControl',
+            SubGroupNameDesc: '',
+            _AP: field.formName,
+            PropertyLabel: field.label,
+            NameDesc: field.label,
+            DefaultAPValue: '',
+            Value: '',
+            ValueDesc: '',
+            SortOrder: field.sortOrder,
+            MaxInstances: 0,
+            InputMask: '',
+            RegEx: '',
+            DisplayGroupControl: 'Ticket Details',
+            DisplayControl: isEditable ? field.displayControl : (field.displayControl === 'TextareaControl' ? 'TextareaControl' : 'TextControl'),
+            ChangeEvent: '',
+            Secured: false,
+            IsNZ: false,
+            EntID: field.formName,
+            RecID: field.formName,
+            LastUpdated: '',
+            EntityName: 'Ticket',
+            Name: field.formName,
+            disabled: !isEditable,
+            IsReadOnly: !isEditable,
+        };
+    });
 }
-
-const ticketFormControls = buildTicketControls()
 
 const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
     const { ticket, uniqueName } = ticketDetailPaneProps
+
+    const isLocked = isStatusLocked(ticket?.Status);
+    const controls = useMemo(() => buildTicketControls(ticket?.Status), [ticket?.Status]);
 
     const profileString = useMemo(() => {
         if (!ticket) return ''
@@ -121,14 +133,14 @@ const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
     return (
         <div className="nz-wh-100" style={{ overflow: 'auto' }}>
             <SettingsLibForm
-                key={`${uniqueName}-${ticket.Ticket}-${ticket.ProdNo}`}
+                key={`${uniqueName}-${ticket.Ticket}-${ticket.ProdNo}-${isLocked ? 'locked' : 'unlocked'}`}
                 uniqueName={`${uniqueName}-form`}
-                controls={ticketFormControls}
+                controls={controls}
                 profileString={profileString}
                 allowShowHeader={true}
                 allowShowSectionHeader={true}
                 headerText={`${ticket.Ticket} -> ${ticket.ProdNo}`}
-                isDisableForm={true}
+                isDisableForm={isLocked}
                 isAutoSave={false}
                 id={ticket.ProdNo}
             />

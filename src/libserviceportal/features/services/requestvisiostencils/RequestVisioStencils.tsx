@@ -9,12 +9,14 @@ import { ITreeNode } from '../../../shared/allinterface/tree/ITreeControl';
 import { type IRequestShapeFormData } from '../requestdevicemodels/RequestDeviceModels';
 import { RequestShapeFormContainer } from '../requestshapeformcontainer/RequestShapeFormContainer';
 import './RequestVisioStencils.css';
+import { Label } from '../../../shared/basic/label/Label';
 
 
 interface IRequest {
     uniqueName?: string;
     featureId?: string;
     helpTipText?: string;
+    headerText?: string;
     isShowHelptip?: boolean;
     onRequestClick?: () => void;
     saveSearchCriteria?: (searchText: string, AndOr?: "AND" | "OR", mfg?: string, eqtype?: string, pno?: string) => void
@@ -43,6 +45,10 @@ const EMPTY_SELECTED_NODE: ITreeNode = {
 
 const RequestVisioStencils = (props: IRequest = {}) => {
     // console.log('props RequestVisioStencils', props)
+    const rawHeaderText = props.headerText ?? 'Request Visio Stencils';
+    const headerTitle = rawHeaderText.startsWith('[')
+        ? rawHeaderText
+        : `[Services] ${rawHeaderText}`
     const uniqueName = props.uniqueName ?? 'request-visio-stencils';
     const featureId = props.featureId ?? ServicesEnums.RequestVisioStencils;
     const showHelptip = props.isShowHelptip !== false;
@@ -69,6 +75,15 @@ const RequestVisioStencils = (props: IRequest = {}) => {
 
     return (
         <div className="nz-request-visio-stencils nz-wh-100 nz-d-flex-column" id={uniqueName}>
+            <div className="nz-sub-header">
+                <div className="nz-d-flex-row nz-align-center">
+                    <Label
+                        uniqueName={`${uniqueName}-main-header`}
+                        label={headerTitle}
+                        fontWeight="600"
+                    />
+                </div>
+            </div>
             {showHelptip && (
                 <div className="nz-request-visio-helptip-div">
                     <Helptip
@@ -189,6 +204,7 @@ const RequestDeviceModels = (props: IRequest = {}) => {
 
     return (
         <div className="nz-request-visio-stencils nz-wh-100 nz-d-flex-column" id={uniqueName}>
+
             {showHelptip && (
                 <div className="nz-request-visio-helptip-div">
                     <Helptip

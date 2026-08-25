@@ -1,4 +1,4 @@
-export type TicketStatus = 'Accepted' | 'Pending' | 'Need Info' | 'Released';
+export type TicketStatus = 'Accepted' | 'Pending' | 'Need Info' | 'Released' | 'Closed';
 export type TicketId = `T-${number}`;
 
 interface ITicket {

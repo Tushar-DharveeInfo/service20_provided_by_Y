@@ -12,6 +12,7 @@ interface INoteItems {
     NotesMAX: string;
     NotesType: string;
     UserName: string;
+    Status?: string;
     audio?: unknown,
     file?: unknown,
     fileObj?: any,

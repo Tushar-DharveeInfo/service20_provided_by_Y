@@ -22,7 +22,7 @@ const RequestVisioStencils = lazy(() => import('../../features/services/requestv
 const RequestDeviceModelsContainer = lazy(() => import('../../features/services/requestdevicemodels/RequestDeviceModels.tsx'))
 const RequestSupport = lazy(() => import('../../features/services/requestsupport/RequestSupport.tsx'))
 
-const DownloadNetZoom = lazy(() => import('../../features/download/downloadnetzoom/DownloadNetZoom.tsx'))
+const DownloadNetZoom = lazy(() => import('../../features/services/downloadnetzoom/DownloadNetZoom.tsx'))
 const TicketExplorerContainer = lazy(() => import('../../features/services/myrequests/MyRequests.tsx'))
 
 

@@ -40,6 +40,15 @@ interface IMySubscriptions {
     handleShowUserMessage?: (messageText: string) => void;
 }
 
+/* Helper to check whether a subscription license has expired. */
+const isSubscriptionExpired = (endDate?: string): boolean => {
+    if (!endDate) {
+        return false;
+    }
+    const end = Date.parse(endDate);
+    return !Number.isNaN(end) && end < Date.now();
+};
+
 /* Card rows matching the NZLicenseKey license-card layout. */
 const getLicenseFields = (license: ISampleUserLicense): ICardLayoutField[] => {
     const fields: ICardLayoutField[] = [
@@ -99,20 +108,23 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                     fontWeight='600' />
             </div>
             <div className='nz-my-subscriptions-list'>
-                {licenses.map((license) => (
-                    <CardLayout
-                        key={license.EntID}
-                        uniqueName={`${mySubscriptionsProps.uniqueName}-${license.EntID}`}
-                        featureId={mySubscriptionsProps.featureId}
-                        data={license}
-                        fields={getLicenseFields(license)}
-                        className='nz-my-subscriptions-card'
-                        isSelected={selectedLicenseId === license.EntID}
-                        hideRightMouseMenu={true}
-                        keyboardNavigationOrientation={'vertical'}
-                        tabIndex={0}
-                        onClick={() => setSelectedLicenseId(license.EntID)} />
-                ))}
+                {licenses.map((license) => {
+                    const isExpired = isSubscriptionExpired(license.EndDate);
+                    return (
+                        <CardLayout
+                            key={license.EntID}
+                            uniqueName={`${mySubscriptionsProps.uniqueName}-${license.EntID}`}
+                            featureId={mySubscriptionsProps.featureId}
+                            data={license}
+                            fields={getLicenseFields(license)}
+                            className={`nz-my-subscriptions-card ${isExpired ? 'nz-my-subscriptions-card-expired' : ''}`.trim()}
+                            isSelected={selectedLicenseId === license.EntID}
+                            hideRightMouseMenu={true}
+                            keyboardNavigationOrientation={'vertical'}
+                            tabIndex={0}
+                            onClick={() => setSelectedLicenseId(license.EntID)} />
+                    );
+                })}
             </div>
         </div>
     )

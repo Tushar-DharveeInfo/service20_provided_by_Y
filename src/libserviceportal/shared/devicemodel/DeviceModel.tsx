@@ -70,8 +70,8 @@ const getProductDownloadCartPayload = (node: ITreeNode): { mfg: string; prodno: 
 const leftSideTabs: IActionLabelTabs = {
 	labels: [
 		{
-			label: 'Result',
-			tooltip: 'Result tab'
+			label: 'Found in Library',
+			tooltip: 'Found in Library tab'
 		}
 	],
 	handleMouse: () => {
@@ -82,8 +82,8 @@ const leftSideTabs: IActionLabelTabs = {
 const onlySearchTab: IActionLabelTabs = {
 	labels: [
 		{
-			label: 'Search',
-			tooltip: 'Search tab'
+			label: 'Search library',
+			tooltip: 'Search library tab'
 		}
 
 	],
@@ -94,8 +94,8 @@ const onlySearchTab: IActionLabelTabs = {
 const RightSideTabs: IActionLabelTabs = {
 	labels: [
 		{
-			label: 'Search',
-			tooltip: 'Search tab'
+			label: 'Search library',
+			tooltip: 'Search library tab'
 		},
 		{
 			label: 'Property',
@@ -154,7 +154,7 @@ const DeviceModel = (props: IDeviceModel) => {
 	const [isDeviceURLAvailable, setIsDeviceURLAvailable] = useState<boolean>(true);
 	const [isDeviceUrlValidated, setIsDeviceUrlValidated] = useState<boolean>(true);
 	const [leftSideSelectedTab, setLeftSideSelectedTab] = useState<string>('')
-	const [rightSideSelectedTab, setRightSideSelectedTab] = useState<string>('Search')
+	const [rightSideSelectedTab, setRightSideSelectedTab] = useState<string>('Search library')
 	const [leftSideTabsObj, setLeftSideTabsObj] = useState<IActionLabelTabs>(leftSideTabs)
 	const [wildsearchData, setWildsearchData] = useState<IDeviceWildSearchItem[] | null>(null)
 
@@ -728,8 +728,8 @@ const DeviceModel = (props: IDeviceModel) => {
 		try {
 
 			setLeftSideTabsObj(leftSideTabs)
-			setLeftSideSelectedTab("Result")
-			setRightSideSelectedTab("Search")
+			setLeftSideSelectedTab("Found in Library")
+			setRightSideSelectedTab("Search library")
 			const mfg = getProfileManufacturerValue(profileString)
 			const eqtypeFromProfile = profileString["Equipment Type"]
 				? profileString["Equipment Type"] === "All"

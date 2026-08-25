@@ -109,6 +109,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
             NotesMAX: noteText,
             NotesType: notesType,
             UserName: "demo.user",
+            Status: "Accepted",
             ...(notesType !== "Message"
                 ? { FileUID: `sample-file-${Date.now()}` }
                 : {}),
