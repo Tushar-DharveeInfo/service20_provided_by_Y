@@ -1,4 +1,4 @@
-import { axiosInterceptorForThirdPartyApis, axiosInterceptorToGetFileFromPublic } from "../../api/Interceptor";
+import { axiosInterceptorForThirdPartyApis, axiosInterceptorToGetFileFromPublic } from "../../interceptors/Interceptor";
 
 const FnGetLibJson = async (
     name: string | string[],

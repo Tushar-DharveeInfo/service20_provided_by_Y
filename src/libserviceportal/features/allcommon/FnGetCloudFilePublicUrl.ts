@@ -1,4 +1,4 @@
-import { axiosInterceptorForThirdPartyApis } from "../../shared/api/Interceptor";
+import { axiosInterceptorForThirdPartyApis } from "../../shared/interceptors/Interceptor";
 import { FnGetEnvVariableByKey } from "../../appcontainer/allcommon/FnGetEnvVariableByKey";
 import { envVarEnums } from "../../appcontainer/alldefaultprops/DefaultPropsAppContainer";
 
