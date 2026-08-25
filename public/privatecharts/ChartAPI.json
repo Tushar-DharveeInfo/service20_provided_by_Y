@@ -1,0 +1,291 @@
+{
+  "ChartDataSet": [
+    {
+      "CPName": "Role count by BasicRole",
+      "ChartData": {
+        "Data": [
+          { "BasicRole": "Admin", "RoleCount": 2 },
+          { "BasicRole": "API", "RoleCount": 0 },
+          { "BasicRole": "COLO", "RoleCount": 0 },
+          { "BasicRole": "Enterprise", "RoleCount": 1 },
+          { "BasicRole": "ReadOnly", "RoleCount": 0 },
+          { "BasicRole": "Site", "RoleCount": 1 },
+          { "BasicRole": "testbytu", "RoleCount": 0 }
+        ]
+      }
+    },
+    {
+      "CPName": "Enterprise Audit Assets",
+      "ChartData": {
+        "Data": [
+          { "SiteName": "Chicago", "Totaldevices": 478, "AuditDevices": 9, "New": 0, "Move": 2, "Missing": 0, "Match": 5 },
+          { "SiteName": "Dayton", "Totaldevices": 100, "AuditDevices": 8, "New": 0, "Move": 2, "Missing": 0, "Match": 5 },
+          { "SiteName": "DC", "Totaldevices": 8423, "AuditDevices": 0, "New": 0, "Move": 0, "Missing": 0, "Match": 0 },
+          { "SiteName": "Lisle", "Totaldevices": 99, "AuditDevices": 8, "New": 0, "Move": 2, "Missing": 0, "Match": 5 },
+          { "SiteName": "NewYork", "Totaldevices": 99, "AuditDevices": 8, "New": 0, "Move": 2, "Missing": 0, "Match": 5 }
+        ]
+      }
+    },
+    {
+      "CPName": "Assets by Site",
+      "ChartData": {
+        "Data": [
+          { "SiteName": "DC", "DeviceCount": 8423 },
+          { "SiteName": "Lisle", "DeviceCount": 99 },
+          { "SiteName": "NewYork", "DeviceCount": 99 },
+          { "SiteName": "Chicago", "DeviceCount": 478 },
+          { "SiteName": "Dayton", "DeviceCount": 100 }
+        ]
+      }
+    },
+    {
+      "CPName": "Role count by Site",
+      "ChartData": {
+        "Data": []
+      }
+    },
+    {
+      "CPName": "Site vs Server",
+      "ChartData": {
+        "Data": [
+          { "Site": "Chicago", "ServerCount": 35 },
+          { "Site": "Dayton", "ServerCount": 13 },
+          { "Site": "DC", "ServerCount": 368 },
+          { "Site": "DR", "ServerCount": 0 },
+          { "Site": "Lisle", "ServerCount": 13 },
+          { "Site": "NewYork", "ServerCount": 13 },
+          { "Site": "NKTestSite1", "ServerCount": 0 },
+          { "Site": "SampleDC", "ServerCount": 0 }
+        ]
+      }
+    },
+    {
+      "CPName": "Enterprise Assets by EqType",
+      "ChartData": {
+        "Data": [
+          { "EqType": "Rack", "Count": 67, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Accessory", "Count": 368, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Storage", "Count": 517, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Enclosure", "Count": 2, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Module", "Count": 5700, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "SmartPDU", "Count": 140, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Appliance", "Count": 7, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Shelf", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Security", "Count": 21, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "AVandBroadcasting", "Count": 9, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Cooling", "Count": 56, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Power", "Count": 1076, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Server", "Count": 442, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Telco", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Networking", "Count": 609, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "PatchPanel", "Count": 111, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Switch", "Count": 70, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Door", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EqType": "Display", "Count": 2, "Price": 0.0, "ResidualValue": 0.0 }
+        ]
+      }
+    },
+    {
+      "CPName": "Device Type vs Qty",
+      "ChartData": {
+        "Data": [
+          { "DeviceType": "Rack", "Qty": 67 },
+          { "DeviceType": "Accessory", "Qty": 368 },
+          { "DeviceType": "Storage", "Qty": 517 },
+          { "DeviceType": "Enclosure", "Qty": 2 },
+          { "DeviceType": "Module", "Qty": 5700 },
+          { "DeviceType": "SmartPDU", "Qty": 140 },
+          { "DeviceType": "Appliance", "Qty": 7 },
+          { "DeviceType": "Shelf", "Qty": 1 },
+          { "DeviceType": "Security", "Qty": 21 },
+          { "DeviceType": "AVandBroadcasting", "Qty": 9 },
+          { "DeviceType": "Cooling", "Qty": 56 },
+          { "DeviceType": "Power", "Qty": 1073 },
+          { "DeviceType": "Server", "Qty": 442 },
+          { "DeviceType": "Telco", "Qty": 1 },
+          { "DeviceType": "Networking", "Qty": 609 },
+          { "DeviceType": "PatchPanel", "Qty": 111 },
+          { "DeviceType": "Switch", "Qty": 70 },
+          { "DeviceType": "Door", "Qty": 1 },
+          { "DeviceType": "Display", "Qty": 2 }
+        ]
+      }
+    },
+    {
+      "CPName": "Site vs Rack Server Switch Count",
+      "ChartData": {
+        "Data": [
+          { "_Site": "Chicago", "RackCount": 10, "ServerCount": 35, "SwitchCount": 7 },
+          { "_Site": "Dayton", "RackCount": 7, "ServerCount": 13, "SwitchCount": 5 },
+          { "_Site": "DC", "RackCount": 36, "ServerCount": 368, "SwitchCount": 48 },
+          { "_Site": "DR", "RackCount": 0, "ServerCount": 0, "SwitchCount": 0 },
+          { "_Site": "Lisle", "RackCount": 7, "ServerCount": 13, "SwitchCount": 5 },
+          { "_Site": "NewYork", "RackCount": 7, "ServerCount": 13, "SwitchCount": 5 },
+          { "_Site": "NKTestSite1", "RackCount": 0, "ServerCount": 0, "SwitchCount": 0 },
+          { "_Site": "SampleDC", "RackCount": 0, "ServerCount": 0, "SwitchCount": 0 }
+        ]
+      }
+    },
+    {
+      "CPName": "Role count by Company",
+      "ChartData": {
+        "Data": []
+      }
+    },
+    {
+      "CPName": "Site vs Rack",
+      "ChartData": {
+        "Data": [
+          { "_Site": "Chicago", "RackCount": 10, "ServerCount": 35, "SwitchCount": 7 },
+          { "_Site": "Dayton", "RackCount": 7, "ServerCount": 13, "SwitchCount": 5 },
+          { "_Site": "DC", "RackCount": 36, "ServerCount": 368, "SwitchCount": 48 },
+          { "_Site": "DR", "RackCount": 0, "ServerCount": 0, "SwitchCount": 0 },
+          { "_Site": "Lisle", "RackCount": 7, "ServerCount": 13, "SwitchCount": 5 },
+          { "_Site": "NewYork", "RackCount": 7, "ServerCount": 13, "SwitchCount": 5 },
+          { "_Site": "NKTestSite1", "RackCount": 0, "ServerCount": 0, "SwitchCount": 0 },
+          { "_Site": "SampleDC", "RackCount": 0, "ServerCount": 0, "SwitchCount": 0 }
+        ]
+      }
+    },
+    {
+      "CPName": "Role count by Feature",
+      "ChartData": {
+        "Data": []
+      }
+    },
+    {
+      "CPName": "Enterprise Assets by Manufacturer",
+      "ChartData": {
+        "Data": [
+          { "Manufacturer": "3MTelecomSystemsDivision", "Count": 105, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "Symmetricom", "Count": 12, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "2BM", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "3com", "Count": 2, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "ScienceLogic", "Count": 6, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "360Systems", "Count": 25, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "Panasonic", "Count": 4, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "101SignWholesale", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "GenericNetZoomPowerEquipment", "Count": 27, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "IBM", "Count": 1846, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "AlertLogic", "Count": 7, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "901D", "Count": 2, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "DandBAudiotechnik", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "WatchguardTechnologies", "Count": 7, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "Liebert", "Count": 22, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "Eaton", "Count": 5, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "TrippLite", "Count": 4, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "GenericRackIcons", "Count": 12, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "CiscoSystems", "Count": 1092, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "APC", "Count": 279, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "AcerAmerica", "Count": 2, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "GenericEquipmentSet", "Count": 4, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "SUNMicrosystems", "Count": 12, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "3xLOGIC", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "ServerTechnology", "Count": 76, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "GenericNetZoomRackmountable", "Count": 395, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "Hewlett-Packard", "Count": 616, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "Corning", "Count": 277, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "DellComputer", "Count": 4352, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "UltraElectronics3eTechnologiesInternational", "Count": 4, "Price": 0.0, "ResidualValue": 0.0 },
+          { "Manufacturer": "Cummins", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 }
+        ]
+      }
+    },
+    {
+      "CPName": "Basic Role vs UserCount",
+      "ChartData": {
+        "Data": [
+          { "Role": "Admin", "UserCount": 18 },
+          { "Role": "Enterprise", "UserCount": 1 },
+          { "Role": "Site", "UserCount": 0 },
+          { "Role": "ReadOnly", "UserCount": 0 },
+          { "Role": "COLO", "UserCount": 0 },
+          { "Role": "API", "UserCount": 0 }
+        ]
+      }
+    },
+    {
+      "CPName": "Site vs Monitored",
+      "ChartData": {
+        "Data": [
+          { "_Site": "Chicago", "NonDiscoverable": 478, "Discoverable": 0, "Discovered": 0, "Monitored": 0 },
+          { "_Site": "Dayton", "NonDiscoverable": 100, "Discoverable": 0, "Discovered": 0, "Monitored": 0 },
+          { "_Site": "DC", "NonDiscoverable": 8418, "Discoverable": 2, "Discovered": 2, "Monitored": 2 },
+          { "_Site": "DR", "NonDiscoverable": 0, "Discoverable": 0, "Discovered": 0, "Monitored": 0 },
+          { "_Site": "Lisle", "NonDiscoverable": 99, "Discoverable": 0, "Discovered": 0, "Monitored": 0 },
+          { "_Site": "NewYork", "NonDiscoverable": 99, "Discoverable": 0, "Discovered": 0, "Monitored": 0 },
+          { "_Site": "NKTestSite1", "NonDiscoverable": 0, "Discoverable": 0, "Discovered": 0, "Monitored": 0 },
+          { "_Site": "SampleDC", "NonDiscoverable": 0, "Discoverable": 0, "Discovered": 0, "Monitored": 0 }
+        ]
+      }
+    },
+    {
+      "CPName": "Site vs Residual Value",
+      "ChartData": {
+        "Data": [
+          { "Site": "SampleDC", "Cost": 0.0, "ResidualValue": 0.0 },
+          { "Site": "Chicago", "Cost": 0.0, "ResidualValue": 0.0 },
+          { "Site": "Lisle", "Cost": 0.0, "ResidualValue": 0.0 },
+          { "Site": "Dayton", "Cost": 0.0, "ResidualValue": 0.0 },
+          { "Site": "NewYork", "Cost": 0.0, "ResidualValue": 0.0 },
+          { "Site": "DC", "Cost": 0.0, "ResidualValue": 0.0 },
+          { "Site": "DR", "Cost": 0.0, "ResidualValue": 0.0 },
+          { "Site": "NKTestSite1", "Cost": 0.0, "ResidualValue": 0.0 }
+        ]
+      }
+    },
+    {
+      "CPName": "Inventory vs Device Type",
+      "ChartData": {
+        "Data": [
+          { "DeviceType": "Cable", "Qty": 767 },
+          { "DeviceType": "Power", "Qty": 3 }
+        ]
+      }
+    },
+    {
+      "CPName": "Site vs Switch",
+      "ChartData": {
+        "Data": [
+          { "Site": "Chicago", "SwitchCount": 7 },
+          { "Site": "Dayton", "SwitchCount": 5 },
+          { "Site": "DC", "SwitchCount": 48 },
+          { "Site": "DR", "SwitchCount": 0 },
+          { "Site": "Lisle", "SwitchCount": 5 },
+          { "Site": "NewYork", "SwitchCount": 5 },
+          { "Site": "NKTestSite1", "SwitchCount": 0 },
+          { "Site": "SampleDC", "SwitchCount": 0 }
+        ]
+      }
+    },
+    {
+      "CPName": "Enterprise Assets by Entity",
+      "ChartData": {
+        "Data": [
+          { "EntityName": "UPS", "Count": 95, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "Shelf", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "AV", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "Display", "Count": 2, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "RackDoor", "Count": 1, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "Appliance", "Count": 7, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "GeneratorSet", "Count": 9, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "OtherDevice", "Count": 3475, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "Accessory", "Count": 368, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "PowerGrid", "Count": 2, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "PatchPanel", "Count": 111, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "Switch", "Count": 70, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "Security", "Count": 29, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "Rack", "Count": 67, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "CircuitBreaker", "Count": 2, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "CoolingUnit", "Count": 56, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "Server", "Count": 442, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "PDU", "Count": 158, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "UtilityPower", "Count": 2, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "BladeEnclosure", "Count": 2, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "Module", "Count": 948, "Price": 0.0, "ResidualValue": 0.0 },
+          { "EntityName": "Card", "Count": 3352, "Price": 0.0, "ResidualValue": 0.0 }
+        ]
+      }
+    }
+  ]
+}

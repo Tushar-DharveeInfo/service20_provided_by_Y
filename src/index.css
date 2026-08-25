@@ -1,0 +1,116 @@
+:root {
+  --explorer_pane_size: 250px;
+  --node_height: 30px;
+  --submenu_height: 30px;
+  --default_font_size: 13px;
+  --default_font_family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+
+  --text-content-indent: 4px;
+
+  --image-size-1: 16px;
+  --image-size-2: 20px;
+
+  --spacing-0: 2px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 24px;
+  --spacing-6: 32px;
+
+  --card-padding-1: 6px;
+  --card-padding-0: 4px;
+  --card-gap: 4px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+html {
+  /* --bgexplorer: #fff;
+  --bgfeaturepane1: #e4e4e4;
+  --selection: #ddd;
+  --hover: #11182713;
+  --borderandscrollbar: #ccc;
+  --link: teal;
+  --textprimary: #111;
+  --textsecondary: #555;
+  --fontfamily: Bitcount;
+  --btn_primary_hover: #672367;
+  --btn_primary_bg: #271f27;
+  --btn_primary_text: #ffffff;
+  --btn_secondary_hover: #672367;
+  --btn_secondary_bg: #672367;
+  --btn_secondary_text: #ffffff;
+  --btn_error_hover: #ab5350;
+  --btn_error_bg: #ef5350;
+  --btn_error_text: #ffffff;
+  --btn_warning_hover: #aa9800;
+  --btn_warning_bg: #ff9800;
+  --btn_warning_text: #ffffff;
+  --bgexplorerrgb: 0, 15, 255;
+  --secondaryrgb: 228, 228, 228;
+  --textprimaryrgb: 0, 1, 17;
+  --textsecondaryrgb: 0, 5, 85; */
+}
+
+body {
+  margin: 0;
+  font-family: var(--default_font_family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: var(--default_font_size);
+  scroll-behavior: smooth;
+  color: var(--textprimary);
+  background-color: var(--bgexplorer) !important;
+  font-style: normal;
+  font-weight: 400;
+  max-height: 100vh;
+  max-width: 100vw;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--bgexplorer);
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 2px rgb(0 0 0 / 10%);
+  width: 20px;
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--borderandscrollbar);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+.nz-save-yellow-background {
+  background-color: #FFFF99;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.nz-save-yellow-background .nz-action-image-container:hover {
+  transform: scale(0.92);
+  background-color: #FFFF99;
+}

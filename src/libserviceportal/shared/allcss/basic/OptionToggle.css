@@ -1,0 +1,19 @@
+.nz-popover-three-dots-menu-div .MuiPaper-root {
+    background-color: transparent;
+}
+
+.nz-popover-three-dots-menu-div .nz-checkbox-group:hover {
+    background-color: var(--hover);
+}
+
+.nz-popover-three-dots-menu-div .nz-fc-toggle-container .nz-checkbox-group {
+    padding: var(--spacing-2);
+    display: flex;
+    align-items: center;
+    justify-self: center;
+    width: 100%;
+}
+
+.nz-popover-three-dots-menu-div .nz-fc-toggle-container {
+    padding: 0px !important;
+}

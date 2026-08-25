@@ -1,0 +1,107 @@
+.nz-feature-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bgexplorer);
+    padding: var(--spacing-0)
+}
+
+/* Host for features that replace the explorer and own the whole content area */
+.nz-feature-render-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.nz-feature-render-content>* {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Auto-dismissing confirmation toast shown near the mouse pointer */
+.nz-overlay-toast {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    animation: nz-overlay-toast-fade-in 0.15s ease-in-out;
+}
+
+.nz-overlay-toast .nz-overlay-message {
+    background: var(--bgform);
+    padding: var(--spacing-2);
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--textprimary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    min-width: 100px;
+}
+
+@keyframes nz-overlay-toast-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.nz-feature-container .nz-exp-pane {
+    background-color: var(--bgexplorer);
+}
+
+.nz-feature-container .nz-pane-1 {
+    background-color: var(--bgfeaturepane1);
+}
+
+.nz-feature-container .nz-pane-2 {
+    background-color: var(--bgfeaturepane2);
+}
+
+.nz-feature-container .nz-pane-form {
+    background-color: var(--bgform);
+}
+
+.nz-feature-container .nz-pane-3 {
+    background-color: var(--bgfeaturepane1);
+}
+
+.nz-node-menu-controls-container {
+    overflow: hidden;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+}
+
+.nz-feature-container .nz-feature-explorer-pane {
+    justify-content: flex-start;
+    /* background-color: var(--bgexplorer); */
+}
+
+.nz-feature-container .p-splitter-panel {
+    overflow: hidden;
+}
+
+.nz-feature-container .nz-feature-container-splitter {
+    display: flex;
+    flex-direction: row;
+}
+
+.nz-feature-explorer-right-pane .nz-dc-explorer-container .rc-tree-treenode-selected {
+    background-color: var(--selection) !important;
+    color: var(--selection-text) !important;
+}
+
+.nz-feature-explorer-right-pane .nz-dc-explorer-container .rc-tree-node-selected {
+    background-color: transparent !important;
+}
+
+.nz-dc-explorer-container .nz-dce-search-tree-container,
+.nz-dc-explorer-container .nz-dce-search-tree-container .nz-dce-tree-container {
+    height: 100%;
+}

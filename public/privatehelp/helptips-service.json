@@ -1,0 +1,37 @@
+[
+    {
+        "featureid": "43_help",
+        "tip": "Use **Help** to launch context-sensitive help on any feature"
+    },
+    {
+        "featureid": "122_Purchase",
+        "tip": "To **Purchase** a NetZoom product or service, first select the product from the Products and Services list. Next select the options in the middle pane and click *Add to Cart*. Repeat the process for additional items. Once you have added your order to the cart, complete the Checkout process by clicking *Checkout* and filling in the purchase form and click *Submit Order*."
+    },
+    {
+        "featureid": "152_MyRequests",
+        "tip": "Use **My Requests** to track the status of NetZoom Device Library or Visio stencil shape requests. "
+    },
+    {
+        "featureid": "154_RequestSupport",
+        "tip": "Use **Request Support** to communicate with the technical support team. "
+    },
+    {
+        "featureid": "156_RequestVisioStencils",
+        "tip": "Use the **Visio Stencils** pane to browse and search the Visio Stencils library for specific Visio stencil shapes. Request and Download panes will support stencil request workflows."
+    },
+    {
+        "featureid": "158_RequestDeviceModels",
+        "tip": "Use the **Device Model** pane to browse and search the NetZoom device library for your desired manufacturer-specific shapes. Request and Download panes will support shape request workflows."
+    },
+    {
+        "featureid": "160_DownloadNetZoom",
+        "tip": "Download brochures and resources for the NetZoom application and Visio Stencils."
+    },
+    {
+        "featureid": "302_VisioStencils",
+        "tip": "Browse the **Visio Stencils** Frequently Asked Questions."
+    },
+    {
+        "featureid": "304_FAQNetZoom",
+        "tip": "Browse the **NetZoom** application Frequently Asked Questions about application usage, installation and system requirements."
+    }]

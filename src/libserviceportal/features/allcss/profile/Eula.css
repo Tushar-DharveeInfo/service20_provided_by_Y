@@ -1,0 +1,5 @@
+.nz-eula-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}

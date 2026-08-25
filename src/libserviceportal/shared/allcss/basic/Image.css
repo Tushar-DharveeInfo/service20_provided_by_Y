@@ -1,0 +1,11 @@
+.nz-image-container {
+    display: flex;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.nz-image-container .nz-feature-icon svg {
+    width: 100%;
+    height: 100%
+}

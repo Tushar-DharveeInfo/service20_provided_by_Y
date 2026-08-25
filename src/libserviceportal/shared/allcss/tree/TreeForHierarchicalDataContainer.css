@@ -1,0 +1,40 @@
+.nz-tree-container-hierarchical-data {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+.nz-tree-action-control-container {
+    width: 100%;
+}
+.nz-node-kebab-copy-icon {
+    width: auto !important;
+    min-width: 20px !important;
+}
+.nz-node-kebab-copy-icon > .nz-action-image-container > .nz-image-container > .nz-feature-icon > div:first-of-type {
+    width: 20px;
+    height: 20px;
+}
+.nz-node-kebab-copy-icon > .nz-action-image-container {
+    position: absolute;
+    right: 25px;
+}
+.nz-node-kebab-copy-icon > div.nz-node-menu {
+    position: absolute;
+    right: 0px;
+    width: 24px;
+}
+.rc-tree-title .nz-node-kebab-copy-icon > .nz-action-image-container {
+    display: none;
+}
+.rc-tree-title:hover .nz-node-kebab-copy-icon > .nz-action-image-container {
+    display: flex;
+}
+.nz-tree-container-hierarchical-data .rc-tree-node-content-wrapper .nz-tree-node-nz-icon-div .nz-node-menu {
+    display: none;
+}
+.nz-tree-container-hierarchical-data
+    .rc-tree-node-content-wrapper.rc-tree-node-selected
+    .nz-tree-node-nz-icon-div
+    .nz-node-menu {
+    display: flex;
+}

@@ -1,0 +1,84 @@
+.nz-forensic-log-root {
+    height: 100%;
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.nz-main-search-control-log {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.nz-logs-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.nz-log-searchControl .nz-searchControl {
+    margin: var(--spacing-1) 0px !important;
+}
+
+.nz-log-searchControl .nz-searchControl .nz-form-groupControl-with-filter {
+    width: 100%;
+}
+
+.nz-logs-grid .nz-grid-container-div,
+.nz-logs-grid .nz-OnetoOne-Grid,
+.nz-logs-grid .nz-grid-dialog-container-div,
+.nz-logs-grid .nz-grid-dialog-container-div .nz-grid-main-container-div {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+.nz-logs-grid .nz-searchControl {
+    min-height: 30px;
+}
+
+.nz-forensic-log-no-data-to-show {
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.nz-main-search-control-log .nz-grid-container-div {
+    padding: 0px;
+}
+
+.nz-logs-grid .nz-grid-container-div .nz-copy-to-clipboard-div .nz-copy-to-clipboard-only {
+    top: 4px;
+}
+
+/* BasicGrid.css hides .nz-ag-container by default; keep forensic log grid visible and sized. */
+.nz-logs-grid .nz-ag-container {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100% !important;
+}
+
+.nz-logs-grid .ag-body-viewport {
+    overflow: auto !important;
+}
+
+.nz-logs-grid .ag-body-vertical-scroll {
+    display: block !important;
+}

@@ -1,0 +1,68 @@
+.nz-app-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bgPrimary);
+}
+
+.nz-ui-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.nz-ui-content {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.nz-ui-content .nz-action-list-menu .nz-nav-bar {
+    height: 100%;
+    background-color: var(--bg-color-menu);
+    border: 2px solid var(--borderandscrollbar);
+}
+
+.nz-ui-content .nz-action-list-menu .nz-menu-search {
+    background-color: var(--bg-color-menu);
+}
+
+.nz-action-list-menu {
+    transform-origin: left center;
+    transition:
+        transform 0.3s ease,
+        opacity 0.3s ease;
+    width: 0.1s;
+}
+
+.nz-action-list-menu-open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+    width: auto;
+}
+
+.nz-action-list-menu-closed {
+    transform: translateX(-10px);
+    opacity: 0;
+    pointer-events: none;
+    width: 0px;
+}
+
+.nz-action-list-menu.nz-action-list-menu-closed .nz-nav-bar,
+.nz-action-list-menu.nz-action-list-menu-closed .nz-menu-search {
+    border: 0px;
+    background-color: transparent;
+}
+
+.nz-action-list-menu.nz-action-list-menu-closed .nz-menu-search {
+    opacity: 0;
+}

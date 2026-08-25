@@ -1,0 +1,85 @@
+/* Aggregates all libserviceportal CSS - replaces ../libserviceportal/style.css */
+@import './allcss/NzAppService.css';
+
+@import './appcontainer/allcss/AppContainer.css';
+@import './appcontainer/allcss/AppQaMenuContainer.css';
+@import './appcontainer/allcss/ComponentsWrapperContainer.css';
+@import './appcontainer/allcss/ExplorerContainer.css';
+@import './appcontainer/allcss/FeatureContainer.css';
+@import './appcontainer/allcss/FeatureRouteContainer.css';
+@import './appcontainer/allcss/SidebarContainer.css';
+@import './appcontainer/allcss/StatusBarCard.css';
+@import './appcontainer/allcss/StatusBarContainer.css';
+@import './appcontainer/allcss/StatusBarTitleContainer.css';
+@import './appcontainer/allcss/TitleContainer.css';
+
+@import './appqa/allcss/_AppQaContactUs.css';
+@import './appqa/allcss/AppQaContactUs.css';
+
+@import './features/allcss/buy/BuyContainer.css';
+@import './features/allcss/PdfDocumentViewer.css';
+@import './features/allcss/profile/Eula.css';
+@import './features/allcss/profile/MyActivities.css';
+@import './features/allcss/profile/MyProfile.css';
+@import './features/allcss/profile/MySubscriptions.css';
+@import './features/services/requestsupport/RequestSupport.css';
+@import './features/services/requestvisiostencils/RequestVisioStencils.css';
+
+@import './shared/allcss/basic/ActionImage.css';
+@import './shared/allcss/basic/ActionImageList.css';
+@import './shared/allcss/basic/ActionImageStrip.css';
+@import './shared/allcss/basic/ActionLabel.css';
+@import './shared/allcss/basic/ActionLabelStrip.css';
+@import './shared/allcss/basic/ActionLabelTabs.css';
+@import './shared/allcss/basic/BaseOptionToggle.css';
+@import './shared/allcss/basic/DirtyFlagImage.css';
+@import './shared/allcss/basic/DynamicCard.css';
+@import './shared/allcss/basic/Image.css';
+@import './shared/allcss/basic/JsonViewerControl.css';
+@import './shared/allcss/basic/Label.css';
+@import './shared/allcss/basic/OptionToggle.css';
+@import './shared/allcss/basic/OptionsFilter.css';
+@import './shared/allcss/basic/OverlayTab.css';
+@import './shared/allcss/basic/YesNoFormContainer.css';
+
+@import './shared/allcss/devicemodel/DeviceModel.css';
+@import './shared/allcss/devicemodel/PropertyTab.css';
+@import './shared/allcss/devicemodel/SearchTab.css';
+
+@import './shared/allcss/deviceview/DevicePreview.css';
+@import './shared/allcss/deviceview/ViewContainer.css';
+
+@import './shared/allcss/menu/ExpandableList.css';
+@import './shared/allcss/menu/MenuImage.css';
+@import './shared/allcss/menu/NodeMenu.css';
+@import './shared/allcss/menu/OverlayIconStrip.css';
+
+@import './shared/allcss/searchfilter/FilterKeywordControl.css';
+@import './shared/allcss/searchfilter/SearchControl.css';
+@import './shared/allcss/searchfilter/SearchControlWithFilter.css';
+
+@import './shared/allcss/settingsform/OneToManyPropertyFormWithGrid.css';
+@import './shared/allcss/settingsform/SettingsContainer.css';
+@import './shared/allcss/settingsform/SettingsInstanceList.css';
+@import './shared/allcss/settingsform/SettingsLibForm.css';
+
+@import './shared/allcss/sidebar/ContactList.css';
+@import './shared/allcss/sidebar/ForensicLog.css';
+@import './shared/allcss/sidebar/FqaNotes.css';
+@import './shared/allcss/sidebar/PropertyFormContainer.css';
+@import './shared/allcss/sidebar/Sidebar.css';
+@import './shared/allcss/sidebar/SidebarContainer.css';
+
+@import './shared/allcss/tablegrid/BasicGrid.css';
+
+@import './shared/allcss/tree/tree.css';
+@import './shared/allcss/tree/TreeControl.css';
+@import './shared/allcss/tree/TreeForHierarchicalDataContainer.css';
+
+@import './shared/allcss/ForensicLog.css';
+@import './shared/allcss/FqaNotes.css';
+@import './shared/allcss/Help.css';
+@import './shared/allcss/JsonViewer.css';
+@import './shared/allcss/TicketExplorerContainer.css';
+
+@import './shared/cardlayout/CardLayout.css';

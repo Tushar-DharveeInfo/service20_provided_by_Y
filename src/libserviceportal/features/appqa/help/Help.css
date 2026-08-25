@@ -1,0 +1,118 @@
+.nz-appqa-help-content {
+    width: 100%;
+    max-height: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    padding: 0px var(--spacing-1);
+}
+
+.nz-help-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.nz-help-header {
+    position: relative;
+    min-height: var(--node_height);
+    flex-shrink: 0;
+}
+
+.nz-help-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.nz-help-overlay-pane {
+    position: absolute;
+    right: 0;
+    top: 80%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.nz-help-overlay-pane .nz-overlay-title {
+    position: relative;
+    min-height: auto;
+    background: transparent;
+}
+
+.nz-help-overlay-pane .nz-overlay-title>div:first-child {
+    background: #FFFF99;
+    border: 2px solid #007acc;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+}
+
+.nz-help-overlay-pane .nz-overlay-tab-draggable {
+    display: none;
+}
+
+.nz-helptip-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.nz-feature-helptip-container {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.nz-feature-helptip-container .nz-feature-helptip-content {
+    position: relative;
+    padding: var(--spacing-2);
+    align-items: center;
+    width: 100%;
+    background-color: var(--bg-color-helptip);
+    color: var(--textprimary);
+    border: 2px solid var(--borderandscrollbar);
+    box-sizing: border-box;
+}
+
+.nz-feature-helptip-container .nz-feature-helptip-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px;
+    line-height: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.nz-feature-helptip-container .nz-feature-helptip-close svg {
+    display: block;
+    stroke: var(--textprimary);
+    stroke-width: 2;
+}
+
+.nz-feature-helptip-container .nz-feature-helptip-body {
+    width: 100%;
+    box-sizing: border-box;
+    /* Keep text clear of the absolute close icon (24px + gaps). */
+    padding-right: var(--spacing-5);
+}
+
+.nz-feature-helptip-container .nz-feature-helptip-content * {
+    margin: 0px;
+}
+
+.nz-feature-helptip-container .nz-feature-helptip-content ol {
+    margin-left: var(--spacing-3);
+}

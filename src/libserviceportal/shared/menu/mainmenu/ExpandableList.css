@@ -1,0 +1,210 @@
+.nz-nav-i-arrow.closed {
+  transform: rotate(180deg);
+  /* Arrow pointing down */
+}
+
+.nz-main-nav-div {
+  width: 100%;
+  height: 100%;
+}
+
+.nz-nav-box {
+  height: 100%;
+}
+
+.nz-menu-main {
+  height: 100%;
+}
+
+.nz-menu-burger {
+  width: 40px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.nz-nav-bar {
+  width: 250px;
+  height: calc(100% - 40px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.nz-nav-bar:focus:not(:focus-visible),
+.nz-expandable-list .MuiListItemButton-root:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.nz-nav-bar:focus-visible {
+  outline: 1px solid var(--textprimary);
+  outline-offset: 0px;
+}
+
+.nz-expandable-list .MuiListItemButton-root:focus-visible {
+  outline: none;
+}
+
+.nz-menu-close .nz-image-strip-container .nz-action-image-container {
+  min-height: 40px;
+}
+
+.nz-nav-open .nz-nav-box .nz-nav-ul-main,
+.nz-nav-open .nz-nav-box:hover {
+  background-color: var(--bgfeaturepane1);
+}
+
+.nz-image-strip-container {
+  overflow-y: auto;
+}
+
+.nz-hide-menu {
+  display: none;
+}
+
+.nz-menu-close .nz-right-mouse-menu-main {
+  height: 37px;
+  width: 100%;
+}
+
+.nz-menu-close .nz-right-menu-with-icon .nz-right-mouse-menu-base-main,
+.nz-menu-close .nz-right-menu-with-icon .nz-right-mouse-menu,
+.nz-menu-close .nz-right-menu-with-icon .nz-label-container,
+.nz-menu-close .nz-right-menu-with-icon .nz-action-image-container {
+  height: 100% !important;
+  width: 100% !important;
+  display: flex;
+}
+
+.nz-menu-close .nz-right-menu-with-icon .nz-label-container {
+  font-size: 8px !important;
+  justify-content: center;
+}
+
+.nz-right-menu-with-icon {
+  width: calc(100% - 3px);
+  justify-content: center;
+  display: FLEX;
+  align-items: center;
+  border: 1px solid green;
+  background-color: var(--bgfeaturepane1);
+}
+
+.nz-menu-search,
+.nz-nav-bar {
+  background-color: var(--bgfeaturepane1);
+}
+
+.nz-right-mouse-menu .nz-image-container,
+.nz-right-mouse-menu .nz-feature-icon {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.nz-menu-close .nz-right-mouse-menu {
+  margin: 1px !important;
+}
+
+.nz-menu-main .nz-menu-burger {
+  height: 40px !important;
+  justify-content: center;
+}
+
+.nz-menu-close {
+  background: var(--bgfeaturepane1) !important;
+  color: var(--textsecondary);
+}
+
+.MuiTypography-root {
+  font-family: var(--fontfamily) !important;
+  -webkit-font-smoothing: antialiased;
+  font-size: var(--default_font_size) !important;
+  font-weight: 400 !important;
+}
+
+.nz-nav-bar .nz-nav-box {
+  height: calc(100% - 80px) !important;
+}
+
+.nz-menu-search {
+  height: 40px;
+  display: flex;
+}
+
+.nz-expandable-list {
+  flex-grow: 1;
+  overflow: auto;
+  visibility: hidden;
+}
+
+.nz-expandable-list ul {
+  visibility: visible;
+  padding: 0px !important;
+}
+
+.nz-expandable-list:hover {
+  visibility: visible;
+}
+
+.nz-expandable-list-absolute {
+  /* position: absolute; */
+  z-index: 11;
+}
+
+.nz-nav-link .Mui-selected,
+.nz-nav-li-button.Mui-selected {
+  background-color: var(--selection) !important;
+  color: var(--selection-text);
+}
+
+.nz-nav-link:hover {
+  background-color: var(--hover) !important;
+}
+
+.nz-nav-li-button {
+  padding: var(--spacing-2) calc(var(--spacing-2) + 2px) !important;
+}
+
+.nz-nav-open .nz-nav-li-icon {
+  min-width: 20px;
+}
+
+.nz-nav-li-icon {
+  justify-content: center;
+  min-width: auto;
+}
+
+.nz-nav-sub-menu {
+  padding-left: 30px !important;
+}
+
+.nz-expandable-list .nz-nav-menu-text,
+.nz-nav-sub-menu .MuiListItemText-root {
+  margin: 0px;
+  margin-left: 5px;
+}
+
+.nz-nav-link .nz-image-list-data .MuiListItemText-root {
+  white-space: nowrap;
+}
+
+.nz-nav-link .nz-image-list-data .MuiListItemText-root span {
+  overflow: hidden;
+  word-wrap: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nz-expandable-list .nz-only-show-label {
+  margin-left: 0px;
+}
+
+.nz-nav-li-button.Mui-focusVisible {
+  background-color: var(--bg-color-qamenu) !important;
+  border: 1px solid var(--textprimary);
+  box-shadow: none;
+}
+
+.nz-nav-li-button-selected {
+  background-color: var(--bgexplorer) !important;
+}

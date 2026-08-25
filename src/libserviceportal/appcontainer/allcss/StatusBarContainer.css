@@ -1,0 +1,143 @@
+.nz-statusbar-container {
+    width: 100%;
+    height: var(--submenu_height);
+    max-height: var(--submenu_height);
+    overflow: hidden;
+    padding: 0px;
+    background-color: var(--bgtitlebarandstatusbar);
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    /* size to content only */
+    min-height: var(--submenu_height);
+    line-height: var(--node_height);
+    display: flex;
+    padding: 0px;
+    flex-direction: column;
+}
+
+.nz-statusbar-container .nz-statusbar-content {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.nz-statusbar-container .nz-statusbar-content .nz-statusbar-content-stats {
+    max-width: 50%;
+    overflow: hidden;
+    gap: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.nz-statusbar-container .nz-statusbar-content .nz-statusbar-stats-content {
+    height: 30px;
+}
+
+.nz-statusbar-container .nz-statusbar-loader {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--submenu_height);
+    background-color: var(--bgtitlebarandstatusbar);
+    /* Ensures opaque background */
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 0px 5px;
+    pointer-events: auto;
+    cursor: wait;
+}
+
+.nz-statusbar-loader .MuiCircularProgress-root {
+    height: var(--node_height) !important;
+    width: var(--node_height) !important;
+}
+
+.nz-loading {
+    display: flex;
+    align-items: center;
+    overflow: hidden !important;
+}
+
+.nz-statusbar-container .nz-statusbar-loader .nz-label-container {
+    padding-left: 5px;
+}
+
+.nz-statusbar-container .nz-statusbar-content p {
+    margin: 0px;
+}
+
+.nz-statusbar-container .nz-info-bar-dragger-gutter {
+    height: 4px;
+    width: 24px;
+    background-color: #80858e;
+}
+
+.nz-statusbar-container .nz-info-bar-dragger {
+    height: 4px;
+    /* Small height */
+    cursor: row-resize;
+    /* Horizontal drag cursor */
+    position: relative;
+    top: 0;
+    /* or adjust as needed */
+    left: 0;
+    right: 0;
+    /* Stretch horizontally */
+    z-index: 100;
+    background-color: #f9fafb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.nz-statusbar-container .nz-statusbar-loader-reserved-space {
+    min-height: var(--submenu_height);
+    /* adjust to match spinner height */
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    max-height: var(--submenu_height);
+}
+
+.nz-statusbar-container.nz-statusbar-container-open {
+    height: 50%;
+    max-height: 50%;
+}
+
+.nz-statusbar-container.nz-statusbar-container-open .nz-statusbar-card-container .nz-statusbar-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+    overflow: hidden;
+    overflow-y: auto;
+    padding: 8px;
+    background-color: var(--bgexplorer);
+}
+
+.nz-statusbar-container.nz-statusbar-container-open .nz-statusbar-card-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    padding: var(--spacing-0);
+}
+
+.nz-statusbar-container.nz-statusbar-container-open .nz-statusbar-card-container .nz-dynamic-card-main-content {
+    width: 100%;
+    height: auto;
+}
+
+.nz-statusbar-container.nz-statusbar-container-open .nz-statusbar-card-container .nz-dynamic-card .nz-dynamic-card-content {
+    height: auto;
+    width: 100%;
+}
+
+.nz-dynamic-card-main-content {
+    width: 100%
+}

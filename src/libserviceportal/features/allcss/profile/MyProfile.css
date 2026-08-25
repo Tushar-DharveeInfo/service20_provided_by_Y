@@ -1,0 +1,22 @@
+.nz-my-profile-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.nz-my-profile-address {
+    width: 100%;
+    height: 100%;
+}
+
+.nz-my-profile-form {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.nz-my-profile-details,
+.nz-my-profile-address,
+.nz-my-profile-form {
+    padding: var(--spacing-1);
+}

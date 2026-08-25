@@ -1,0 +1,118 @@
+
+[
+    {
+        "sortorder": 1,
+        "productsku": "NetZoomRW",
+        "name": "NetZoom, 12 months ReadWrite",
+        "image": "netzoom.png",
+        "description": "NetZoom, 12 months user subscription",
+        "price": 3000,
+        "discountpercent?": 10,
+        "Taxable?": true
+    },
+    {
+        "sortorder": 2,
+        "productsku": "NetZoomRO",
+        "name": "NetZoom, 12 months ReadOnly",
+        "image": "netzoom.png",
+        "description": "NetZoom, 12 months ReadOnly user subscription",
+        "price": 1000,
+        "Taxable?": true
+    },
+    {
+        "sortorder": 3,
+        "productsku": "NetZoomColo",
+        "name": "NetZoom, 12 months Colo",
+        "image": "netzoom.png",
+        "description": "NetZoom, 12 months Colo user subscription",
+        "price": 1000,
+        "discountpercent?": 20,
+        "Taxable?": true
+    },
+        {
+        "sortorder": 4,
+        "productsku": "NetZoomAMC",
+        "name": "NetZoom, 12 months AMC",
+        "image": "netzoom.png",
+        "description": "NetZoom, 12 months Paid Support and Service subscription, percent of subscription fee",
+        "price": 15
+    },
+        {
+        "sortorder": 5,
+        "productsku": "NetZoomSSI",
+        "name": "NetZoom, 12 months SSI",
+        "image": "netzoom.png",
+        "description": "NetZoom, per Hour Support and Service subscription, valid for 12 months",
+        "price": 200
+    },
+        {
+        "sortorder": 6,
+        "productsku": "NetZoomTraining",
+        "name": "NetZoom, Training",
+        "image": "netzoom.png",
+        "description": "NetZoom, 2 days Training for upto 5 users, valid for 12 months",
+        "price": 3000
+    },
+        {
+        "sortorder": 7,
+        "productsku": "NetZoomAMINode",
+        "name": "NetZoom, 12 months AMI-Node",
+        "image": "netzoom.png",
+        "description": "NetZoom, 12 months per Device node Monitoring subscription",
+        "price": 60
+    },
+        {
+        "sortorder": 8,
+        "productsku": "NetZoomMCS",
+        "name": "MCS Certified Visio Stencils",
+        "image": "visio-stencils.png",
+        "description": "MCS Certified Visio Stencils, per device view",
+        "price": 100
+    },
+    {
+        "sortorder": 21,
+        "productsku": "vss-M",
+        "name": "Visio Stencils, 1 user pack",
+        "image": "visio-stencils.png",
+        "description": "Visio Stencils, 1 user pack, monthly subscription",
+        "price": 900,
+        "Taxable?": true
+    },
+    {
+        "sortorder": 22,
+        "productsku": "vss1",
+        "name": "Visio Stencils, 1 user pack",
+        "image": "visio-stencils.png",
+        "description": "Visio Stencils, 1 user pack, 12 months subscription",
+        "price": 900,
+        "Taxable?": true
+    },
+    {
+        "sortorder": 23,
+        "productsku": "vss2",
+        "name": "Visio Stencils, 2 user pack",
+        "image": "visio-stencils.png",
+        "description": "Visio Stencils, 2 user pack, 12 months subscription",
+        "price": 1800,
+        "discountpercent?": 10,
+        "Taxable?": true
+    },
+    {
+        "sortorder": 24,
+        "productsku": "vss5",
+        "name": "Visio Stencils, 5 user pack",
+        "image": "visio-stencils.png",
+        "description": "Visio Stencils, 5 user pack, 12 months subscription",
+        "price": 4000,
+        "Taxable?": true
+    },
+    {
+        "sortorder": 25,
+        "productsku": "vss10",
+        "name": "Visio Stencils, 10 user pack",
+        "image": "visio-stencils.png",
+        "description": "Visio Stencils, 10 user pack, 12 months subscription",
+        "price": 7000,
+        "Taxable?": true
+    }
+]

@@ -1,0 +1,26 @@
+.nz-searchControl {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    margin: var(--spacing-1) 0px;
+    padding: 0px var(--spacing-1);
+}
+
+.nz-search-control {
+    width: 100%;
+}
+
+.nz-search-control .nz-form-control-labeled {
+    padding: 0px !important;
+    margin-top: 0px !important;
+}
+
+/* .nz-filter-icon ,
+.nz-lens-icon{
+    padding-left: 5px;
+    padding-right: 5px;
+} */
+
+.nz-search-control .nz-form-control-labeled input {
+    padding: 1px 3px 0px;
+}

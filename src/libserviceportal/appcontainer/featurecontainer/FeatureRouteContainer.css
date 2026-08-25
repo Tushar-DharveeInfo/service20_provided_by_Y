@@ -1,0 +1,12 @@
+.nz-feature-route-container {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.nz-feature-route-container .nz-work-feature-container {
+    flex-grow: 1;
+    overflow: hidden;
+}

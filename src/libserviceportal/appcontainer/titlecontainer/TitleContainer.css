@@ -1,0 +1,72 @@
+.nz-title-container {
+    width: 100%;
+    height: 40px;
+    display: flex;
+    background-color: var(--bgtitlebarandstatusbar);
+}
+
+.nz-title-container .nz-image-strip-container .nz-selected,
+.nz-title-container .nz-image-strip-container .nz-selected .nz-label-container {
+    background-color: var(--selection);
+    color: var(--selection-text) !important;
+}
+
+.nz-title-container .nz-image-strip-container .nz-image-strip-data:hover {
+    background-color: var(--hover);
+}
+
+.nz-title-container .nz-appqa-theme-container {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.nz-title-container #nz-optionalcomponent .nz-image-container svg {
+    width: auto;
+    height: 100%;
+}
+
+/* .nz-title-container .nz-image-strip-data .nz-action-image-container .nz-image-container {
+    height: 24px !important;
+    width: 24px !important;
+    min-height: 24px !important;
+    min-width: 24px !important;
+} */
+
+/*  Mobile First (Default)  */
+.nz-title-container #nz-optionalcomponent {
+    display: none !important;
+}
+
+/*  Tablet (≥576px)  */
+@media (min-width: 576px) {
+    .nz-title-container #nz-optionalcomponent {
+        display: none !important;
+    }
+}
+
+/*  Desktop (≥992px)  */
+@media (min-width: 992px) {
+    .nz-title-container #nz-optionalcomponent {
+        display: flex !important;
+    }
+}
+
+.nz-title-container .nz-menu .nz-scroll-image-strip-container {
+    display: none;
+}
+
+.nz-title-container .nz-menu {
+    width: 40px;
+}
+
+.nz-title-container .nz-expandable-list-absolute,
+.nz-title-container .nz-menu-search {
+    background-color: var(--bg-color-menu);
+    z-index: 9999;
+}
+
+.nz-title-container .nz-expandable-list-absolute {
+    border: 2px solid var(--borderandscrollbar);
+}

@@ -1,0 +1,29 @@
+﻿{
+  "EntityData": [
+    {
+      "Name": "EntityData",
+      "Description": "EntityData",
+      "NodeType": "EntityData",
+      "Dataset": {
+        "_User": [
+          {
+            "Email": "info@NetZoom.com",
+            "Enabled": true,
+            "_User": ".\\administrator",
+            "Shortname": "Admin",
+            "Designation": "ProjectManager",
+            "TimeZone": "Central Standard Time",
+            "DisplayTheme": "Dark",
+            "Secured": true,
+            "IsNZ": true,
+            "EntID": "D5FE2B9A-CF1B-466C-99CB-19D789CB5EF7",
+            "RecID": "81BC4B98-4E9D-4929-B32D-1BA6BF4B14E1",
+            "LastUpdated": "29/07/2026",
+            "EntityName": "User",
+            "NodeType": "TableNode"
+          }
+        ]
+      }
+    }
+  ]
+}

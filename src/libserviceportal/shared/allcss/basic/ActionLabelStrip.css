@@ -1,0 +1,38 @@
+.nz-label-strip-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    overflow: hidden;
+}
+
+.nz-label-strip-container.nz-strip-vertical {
+    flex-direction: column;
+    align-items: center;
+}
+
+.nz-label-strip-container .nz-selected {
+    background-color: var(--bgexplorer);
+    color: var(--textprimary);
+}
+
+.nz-label-strip-container .nz-label-container {
+    color: var(--textprimary);
+}
+
+.nz-label-strip-container .nz-action-image-container {
+    justify-content: space-evenly;
+}
+
+.nz-label-strip-container .nz-image-container .nz-feature-icon div {
+    display: flex;
+}
+
+.nz-label-strip-container .nz-image-container .nz-feature-icon div svg {
+    width: 100%;
+    height: 100%;
+}
+
+.nz-label-strip-container .nz-action-label-container:not(.nz-selected):hover {
+    background-color: var(--hover);
+}

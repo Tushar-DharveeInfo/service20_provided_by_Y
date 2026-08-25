@@ -1,0 +1,36 @@
+.nz-prop-form-container {
+    overflow: hidden;
+}
+.nz-prop-form-container .nz-prop-form-container-action {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.nz-prop-form-container .nz-prop-form-content {
+    flex-grow: 1;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.nz-prop-form-container .nz-prop-form-content > div:first-of-type {
+    overflow: unset !important;
+    flex: 0 !important;
+    min-height: unset !important;
+}
+
+.nz-prop-form-container .nz-prop-form-container-action .nz-header-action {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-1);
+}
+.nz-prop-form-container .nz-prop-form-content.nz-prop-form-with-onetomany-grid {
+    overflow-y: auto;
+}
+.nz-prop-form-container .nz-prop-form-content.nz-prop-form-with-onetomany-grid > div:first-of-type {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+}

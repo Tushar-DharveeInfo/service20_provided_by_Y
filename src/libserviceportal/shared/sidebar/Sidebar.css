@@ -1,0 +1,333 @@
+.nz-side-bar-container .nz-title-header {
+    background: var(--bgfeaturepane2);
+    display: flex;
+    align-items: center;
+    /* padding: 2px 5px; */
+    justify-content: space-between;
+    height: 40px;
+    max-height: 40px;
+}
+
+.nz-resizable {
+    display: "flex";
+    flex-direction: "column";
+    height: "100%";
+    background: "#fff";
+    overflow: hidden;
+}
+
+.nz-drawer-container .MuiPaper-root {
+    overflow: hidden;
+}
+
+.nz-resize-main-content {
+    height: 100%;
+    background-color: var(--bgexplorer);
+}
+
+.nz-info-bar-dragger {
+    width: 4px;
+    cursor: col-resize;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    background-color: #f9fafb;
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nz-info-bar-dragger-gutter {
+    height: 24px;
+    width: 100%;
+    background-color: #80858e;
+}
+
+.nz-resize-content .nz-grid-dialog-container-div,
+.nz-resize-content .nz-grid-main-container-div {
+    height: 100%;
+}
+
+.nz-resize-content {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--bg-color-sidebar);
+    padding-left: 0px;
+    visibility: hidden;
+}
+
+.nz-resize-main-content .nz-image-strip-container {
+    overflow: auto;
+}
+
+.nz-resize-main-content .nz-title-header .nz-image-strip-container .nz-action-image-container {
+    min-width: 40px;
+}
+
+.nz-side-bar-container {
+    height: 100%;
+    padding-left: 5px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.nz-sidebar {
+    background: var(--bg-color-sidebar);
+    flex-grow: 1;
+    overflow: auto;
+}
+
+.nz-resize-content>div,
+.nz-resize-content:hover {
+    visibility: visible;
+}
+
+.nz-qa-sidebar-container {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    right: 0;
+    z-index: 999;
+}
+
+.nz-qa-sidebar-container .nz-info-bar-active {
+    width: 100%;
+    height: 100%;
+}
+
+.nz-qa-sidebar-container .nz-info-bar-active .MuiPaper-root {
+    width: 100%;
+    height: 100%;
+}
+
+.nz-sidebar-with-notification.nz-qa-sidebar-container {
+    height: calc(100% - 40px);
+}
+
+.scroll-btn.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.nz-qa-sidebar-container .MuiPaper-root {
+    overflow: hidden;
+    position: relative;
+    height: 0px;
+}
+
+.nz-qa-sidebar-container .nz-menu-action-image-container {
+    background: var(--bgfeaturepane2);
+}
+
+.nz-sidebar-expandableList {
+    position: absolute;
+    z-index: 99;
+}
+
+.nz-sidebar-expandableList .nz-nav-bar,
+.nz-sidebar-expandableList .nz-menu-search {
+    background: var(--bg-color-menu);
+}
+
+.nz-sidebar-expandableList .nz-nav-bar {
+    width: fit-content !important;
+    height: 100% !important;
+    flex: 1 1 auto;
+    z-index: 99999;
+    border: 2px solid var(--borderandscrollbar);
+    background-color: var(--bgfeaturepane2);
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    border-radius: 4px;
+    padding: var(--spacing-0);
+}
+
+.nz-sidebar-expandableList .nz-nav-ul-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-0);
+}
+
+.nz-sidebar-strip {
+    display: flex;
+}
+
+.nz-sidebar-expandableList {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.nz-sidebar-expandableList .nz-expandable-list {
+    width: fit-content;
+}
+
+.nz-sidebar-expandableList .nz-menu-search .nz-searchControl {
+    position: absolute;
+}
+
+.nz-sidebar-expandableList .nz-menu-search {
+    height: 30px;
+}
+
+.nz-full-view {
+    padding: 0px !important;
+}
+
+.nz-popup-sidebar-strip .nz-image-container .nz-feature-icon,
+.nz-popup-strip-qa .nz-feature-icon {
+    border: 1px solid var(--textprimary);
+    padding: 1px;
+    border-radius: 6px;
+}
+
+.nz-popup-sidebar-strip .nz-image-container .nz-feature-icon:hover,
+.nz-popup-strip-qa .nz-feature-icon:hover {
+    border-color: red;
+}
+
+.nz-popup-sidebar-strip .nz-image-strip-data {
+    margin: 0px 2px;
+}
+
+.nz-side-bar-container .nz-sidebar-title {
+    background-color: var(--bg-color-sidebar-title);
+    color: var(--textprimary);
+}
+
+.nz-side-bar-container .nz-sidebar-container {
+    background-color: var(--bg-color-sidebar);
+    color: var(--textprimary);
+    padding: var(--spacing-0);
+    width: 100%;
+    height: 100%;
+}
+
+.nz-sidebar-container .nz-copy-to-clipboard-div .nz-image-container {
+    color: var(--textprimary);
+}
+
+.nz-sidebar-container .nz-name-cell {
+    background-color: rgba(var(--secondaryrgb), 0.3);
+    color: var(--textprimary);
+}
+
+.nz-sidebar-container .nz-main-search-control-log .nz-image-container svg {
+    color: var(--iconColor);
+}
+
+.nz-side-bar-container .ag-cell-inline-editing .nz-fc-toggle-container .nz-fc-checkbox.MuiCheckbox-root+.MuiTouchRipple-root,
+.nz-side-bar-container .ag-cell-inline-editing .nz-fc-toggle-container .nz-fc-checkbox.Mui-checked+.MuiTouchRipple-root:after {
+    border-color: var(--bg-color-darktext) !important;
+}
+
+.nz-sidebar-container .ag-cell .ag-cell-value span,
+.nz-sidebar-container .ag-cell .ag-cell-value,
+.nz-sidebar-container .ag-cell-value .nz-cell-scroll,
+.nz-sidebar-container .nz-node-list-box .nz-label-container,
+.nz-sidebar-container .nz-main-period .nz-label-container,
+.nz-sidebar-container .nz-inline-controls .nz-label-container,
+.nz-side-bar-container .nz-fc-edittext-control input,
+.nz-side-bar-container .nz-form-controls .nz-form-control-labeled span,
+.nz-side-bar-container .nz-form-controls .MuiInputBase-input,
+.nz-side-bar-container .nz-form-controls .MuiButtonBase-root svg,
+.nz-side-bar-container .nz-devicepreviw-label .nz-label-container,
+.nz-side-bar-container .nz-property-grid-div .ag-cell-wrapper span,
+.nz-sidebar-container .nz-notes-list-scroll .nz-image-container svg,
+.nz-sidebar-container .nz-notes-message-box-container .nz-image-container svg,
+.nz-sidebar-container .ag-cell .ag-cell-value div {
+    color: var(--textprimary) !important;
+}
+
+.nz-side-bar-container .nz-base-radio .MuiSvgIcon-root {
+    fill: var(--textprimary) !important;
+}
+
+.nz-sidebar-container .nz-tableTopForm .ag-cell .nz-grid-copy-icon-div .nz-label-container span,
+.nz-sidebar-container .nz-tableTopForm .ag-cell-wrapper .nz-label-container span {
+    color: var(--textsecondary) !important;
+}
+
+.nz-sidebar-container .ag-row-focus .nz-grid-copy-icon-div .nz-grid-copy-row-icon {
+    display: block !important;
+    visibility: visible !important;
+    position: absolute;
+    z-index: 9999;
+}
+
+.nz-side-bar-container .nz-nav-link .Mui-selected {
+    color: var(--textprimary) !important;
+}
+
+.nz-sidebar-container .rc-tree-node-selected {
+    box-shadow: none !important;
+}
+
+.nz-side-bar-container .nz-image-strip-container .nz-selected .nz-image-container svg {
+    color: var(--textprimary) !important;
+}
+
+.nz-sidebar-container .ag-center-cols-container .ag-row-focus {
+    color: var(--selection-text) !important;
+    background-color: var(--selection) !important;
+}
+
+.nz-sidebar-container .ag-center-cols-container .ag-row-focus .ag-cell-value span {
+    color: var(--selection-text) !important;
+}
+
+.nz-sidebar-container .ag-center-cols-container .ag-row-focus .nz-sidebar-container .nz-fc-react-select .nz_fc_rc__control,
+.nz-sidebar-container .nz-fc-react-select .nz_fc_rc__single-value,
+.nz-sidebar-container .nz-no-data-span .nz-label-container span {
+    background-color: transparent !important;
+    color: var(--textprimary) !important;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.nz-side-bar-container .ag-cell .nz-fc-edittext-control input {
+    background-color: transparent !important;
+    color: var(--textprimary) !important;
+}
+
+.nz-side-bar-container .nz-logs-grid .nz-side-bar-container .nz-form-controls .nz-form-control-labeled .nz-checkbox-container .MuiTouchRipple-root,
+.nz-side-bar-container .nz-logs-grid .nz-side-bar-container .nz-form-controls .nz-form-control-labeled .nz-checkbox-container .MuiTouchRipple-root ::after,
+.nz-side-bar-container .nz-fc-toggle-container .nz-fc-checkbox.Mui-checked+.MuiTouchRipple-root:after,
+.nz-side-bar-container .nz-fc-toggle-container .nz-fc-checkbox.MuiCheckbox-root+.MuiTouchRipple-root {
+    border-color: var(--textprimary) !important;
+}
+
+.nz-sidebar-container .ag-pinned-left-cols-container .ag-cell .ag-cell-value span {
+    color: var(--textprimary) !important;
+}
+
+.nz-side-bar-container .nz-form-title-header .nz-main-save-btn .nz-image-container {
+    color: var(--textprimary);
+}
+
+.nz-sidebar-container .nz-grid-container-div {
+    padding: 0px;
+}
+
+.nz-sidebar-expandableList .nz-nav-li-button-selected {
+    background-color: transparent !important;
+}
+
+.nz-sidebar .nz-sidebar-expandableList,
+.nz-sidebar .nz-sidebar-expandableList .nz-nav-bar {
+    background-color: #FFFF99 !important;
+}
+
+.nz-sidebar .nz-sidebar-expandableList .nz-nav-bar {
+    border-color: #007acc !important;
+}
+
+.nz-side-bar-container .nz-nav-link:hover .MuiTypography-root {
+    color: black !important;
+}

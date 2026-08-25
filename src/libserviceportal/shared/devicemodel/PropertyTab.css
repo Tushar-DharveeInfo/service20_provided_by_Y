@@ -1,0 +1,24 @@
+.nz-propertyTab-main {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+.nz-property-grid-div {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+    overflow: auto;
+}
+
+.nz-property-splitter-panel {
+    height: 100%;
+    overflow: auto;
+}
+
+.nz-propertyTab-main .nz-device-view-container {
+    height: 100%;
+    width: 100%;
+}

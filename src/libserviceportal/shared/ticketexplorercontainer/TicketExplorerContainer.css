@@ -1,0 +1,55 @@
+.nz-dc-explorer-container,
+.nz-feature-explorer-container .nz-dc-explorer-container .nz-dce-tree-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    color: var(--textprimary);
+    /* background-color: var(--bgexplorer); */
+}
+
+.nz-dc-explorer-container .nz-dce-search-tree-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.nz-dce-filter-form>.nz-tree-action-control-container {
+    display: none;
+}
+
+.nz-dce-filter-form .nz-tree-action-control-container .nz-tree-control-container {
+    overflow: visible;
+    height: 100%;
+}
+
+.nz-dce-filter-form .nz-tree-action-control-container .nz-tree-control-container .rc-tree {
+    height: 100%;
+}
+
+.nz-dc-explorer-container .rc-tree-treenode-selected,
+.nz-dc-explorer-container .rc-tree-node-selected,
+.nz-explorer-tree-main-container .rc-tree-treenode-selected {
+    /* background-color: var(--selection) !important; */
+    color: var(--selection-text) !important;
+}
+
+
+.nz-dc-explorer-container .rc-tree-node-content-wrapper .nz-tree-node-nz-icon-div .nz-node-menu {
+    display: none;
+}
+
+.nz-dc-explorer-container .rc-tree-node-content-wrapper.rc-tree-node-selected .nz-tree-node-nz-icon-div .nz-node-menu {
+    display: flex;
+}
+
+.nz-ticket-explorer-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.nz-ticket-explorer-container .nz-ticket-explorer-content {
+    flex-grow: 1;
+    overflow: hidden;
+}

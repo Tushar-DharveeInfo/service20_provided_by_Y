@@ -1,0 +1,72 @@
+.nz-kebab-menu-container .nz-image-list-data .nz-action-image-container:hover {
+    background-color: var(--hover);
+}
+
+.nz-node-menu {
+    height: 100%;
+}
+
+.nz-node-menu-image {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nz-kebab-menu-container .nz-image-container {
+    min-width: 40px;
+}
+
+.nz-kebab-menu-container .nz-searchControl {
+    position: absolute;
+
+}
+
+
+
+.nz-node-menu-popover .MuiPaper-root {
+    max-height: 100%;
+    overflow: hidden !important;
+    display: flex;
+}
+
+.nz-node-menu-popover .nz-kebab-menu-container {
+    max-height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.nz-node-menu-popover .nz-kebab-menu-container .nz-sub-menu-node {
+    overflow-y: auto;
+    height: 100% !important;
+    flex-grow: 1;
+}
+
+.nz-node-menu-popover .nz-kebab-menu-container .nz-menu-search {
+    min-height: 30px;
+    height: 30px;
+}
+
+.nz-kebab-menu-container .nz-node-menu-image {
+    background: var(--bgfeaturepane2)
+}
+
+.nz-node-menu-popover .MuiBackdrop-root {
+    position: relative;
+}
+
+.nz-node-menu-popover .nz-image-list-container .nz-action-image-container {
+    padding: calc(var(--spacing-2) - 1px) calc(var(--spacing-2) + 2px) !important;
+    height: auto !important;
+}
+
+.nz-node-menu-popover.nz-popover-three-dots-menu-div .nz-image-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-0);
+}
+
+.nz-node-menu-popover.nz-popover-three-dots-menu-div:not(.nz-node-menu-popover-kabeb) {
+    margin-top: calc(0px - var(--node_height));
+}

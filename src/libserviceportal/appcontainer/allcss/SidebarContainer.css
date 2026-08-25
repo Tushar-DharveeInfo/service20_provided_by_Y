@@ -1,0 +1,17 @@
+.nz-sidebar {
+    height: calc(100% - 40px);
+    background: var(--bgexplorer);
+    display: flex;
+    flex-direction: column;
+}
+
+.nz-qa-sidebar-container .nz-info-bar-active .MuiPaper-root {
+    width: 100% !important;
+    height: 100%;
+    position: relative;
+    border-left: 0px;
+}
+
+.nz-sidebar-with-notification {
+    position: relative !important;
+}

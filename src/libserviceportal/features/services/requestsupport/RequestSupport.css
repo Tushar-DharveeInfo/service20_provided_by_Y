@@ -1,0 +1,59 @@
+.nz-request-support-container {
+    display: flex;
+    flex-direction: row !important;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+
+
+.nz-request-support-container .nz-feature-explorer-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: calc(100% - 40px);
+    flex-grow: 1;
+    overflow: hidden;
+    padding: var(--spacing-0);
+    box-sizing: border-box;
+    position: relative;
+}
+
+.nz-request-support-splitter-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+    padding: var(--spacing-1);
+}
+
+.nz-request-support-splitter {
+    height: 100% !important;
+    width: 100% !important;
+    border: none !important;
+    background: inherit !important;
+}
+
+.nz-request-support-empty-pane {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    color: #888888;
+    font-style: italic;
+    font-size: 14px;
+    background-color: var(--bg-color-main, #ffffff);
+}
+
+/* Right pane form container */
+.nz-request-support-form-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--bg-color-main, #ffffff);
+}

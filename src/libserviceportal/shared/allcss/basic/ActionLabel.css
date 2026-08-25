@@ -1,0 +1,12 @@
+.nz-action-label-container {
+    display: flex;
+    align-items: center;
+    background-color: var(--bgfeaturepane1);
+    color: var(--textprimary);
+    padding: 0px 5px;
+}
+
+.nz-action-label-container.nz-selected {
+    background-color: var(--selection);
+    color: var(--selection-text);
+}

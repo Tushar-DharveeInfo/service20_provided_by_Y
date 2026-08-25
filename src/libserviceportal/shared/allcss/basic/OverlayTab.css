@@ -1,0 +1,167 @@
+.nz-overlay-inline {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: auto;
+    width: auto;
+    padding: 0;
+    background: transparent;
+}
+
+.nz-overlay-inline-header-placeholder {
+    display: none;
+}
+
+.nz-overlay-inline .nz-overlay-tab-draggable {
+    position: relative;
+    top: auto;
+    left: auto;
+}
+
+.nz-overlay-tab-draggable {
+    position: absolute;
+    top: 0px;
+    background: #FFFF99;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    z-index: 11;
+    gap: 5px;
+    padding: 0.25rem 0.5rem !important;
+    display: flex;
+    border: 2px solid #007acc !important;
+    justify-content: center;
+    align-items: center;
+}
+
+.nz-overlay-container {
+    height: 100%;
+    width: 100%;
+}
+
+.nz-tab-container-ovelay-tab .nz-action-label-container,
+.nz-tab-container-ovelay-tab .nz-tab-container-ovelay-tab-img {
+    gap: var(--spacing-1);
+    /* background-color: #FFFFFF !important; */
+    /* Same as drag panel icon buttons */
+    color: #333 !important;
+    border: 0.25px solid #007acc !important;
+    /* Same border color as panel */
+    border-radius: 0.375rem !important;
+    /* 6px */
+    cursor: pointer !important;
+    font-size: 10px !important;
+    /* font-weight: bold !important; */
+    /* No padding inside icon container */
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 400 !important;
+    flex-shrink: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    max-width: 20px !important;
+    min-height: 20px !important;
+    max-height: 20px !important;
+    padding: 0 !important;
+}
+
+.nz-tab-container-ovelay-tab .nz-action-label-container {
+    background-color: #FFFF99 !important;
+    width: auto !important;
+    min-width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 0 0.25rem !important;
+}
+
+.nz-tab-container-ovelay-tab .nz-selected,
+.nz-tab-container-ovelay-tab .nz-tab-container-ovelay-tab-img.nz-selected-icon {
+    /* transform: scale(0.95) !important;  old css */
+    /* transform: scale(1.1) !important; */
+    border: 2px solid #007acc !important;
+    /* font-weight: 700 !important; */
+}
+
+.nz-tab-container-ovelay-tab .nz-action-label-container:hover,
+.nz-tab-container-ovelay-tab .nz-tab-container-ovelay-tab-img:hover {
+    background-color: #FFFFFF !important;
+    /* Same as drag panel icon buttons */
+    /* Keep border-width stable — changing it at the edge causes mouse flicker */
+    box-shadow: 0 0 0 1.25px #007acc, 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.nz-tab-container-ovelay-tab .nz-action-label-container:hover {
+    background-color: #FFFF99 !important;
+}
+
+/* Prevent ActionImage hover (circle bg / scale) from fighting the tab hover hit-area */
+.nz-tab-container-ovelay-tab .nz-tab-container-ovelay-tab-img .nz-action-image-container:hover,
+.nz-tab-container-ovelay-tab .nz-tab-container-ovelay-tab-img .nz-action-image-container:active {
+    background-color: transparent !important;
+    border-radius: 0 !important;
+    transform: none !important;
+}
+
+.nz-tab-container-ovelay-tab .nz-label-container {
+    color: #333 !important;
+}
+
+.nz-overlay-title {
+    background-color: var(--subheaderbg);
+}
+
+.nz-drag-panel {
+    background-color: White !important;
+    /* Same as panel container */
+    color: #333 !important;
+    border: 0.25px solid #007acc !important;
+    /* Same border color as panel */
+    border-radius: 0.375rem !important;
+    /* 6px */
+    cursor: grab !important;
+    font-size: 10px !important;
+    font-weight: bold !important;
+    padding: 0 !important;
+    /* No padding inside icon container */
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    max-width: 20px !important;
+    min-height: 20px !important;
+    max-height: 20px !important;
+    flex-shrink: 0 !important;
+}
+
+.nz-drag-panel svg {
+    color: #000;
+}
+
+.nz-tab-container-ovelay-tab {
+    max-height: 20px;
+}
+
+.nz-tab-container-ovelay-tab:focus {
+    outline: none;
+}
+
+.nz-tab-container-ovelay-tab:focus-visible {
+    outline: 2px solid #007acc;
+    outline-offset: 1px;
+}
+
+.nz-tab-container-ovelay-tab .nz-tab-container-ovelay-tab-img .nz-image-container {
+    color: #000;
+}

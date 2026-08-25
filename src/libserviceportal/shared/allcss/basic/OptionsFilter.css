@@ -1,0 +1,91 @@
+.nz-right-mouse-menu {
+    margin: 3px;
+}
+
+.nz-option-toggle-control .nz-image-list-container .nz-image-container {
+    width: 40px !important;
+}
+
+.nz-popover-three-dots-menu-div .MuiPaper-root {
+    overflow-y: auto;
+}
+
+.nz-fc-checkbox.MuiCheckbox-root + .MuiTouchRipple-root:before {
+    content: "";
+    width: 13px !important;
+    height: 13px !important;
+    top: 0;
+    left: 0;
+    position: relative;
+    background-image: none !important;
+    overflow: inherit;
+    display: block !important;
+    z-index: 9;
+}
+
+.nz-fc-checkbox.Mui-checked + .MuiTouchRipple-root:after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 1px;
+    left: 5px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--textprimary);
+    border-width: 0 1px 1px 0;
+    transform: rotate(45deg);
+}
+
+.nz-fc-checkbox.MuiCheckbox-root + .MuiTouchRipple-root:focus {
+    outline: none !important;
+}
+
+.nz-fc-checkbox.MuiCheckbox-root + .MuiTouchRipple-root {
+    padding: 0 !important;
+    margin: 6px 4px !important;
+    border-radius: 0 !important;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--textprimary);
+    position: relative;
+}
+
+.nz-fc-checkbox .MuiSvgIcon-root {
+    position: absolute;
+}
+
+.nz-option-toggle-control .MuiPaper-root .nz-form-control-labeled {
+    margin-top: 4px !important;
+}
+
+.nz-popover-three-dots-menu-div .nz-checkbox-group .MuiFormControlLabel-root {
+    margin: 0px;
+    height: var(--submenu_height);
+}
+
+.nz-popover-three-dots-menu-div .nz-checkbox-group .MuiFormControlLabel-label {
+    color: var(--textprimary) !important;
+}
+
+/* .nz-options-filter-popover .MuiPaper-root .nz-option-filter-container {
+    border: 2px solid var(--borderandscrollbar);
+    border-radius: 4px;
+} */
+
+/* .nz-option-filter-container .nz-option-filter-toggle-control {
+    padding: var(--spacing-0) !important;
+
+} */
+
+.nz-option-filter-container .nz-popover-three-dots-menu-div .nz-fc-toggle-container .nz-checkbox-group {
+    padding: var(--spacing-2);
+}
+
+.nz-option-filter-container .nz-option-header {
+    margin-left: var(--spacing-1);
+    padding: var(--spacing-1);
+    font-weight: bold;
+}
+.nz-option-filter-container .nz-option-filter-toggle-control {
+    padding: 0px var(--spacing-2);
+}

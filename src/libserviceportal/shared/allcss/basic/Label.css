@@ -1,0 +1,6 @@
+.nz-label-container {
+    overflow: hidden;
+    word-wrap: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

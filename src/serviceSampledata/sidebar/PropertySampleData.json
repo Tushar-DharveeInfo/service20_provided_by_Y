@@ -1,0 +1,39 @@
+﻿{
+  "samplePropertyKebabMenuResponse": {
+    "kebabJson": "{\"KebabMenu\":[]}"
+  },
+  "sampleBusinessPropertyKebabMenuResponse": {
+    "kebabJson": "{\"KebabMenu\":[{\"ID\":1,\"Name\":\"_Business\",\"Label\":\"Business\",\"Description\":\"Business properties\",\"SortOrder\":1,\"TotalCount\":1}]}"
+  },
+  "sampleContactPropertyKebabMenuResponse": {
+    "kebabJson": "{\"KebabMenu\":[{\"ID\":1,\"Name\":\"_Contact\",\"Label\":\"Contact\",\"Description\":\"Contact properties\",\"SortOrder\":1,\"TotalCount\":1}]}"
+  },
+  "samplePropertyKebabMenuData": {
+    "_test": [
+      {
+        "_test": "Chicago",
+        "Desc250": "Test test-Corporate Headquarters test",
+        "testType": "DC",
+        "Managed": true,
+        "Locked": false,
+        "TileX": 24,
+        "TileY": 24,
+        "Icon": null,
+        "TimeZone": "5",
+        "DateFormat": "mm/dd/yyyy",
+        "Measurement": "USA",
+        "Country": "-1",
+        "RackProvisionPower": 7000,
+        "DataCenterSize": -1,
+        "PowerPeakLoad": -1,
+        "DcmId": "-1",
+        "Secured": false,
+        "IsNZ": true,
+        "EntID": "DA4FE9AA-C701-4523-9406-4490DCD4C6E4",
+        "RecID": "BC3C9EBB-A0CB-42B1-9236-66300CDB8D35",
+        "LastUpdated": "2026-07-25T13:30:00",
+        "EntityName": "test"
+      }
+    ]
+  }
+}

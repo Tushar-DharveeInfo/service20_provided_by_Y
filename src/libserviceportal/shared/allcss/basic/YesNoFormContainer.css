@@ -1,0 +1,106 @@
+/* Make dialog modern */
+.nz-delete-row-dialog .MuiDialog-paper {
+  border-radius: 8px !important;
+  padding-top: 0px !important;
+  overflow: hidden !important;
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--borderandscrollbar);
+  background: none;
+  max-width: 800px;
+  min-width: 500px;
+  width: auto;
+}
+
+/* Header Bar */
+/* Match header + footer height */
+.nz-delete-row-dialog .nz-sub-header,
+.nz-delete-row-dialog .nz-dialog-footer {
+  height: 40px;
+  /* or 30px if you prefer */
+  display: flex;
+  align-items: center;
+  background-color: var(--bgPrimary);
+  border-bottom: 0.5px solid var(--borderandscrollbar);
+}
+
+/* Footer already has a background but ensure height */
+.nz-delete-row-dialog .nz-dialog-footer {
+  border-top: 1px solid var(--borderandscrollbar);
+}
+
+/* Message styling */
+.nz-delete-row-dialog .MuiDialogContent-root {
+  padding: 16px 14px !important;
+  background-color: var(--bgPrimary);
+}
+
+.nz-delete-row-dialog .MuiDialogContent-root p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--textprimary);
+}
+
+/* Actions Section */
+.nz-delete-row-dialog .MuiDialogActions-root {
+  padding: 5px !important;
+  background-color: var(--bgPrimary);
+  border-top: 0.5px solid var(--borderandscrollbar);
+  justify-content: flex-end !important;
+}
+
+/* Buttons */
+.nz-delete-row-dialog .MuiDialogActions-root .MuiButtonBase-root {
+  /* background-color: var(--bgfeaturepane1); */
+  border-radius: 4px !important;
+  height: 34px;
+  padding: 0px 14px !important;
+  text-transform: capitalize !important;
+  transition: all 0.2s ease;
+  /* border: 0.5px solid var(--borderandscrollbar); */
+}
+
+.nz-delete-row-dialog .MuiDialogActions-root .MuiButtonBase-root:hover {
+  background-color: var(--bgfeaturepane2);
+  border-color: var(--borderandscrollbar);
+}
+
+/* Yes Button Highlight (existing class) */
+.nz-yes-btn {
+  background-color: #28a745 !important;
+  color: #fff !important;
+}
+
+.nz-yes-btn:hover {
+  background-color: var(--bgfeaturepane2);
+  border-color: var(--borderandscrollbar);
+}
+
+/* No Button (existing class) */
+.nz-no-btn {
+  background: #dc3545 !important;
+  color: #fff !important;
+}
+
+.nz-ok-btn {
+  background: #3f6791 !important;
+  color: #fff !important;
+}
+
+/* Inside overlay */
+.nz-delete-row-dialog .MuiDialog-container {
+  background-color: rgba(0, 0, 0, 0.35) !important;
+}
+
+.nz-sub-header-left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding-left: var(--spacing-1);
+}
+
+.nz-apply-style-in-dialog-container {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+}

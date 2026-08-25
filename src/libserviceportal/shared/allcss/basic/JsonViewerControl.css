@@ -1,0 +1,11 @@
+.nz-fc-jsonviewer {
+    padding-left: var(--spacing-1);
+    padding-right: var(--spacing-1);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+.nz-fc-jsonviewer .nz-json-viewer-container {
+    scrollbar-gutter: auto;
+}

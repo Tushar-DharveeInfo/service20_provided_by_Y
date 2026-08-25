@@ -1,0 +1,26 @@
+.nz-dirtyFlag-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+}
+
+.nz-dirtyFlag-image-container.flex-at {
+    justify-content: flex-start;
+    flex-direction: column-reverse;
+}
+
+.nz-dirtyFlag-image-container .nz-image-container {
+    display: flex;
+    margin: 0;
+    justify-content: center;
+}
+
+.nz-is-dirty .nz-image-container {
+    color: #000;
+}
+
+.nz-is-dirty svg {
+    color: var(--bg-color-darktext);
+}

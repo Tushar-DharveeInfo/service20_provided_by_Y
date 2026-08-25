@@ -1,0 +1,71 @@
+.nz-action-list-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.nz-action-list-container .nz-action-label-container:focus-visible,
+.nz-action-list-container [data-action-code]:focus-visible {
+    outline: 1px solid var(--textprimary);
+    outline-offset: -1px;
+}
+
+.nz-action-list-container:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.nz-action-list-container:focus-visible {
+    outline: none;
+}
+
+.nz-action-list-container.nz-action-with-buttons .nz-list-data {
+    height: calc(100% - var(--node_height));
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.nz-action-list-container .nz-action-panel {
+    display: flex;
+    padding: var(--spacing-2) calc(var(--spacing-2) + 2px);
+    gap: var(--spacing-2);
+    background-color: #fff;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--subheaderbg);
+}
+
+.nz-action-list-container .nz-action-panel .nz-action-panel-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nz-action-list-container .nz-action-panel .nz-action-panel-count {
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    padding-right: 8px;
+}
+
+.nz-action-list-container .nz-list-data .nz-action-label-container {
+    padding: var(--spacing-2) calc(var(--spacing-2) + 2px);
+    box-sizing: border-box;
+}
+
+.nz-action-list-container .nz-strip-vertical {
+    overflow: visible;
+}
+
+.nz-action-list-container .nz-list-data {
+    height: 100%;
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.nz-action-list-container .nz-dirtyFlag-image-container {
+    pointer-events: none;
+}
+
+.nz-action-list-container .nz-dirtyFlag-image-container.nz-is-dirty {
+    pointer-events: all;
+}

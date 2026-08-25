@@ -1,0 +1,56 @@
+.nz-statusbar-container .nz-statusbar-title-container {
+    border-radius: 0px;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 30px;
+    font-weight: normal;
+    min-height: 30px;
+    width: 100%;
+    background-color: var(--bgtitlebarandstatusbar);
+    padding: 0px 5px;
+}
+
+.nz-statusbar-container .nz-statusbar-title-container .nz-statusbar-title-left {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 80%;
+}
+
+.nz-statusbar-container .nz-statusbar-title-container .nz-statusbar-info-action-icons {
+    display: flex;
+    min-width: var(--image-size-1);
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+}
+
+.nz-statusbar-container .nz-statusbar-title-container .nz-statusbar-info-action-icons .nz-statusbar-close-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--image-size-1);
+    height: var(--image-size-1);
+}
+
+.nz-statusbar-container .nz-statusbar-title-container .nz-statusbar-info-action-icons .nz-statusbar-close-error .nz-pulse {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--image-size-1);
+    height: var(--image-size-1);
+    animation: pulse-animation 1.2s infinite;
+}
+
+.nz-statusbar-container .nz-statusbar-title-container .nz-statusbar-title-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.nz-statusbar-container .nz-statusbar-title-container .nz-statusbar-title-content .nz-action-image-container {
+    margin-left: 5px;
+}

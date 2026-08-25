@@ -1,0 +1,70 @@
+.nz-header {
+    height: 40px;
+    background-color: var(--bgfeaturepane1);
+    color: var(--textsecondary);
+    line-height: 40px;
+    padding: 0px 2px;
+    width: calc(100% - 4px);
+    font-weight: 700;
+}
+
+.nz-plr-lg-1 {
+    padding: 0px 5px;
+}
+
+.nz-svg-container {
+    flex-grow: 1;
+    overflow: hidden;
+    width: 100%;
+}
+
+.nz-hidden {
+    display: none;
+}
+
+.nz-svg-device-preview {
+    height: 100%;
+    width: 100%;
+}
+
+.nz-single-svg {
+    height: calc(100% - 40px);
+    width: 100%;
+}
+
+.nz-two-d-view-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.nz-two-d-view-container .nz-tabs-container .nz-label-strip-container {
+    padding: 0;
+}
+
+.react-transform-component,
+.react-transform-wrapper {
+    border: none !important;
+    outline: none !important;
+}
+
+.zoom-container,
+svg {
+    border: none !important;
+    outline: none !important;
+}
+
+#nz-img-svg-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+#nz-img-svg-container svg {
+    height: 100%;
+    width: 100%;
+}

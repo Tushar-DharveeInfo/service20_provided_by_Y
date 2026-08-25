@@ -1,0 +1,79 @@
+.nz-statusbar-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: var(--bgfeaturepane1);
+    border: 1px solid #e0e0e0;
+    padding: 12px 16px;
+    width: 100%;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition:
+        box-shadow 0.3s ease,
+        background-color 0.3s ease,
+        border-color 0.3s ease;
+    padding: 12px 16px;
+}
+
+.nz-statusbar-card:hover {
+    background-color: var(--hoverbg);
+    border-color: var(--textprimary);
+    box-shadow: 0 0 10px var(--bg-color-sidebar-title);
+    cursor: pointer;
+    backdrop-filter: brightness(1.02);
+    transition:
+        background-color 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.nz-statusbar-card .nz-card-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    height: var(--submenu_height);
+}
+
+.nz-statusbar-card .nz-card-title-content {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--textprimary);
+    word-break: break-word;
+    flex: 1;
+}
+
+.nz-statusbar-card .nz-card-title-action {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.nz-statusbar-card .nz-card-content {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--textprimary);
+    word-break: break-word;
+    /* white-space: pre-wrap;  */
+    /* allow markdown text to wrap properly */
+}
+
+.nz-statusbar-card .nz-card-content img,
+.nz-statusbar-card .nz-card-content svg {
+    flex-shrink: 0;
+}
+
+.nz-statusbar-card .nz-statusbar-card-close-error,
+.nz-statusbar-card .nz-statusbar-card-close-error .nz-pulse {
+    width: var(--node_height);
+    height: var(--node_height);
+}
+
+.nz-statusbar-card .nz-statusbar-card-close-error .nz-pulse {
+    position: relative;
+}

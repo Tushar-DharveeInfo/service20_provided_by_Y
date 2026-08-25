@@ -1,0 +1,29 @@
+.nz-searchtab-radio .nz-fc-label-radio {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin: 0px !important;
+}
+
+.nz-searchtab-radio .nz-radio-control {
+    padding: 0px;
+}
+
+.nz-base-radio input {
+    width: 0px;
+}
+
+.nz-search-tab {
+    overflow: auto;
+    height: 100%;
+}
+
+.nz-searchtab-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.nz-searchtab-container .nz-edit-combo-container .nz-label-container {
+    color: #e5e7eb !important;
+}

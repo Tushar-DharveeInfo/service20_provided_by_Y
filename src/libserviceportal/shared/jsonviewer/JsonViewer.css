@@ -1,0 +1,44 @@
+.nz-json-viewer-container {
+    position: relative;
+    margin: 0px;
+    background: transparent;
+    border-radius: var(--spacing-1);
+    border: 1px solid var(--borderandscrollbar);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 500px;
+}
+
+/* Toolbar */
+.nz-json-toolbar {
+    padding: var(--spacing-1) calc(var(--spacing-1) + 2px);
+    background: var(--subheaderbg);
+    border-bottom: 1px solid var(--borderandscrollbar);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+.nz-json-view-content {
+    overflow: auto;
+    visibility: hidden;
+}
+
+/* JSON text */
+.nz-json-pre {
+    flex: 1;
+    margin: 0;
+    padding: var(--spacing-2) calc(var(--spacing-2) + 2px);
+    overflow: visible;
+    white-space: pre;
+    font-size: var(--default_font_size);
+    line-height: 1.4;
+    color: var(--textprimary);
+    user-select: text;
+}
+.nz-json-view-content .nz-json-pre,
+.nz-json-view-content:hover {
+    visibility: visible;
+}

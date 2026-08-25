@@ -1,0 +1,110 @@
+.nz-explorer-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.nz-explorer-container .nz-explorer-pane {
+    justify-content: flex-start;
+}
+
+.nz-explorer-container .nz-explorer-pane.nz-dc-explorer-pane {
+    gap: var(--spacing-1);
+}
+
+.nz-explorer-container .nz-explorer-pane .nz-sub-header #nz-optionalcomponent {
+    background-color: transparent !important;
+}
+
+.nz-feature-explorer-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    flex-grow: 1;
+    overflow: hidden;
+    padding: var(--spacing-0);
+    box-sizing: border-box;
+}
+
+.nz-feature-explorer-container .nz-explorer-pane .nz-sub-header .nz-image-strip-container {
+    background-color: transparent !important;
+}
+
+.nz-feature-explorer-container .nz-sub-header .nz-popupqa-container,
+.nz-feature-explorer-header,
+.nz-feature-explorer-header .nz-popupqa-container .nz-image-strip-container,
+.nz-feature-explorer-header .nz-popupqa-container #nz-optionalcomponent .nz-label-container,
+.nz-feature-explorer-container .nz-sub-header .nz-popupqa-container .nz-image-strip-container,
+.nz-feature-explorer-container .nz-sub-header .nz-popupqa-container #nz-optionalcomponent .nz-label-container {
+    background-color: var(--subheaderbg) !important;
+}
+
+.nz-layout-without-tree {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.nz-explorer-container .nz-layout-with-sidebar-pane {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.nz-setting-menu-icon .nz-menu-image {
+    width: 25px;
+    height: 25px;
+}
+
+.nz-setting-menu-icon .nz-menu .nz-nav-bar {
+    height: calc(100% - 133px) !important;
+}
+
+.nz-setting-menu-icon .nz-menu-image {
+    background-color: transparent;
+}
+
+.nz-floor-layout-save.nz-pulse {
+    position: relative !important;
+}
+
+.nz-explorer-container .nz-floor-layout-save {
+    padding-right: 10px;
+    padding-left: 5px;
+}
+
+.nz-floor-layout-save.nz-pulse::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 40%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    animation: pulseAnimation 1s ease-out infinite;
+    pointer-events: none;
+}
+
+.nz-explorer-container .nz-fq-container-header {
+    display: flex;
+    width: 100%;
+}
+
+.nz-fq-container-header .nz-label-container {
+    flex-shrink: 0;
+    padding-right: 5px;
+}
+
+.nz-explorer-container .nz-layout-with-sidebar-pane .nz-sub-header .nz-action-image-container.nz-disabled {
+    pointer-events: none;
+}
+
+.nz-explorer-container .nz-layout-without-tree .nz-layout-container {
+    padding: var(--spacing-1);
+}

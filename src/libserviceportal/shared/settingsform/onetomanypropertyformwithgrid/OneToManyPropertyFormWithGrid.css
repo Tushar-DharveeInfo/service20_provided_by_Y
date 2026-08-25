@@ -1,0 +1,20 @@
+.nz-one-to-many-property-form-with-grid {
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+}
+.nz-one-to-many-property-form-with-grid .nz-one-to-many-property-form-header {
+    height: var(--node_height);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--lf-control-label-color, #555555);
+}
+.nz-one-to-many-property-form-with-grid .nz-one-to-many-property-form {
+    height: auto;
+    width: 100%;
+}
+.nz-one-to-many-property-form-with-grid .nz-one-to-many-property-grid,
+.nz-one-to-many-property-form-with-grid .nz-one-to-many-property-grid div {
+    height: auto;
+    width: 100%;
+}

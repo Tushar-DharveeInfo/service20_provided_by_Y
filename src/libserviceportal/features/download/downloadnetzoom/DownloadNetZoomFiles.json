@@ -1,0 +1,14 @@
+[
+  {
+    "GroupName": "NetZoom",
+    "Topic": "Brochure",
+    "Markdown": "### This is NetZoom Brochure",
+    "Filename": "brochure-netzoom.pdf",
+  },
+  {
+    "GroupName": "Visio Stencils",
+    "Topic": "Brochure",
+    "Markdown": "### This is visio Stencils Brochure",
+    "Filename": "brochure-visiostencils.pdf"
+  }
+]

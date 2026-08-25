@@ -1,0 +1,22 @@
+.nz-my-activities-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.nz-my-activities-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-1);
+    overflow: hidden;
+    height: 100%;
+    overflow: hidden;
+}
+
+.nz-my-activities-content>* {
+    flex: 1 1 auto;
+    min-height: 0;
+}

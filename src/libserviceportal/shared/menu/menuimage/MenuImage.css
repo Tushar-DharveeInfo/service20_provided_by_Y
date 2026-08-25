@@ -1,0 +1,49 @@
+/* menu image component style start */
+.nz-menu-image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.5s ease;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+.nz-menu-image-container:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.nz-menu-image-container:focus-visible {
+    outline: 1px solid var(--textprimary);
+    outline-offset: 0px;
+}
+
+.nz-menu-image-container .nz-image-container {
+    display: flex;
+}
+
+.nz-menu-active .nz-image-container {
+    color: #000;
+}
+
+.nz-menu-active {
+    border-radius: 50%;
+    transform: rotate(90deg);
+    transition: all 0.5s ease;
+    background-color: #FFFF99 !important;
+}
+
+.nz-menu-active svg {
+    /* color: var(--bg-color-darktext) !important; */
+    color: var(--bg-color-darktext) !important;
+}
+
+.nz-menu-selected {
+    /* background-color: var(--bgexplorer) !important; */
+    color: var(--textprimary);
+}
+
+.nz-menu-inactive {
+    border-radius: 50%;
+}
+
+/* menu image component style end */

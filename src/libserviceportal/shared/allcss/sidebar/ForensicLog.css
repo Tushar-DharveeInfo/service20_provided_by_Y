@@ -1,0 +1,61 @@
+.nz-logs-grid {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.nz-main-search-control-log {
+    height: 100%;
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+}
+
+.nz-log-searchControl .nz-searchControl {
+    margin: var(--spacing-1) 0px !important;
+}
+
+.nz-log-searchControl .nz-searchControl .nz-form-groupControl-with-filter {
+    width: 100%;
+}
+
+.nz-logs-grid .nz-OnetoOne-Grid,
+.nz-logs-grid .nz-grid-dialog-container-div,
+.nz-logs-grid .nz-grid-dialog-container-div .nz-grid-main-container-div {
+    height: 100%;
+}
+
+.nz-logs-grid .nz-searchControl {
+    min-height: 30px;
+}
+
+.nz-forensic-log-no-data-to-show {
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.nz-main-search-control-log .nz-grid-container-div {
+    padding: 0px;
+}
+
+.nz-logs-grid .nz-grid-container-div .nz-copy-to-clipboard-div .nz-copy-to-clipboard-only {
+    top: 4px;
+}
+
+.nz-log-filter-open {
+    display: none;
+}
+
+.nz-forensic-log-root {
+    height: 100%;
+    width: 100%;
+}
+
+.nz-logs-grid .ag-body-viewport {
+    overflow: hidden !important;
+}
+
+.nz-logs-grid .ag-body-vertical-scroll {
+    display: none !important;
+}

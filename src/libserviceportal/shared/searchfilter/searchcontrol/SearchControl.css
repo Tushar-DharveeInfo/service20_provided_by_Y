@@ -1,0 +1,66 @@
+.nz-searchControl {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    margin: var(--spacing-1) 0px;
+    min-width: 30px;
+}
+
+.nz-search-control {
+    width: 100%;
+}
+
+.nz-search-control .nz-form-control-labeled {
+    padding: 0px !important;
+    margin-top: 0px !important;
+}
+
+.nz-hidefilter-icon {
+    padding-left: var(--spacing-1);
+}
+
+.nz-search-control .nz-form-control-labeled input {
+    padding: 1px 3px 0px;
+}
+
+.nz-searchControl .nz-lens-icon {
+    margin-left: 3px;
+}
+
+.nz-searchControl .nz-edittext-control .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: var(--textsecondary);
+}
+
+.nz-searchControl .nz-dirtyFlag-image-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.nz-searchControl .nz-dirtyFlag-image-container:hover {
+    background-color: color-mix(in srgb, var(--hover) 85%, var(--textprimary) 15%);
+    /* subtle hover */
+    transform: scale(0.92);
+}
+
+.nz-searchControl .nz-image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nz-searchControl .nz-dirtyFlag-image-container:hover svg {
+    stroke: var(--textprimary);
+}
+
+.nz-searchControl .nz-dirtyFlag-image-container:active {
+    background-color: color-mix(in srgb, var(--hover) 85%, var(--textprimary) 15%);
+    transform: scale(0.92);
+}
+
+.nz-searchControl .nz-dirtyFlag-image-container:focus-visible {
+    outline: 2px solid var(--textprimary);
+    outline-offset: 2px;
+}

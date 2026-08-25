@@ -1,0 +1,29 @@
+﻿{
+  "sampleForensicLogSites": [
+    {
+      "Name": "Chicago",
+      "Value": "Chicago",
+      "Label": "Chicago",
+      "EntID": "DA4FE9AA-C701-4523-9406-4490DCD4C6E4",
+      "RefValue": "DA4FE9AA-C701-4523-9406-4490DCD4C6E4",
+      "SortOrder": 1,
+      "Description": "Chicago site"
+    }
+  ],
+  "sampleForensicLogTenantUsers": {
+    "Tenants": [
+      {
+        "TenantID": "TENANT-NZ-001",
+        "TenantName": "NetZoom",
+        "Users": [
+          { "UserID": "USER-ADMIN-001", "UserName": "Admin" },
+          { "UserID": "USER-DEMO-001", "UserName": "demo.user" }
+        ]
+      }
+    ]
+  },
+  "sampleForensicLogAuthorizedUsers": [
+    { "UserID": "USER-ADMIN-001", "UserName": "Admin" },
+    { "UserID": "USER-DEMO-001", "UserName": "demo.user" }
+  ]
+}

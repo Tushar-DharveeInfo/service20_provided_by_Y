@@ -1,0 +1,118 @@
+.nz-dynamic-card {
+    width: 100%;
+    border: 1px solid var(--borderandscrollbar);
+    border-left: 3px solid var(--borderandscrollbar);
+    min-height: 72px;
+    background-color: var(--bgfeaturepane1);
+    border-radius: 6px;
+    box-sizing: border-box;
+    box-shadow: 0px 2px color-mix(in srgb, var(--borderandscrollbar) 50%, transparent);
+    transition:
+        box-shadow 0.3s ease,
+        background-color 0.3s ease,
+        border-color 0.3s ease;
+    padding: var(--card-padding-1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.nz-dynamic-card .nz-dynamic-card-main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+}
+
+
+.nz-dynamic-card:hover {
+    background-color: color-mix(in srgb, var(--borderandscrollbar) 50%, transparent);
+    border-color: var(--textprimary);
+    box-shadow: 0 0 10px var(--bg-color-sidebar-title);
+    cursor: pointer;
+    backdrop-filter: brightness(1.02);
+    transition:
+        background-color 0.3s ease box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.nz-dynamic-selected-card {
+    background-color: var(--selection) !important;
+    color: var(--selection-text);
+    border-color: var(--textprimary);
+    cursor: pointer;
+    backdrop-filter: brightness(1.02);
+    transition:
+        background-color 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.nz-dynamic-card .nz-dynamic-card-content {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 100%;
+    gap: var(--card-gap);
+    flex-grow: 1;
+    width: 100%
+}
+
+
+
+.nz-dynamic-card .nz-dynamic-card-icon {
+    width: 24px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.nz-dynamic-card .nz-dynamic-card-content .nz-card-label-content {
+    flex-grow: 1;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--textprimary);
+}
+
+.nz-dynamic-card .nz-dynamic-card-node-menu {
+    /* right: 16px; */
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 100%;
+    gap: var(--spacing-2);
+    position: relative;
+}
+
+.nz-dynamic-card .nz-dynamic-card-action {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.nz-dynamic-card {
+    position: relative;
+}
+
+.nz-dynamic-card:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.nz-dynamic-card:focus-visible {
+    outline: 1px solid var(--textprimary);
+    outline-offset: 0px;
+}
+
+.nz-dynamic-selected-card .nz-label-container,
+.nz-dynamic-selected-card .nz-image-container svg {
+    color: var(--selection-text) !important
+}

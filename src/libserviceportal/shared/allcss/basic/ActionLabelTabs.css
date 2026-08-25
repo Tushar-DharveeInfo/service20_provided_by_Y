@@ -1,0 +1,63 @@
+.tabs-container {
+    width: 100%;
+    margin: 0 auto;
+    overflow: scroll;
+}
+
+.tabs-header {
+    display: flex;
+}
+
+.tab {
+    padding: 5px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.tab.active {
+    border-bottom: 2px solid var(--textprimary);
+    color: var(--textprimary);
+    font-weight: bold;
+    padding-bottom: 3px;
+    box-sizing: border-box;
+}
+
+.tab:hover {
+    background-color: var(--hover);
+}
+
+.tabs-content {
+    padding: 20px;
+    border: 1px solid var(--borderandscrollbar);
+    border-top: none;
+    box-sizing: border-box;
+}
+
+.nz-tabs-container .nz-action-label-container:not(.nz-selected):hover {
+    /* .nz-tabs-container .nz-action-label-container[data-selected="false"]:hover { */
+    border-bottom: 2px solid var(--textprimary) !important;
+    background-color: var(--hover) !important;
+}
+
+.nz-tabs-container .nz-action-label-container.nz-selected:hover {
+    background: var(--hover) !important;
+}
+
+.nz-tabs-container .nz-action-label-container {
+    box-sizing: border-box;
+    border-bottom: 2px solid transparent !important;
+}
+
+.nz-tabs-container .nz-selected {
+    border-bottom: 2px solid var(--textprimary) !important;
+}
+
+.nz-user-auth-tabs-container-main .nz-tabs-container .nz-label-container {
+    margin-left: 5px;
+}
+
+.nz-action-label-container.nz-selected .nz-label-container {
+    color: var(--selection-text) !important;
+}

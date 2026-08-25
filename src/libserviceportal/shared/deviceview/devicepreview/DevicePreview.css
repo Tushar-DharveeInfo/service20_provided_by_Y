@@ -1,0 +1,37 @@
+.nz-devicePreview-div {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-2);
+    padding-bottom: 0px;
+}
+
+.nz-devicePreview-div .react-transform-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+}
+
+.nz-devicePreview-div .react-transform-component {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    position: relative;
+}
+
+.nz-devicePreview-div .nz-feature-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.nz-devicePreview-div .nz-image-container {
+    overflow: hidden;
+}
+
+.nz-devicepreviw-label {
+    height: var(--submenu_height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
