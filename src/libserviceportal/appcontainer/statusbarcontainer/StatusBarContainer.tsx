@@ -5,7 +5,7 @@ import { CircularProgress } from '@mui/material';
 import { useStatusBarContext } from '../../shared/context/hooks/StatusBarHooks';
 import { useSessionContext } from '../../shared/context/hooks/SessionHooks';
 import { useMainAppContext } from '../../shared/context/hooks/MainAppHooks';
-import '../allcss/StatusBarContainer.css';
+import './StatusBarContainer.css';
 import { IStatusBarContainer, IStatusBarItem } from '../allinterface/IStatusBarContainer';
 import { ISession } from '../../shared/context/allinterface/ISession';
 import { IErrorData } from '../../shared/allinterface/IApiResponse';

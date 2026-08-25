@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { CheckInfo } from 'rc-tree/lib/Tree';
 import { EventDataNode, Key } from 'rc-tree/lib/interface';
 import { NodeDragEventParams } from 'rc-tree/lib/contextTypes';
-import '../../allcss/tree/TreeForHierarchicalDataContainer.css'
+import './TreeForHierarchicalDataContainer.css'
 import { FnUpdateTreeNodeBasedOnKeyForHierarchicalData } from '../../allcommon/tree/FnUpdateTreeNodeBasedOnKeyForHierarchicalData';
 import { FnConvertHierarchicalDataToTree } from '../../allcommon/tree/FnConvertHierarchicalDataToTree';
 import { FnAutoExpandTreeNodesHierarchy } from '../../allcommon/tree/FnAutoExpandTreeNodesHierarchy';

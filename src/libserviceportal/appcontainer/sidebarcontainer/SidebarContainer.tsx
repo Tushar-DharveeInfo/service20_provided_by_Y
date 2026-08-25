@@ -1,8 +1,31 @@
-import '../allcss/SidebarContainer.css';
-import { ISidebarContainer } from '../allinterface/ISidebarContainer';
+import './SidebarContainer.css';
 import { Sidebar } from "../../shared/sidebar/Sidebar";
 import { handleContainerKeyDown } from '../../shared/allcommon/basic/FnHandleContainerKeyDown';
+import { IMenuItem } from '../../shared/allinterface/menu/IMainMenu';
+import { ITreeNode } from '../../shared/allinterface/entity/ITreeNode';
 
+interface ISidebarContainer {
+  uniqueName: string; // unique identifier for the control
+  isShowSidebar: boolean;
+  featureQaList: IMenuItem[];
+  selectedNode?: ITreeNode;
+  featureId: string;
+  handleCloseSidebar: () => void;
+  headerText?: string;
+  selectedNodeExplorer?: ITreeNode; // for show details of Explorer Node
+  subTreeFeatureId?: string;
+  fullView?: boolean;
+  showPopupSidebar?: boolean;
+  selectedMenuFeature?: IMenuItem;
+  selectedFeatureQa?: IMenuItem | null;
+  treeData?: ITreeNode[] | null; // tree data for the sidebar
+  hideSideBarCloseBtn?: boolean; // to hide sidebar close button
+  isHideMaximizeButton?: boolean;
+  handleReloadTree?: (featureId: string, entID?: string) => void;
+  handleMouse?: (event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement> | undefined, actionCode?: string | undefined, payload?: any) => void; // to handle mouse events
+  apValueChange?: (value: any, EntID: string, event: unknown, selectedData: unknown, instanceName?: string) => void; // ap form value change
+  handleShowErrorDialog?: (message: string, isOpen: boolean) => void;
+}
 const SidebarContainer = (sidebarContainerProps: ISidebarContainer) => {
   return (
     <div key={sidebarContainerProps.uniqueName} className="nz-sidebar-with-notification" tabIndex={1} onKeyDown={handleContainerKeyDown}>

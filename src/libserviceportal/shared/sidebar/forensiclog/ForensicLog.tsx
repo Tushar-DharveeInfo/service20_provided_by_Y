@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as XLSX from 'xlsx';
 import { saveAs } from "file-saver";
 import { EditableCallbackParams, ICellRendererParams } from 'ag-grid-community';
-import '../../forensiclog/ForensicLog.css'
+import './ForensicLog.css'
 import { FnCellEditorSelector } from '../../allcommon/tablegrid/FnCellEditorSelector';
 import { FnGetSessionVariableFromStorage } from '../../allcommon/basic/FnGetSessionVariableFromStorage';
 import {

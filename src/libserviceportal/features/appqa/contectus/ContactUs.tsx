@@ -4,10 +4,9 @@ import { handleContainerKeyDown } from '../../../shared/allcommon/basic/FnHandle
 import { Notes } from "@n20a/libavnotes"
 import type { INote } from "@n20a/libavnotes"
 import { Delete24x24, Info24x24 } from "@n20a/libicon"
-import '../allcss/AppQaContactUs.css'
+import './AppQaContactUs.css'
 import '../allcss/FqaNotes.css'
 import '@n20a/libavnotes/style.css'
-import { IContactUs } from "../allinterface/IContactUs.ts"
 import { Label } from "../../../shared/basic/label/Label.tsx"
 import { FnGetCssVariable } from "../../../appcontainer/allcommon/FnGetCssVariable.ts"
 import { Image } from "../../../shared/basic/image/Image.tsx"
@@ -27,6 +26,11 @@ interface IContactUsNotes {
     onSelectNote?: (item: Record<string, any>) => void;
     selectedNoteItem?: Record<string, any> | null;
     isAppQa?: boolean
+}
+interface IContactUs {
+    uniqueName: string;
+    headerText: string;
+    handleShowUserMessage?: (messageText: string) => void;
 }
 
 /*

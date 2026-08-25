@@ -6,9 +6,20 @@ import './PdfDocumentViewer.css'
 import { Label } from '../basic/label/Label.tsx'
 import { DefaultPdfScale } from '../../features/alldefaultprops/DefaultPropsPrivatePdf.ts'
 import { FnGetPrivatePdfUrl } from '../../features/allcommon/FnGetPrivatePdfUrl.ts'
-import { IPdfDocumentViewer } from '../../features/allinterface/IPdfDocumentViewer.ts'
 import { PdfDownloadOverlay } from './PdfDownloadOverlay.tsx'
 import { Loader } from '../loader/Loader.tsx'
+
+interface IPdfDocumentViewer {
+    uniqueName: string; // uniqueName for the control and required
+    fileName?: string; // file name inside public/privatepdf, or used as download name fallback
+    pdfUrl?: string; // absolute cloud/local url; preferred when set
+    documentTitle?: string; // title rendered by the pdf viewer header
+    headerText?: string; // feature header shown above the viewer
+    scale?: number; // render scale, defaults to DefaultPdfScale
+    downloadFileName?: string; // saved file name for the download overlay
+    hideDownloadIcon?: boolean; // hide the download overlay icon
+    pdfSource?: 'local' | 'api'; // resolve pdf from local public or call api
+}
 
 /* Read only pdf host used by EULA and the brochure features.
    SimplePdfViewer is the standard renderer; use FlipPdf (see shared/Help.tsx)
@@ -96,4 +107,5 @@ const PdfDocumentViewer = (pdfDocumentViewerProps: IPdfDocumentViewer) => {
 }
 
 export { PdfDocumentViewer }
+export type { IPdfDocumentViewer }
 export default PdfDocumentViewer

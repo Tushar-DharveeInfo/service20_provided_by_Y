@@ -1,6 +1,6 @@
 
 import { Label } from '../../../shared/basic/label/Label.tsx'
-import '../../allcss/profile/MyActivities.css'
+import './MyActivities.css'
 import { ForensicLog } from './forensiclog/ForensicLog.tsx';
 
 interface IMyActivities {

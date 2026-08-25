@@ -2,9 +2,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getRuntimeConfig, signOut } from "@n20a/libauth";
 import { YesNoFormContainer } from '../../../shared/basic/yesnoformcontainer/YesNoFormContainer.tsx';
-import { ISignout } from '../allinterface/ISignout.ts';
 import sampleOpenSessions from '../../../../serviceSampledata/appqa/SignoutSampleData.json';
-
+interface ISignout {
+  uniqueName: string;//unique identifier for the control
+  handleCloseFailed?: (error: Error) => void; // Optional callback for handling close failures
+}
 function Signout(signoutprops: ISignout) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [openSessions, setOpenSessions] = useState<Record<string, any>[]>();

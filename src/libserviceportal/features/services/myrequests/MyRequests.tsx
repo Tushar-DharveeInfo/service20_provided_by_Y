@@ -12,7 +12,6 @@ import { TreeControl } from '../../../shared/tree/treecontrol/TreeControl'
 import { TicketDetailPane } from './tickets/TicketDetailPane'
 import { TicketFilterForm, type ITicketFilterValues } from './tickets/TicketFilterForm'
 import { Label } from '../../../shared/basic/label/Label';
-import { sampleTickets } from '../../../shared/ticketexplorercontainer/TicketSampleData';
 import { ITicketRecord } from './tickets/ITicket';
 
 interface IFeatureTree {

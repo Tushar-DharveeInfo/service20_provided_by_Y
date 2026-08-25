@@ -3,9 +3,15 @@ import { useMemo } from 'react'
 import MarkdownIt from 'markdown-it'
 import parse from 'html-react-parser'
 import { Download24x24, N, Visio } from '@n20a/libicon'
-import { IDownloadFeature } from '../../allinterface/download/IDownloadFeature.ts'
 import { FnGetPublicAssetUrl } from '../../allcommon/FnGetPublicAssetUrl.ts'
 import downloadNetZoomFilesRaw from './DownloadNetZoomFiles.json?raw'   //The ?raw suffix is a bundler feature (commonly Vite) that changes how the file is imported: instead of parsing JSON into an object automatically, it imports the file as a plain text string. 
+
+interface IDownloadFeature {
+	uniqueName: string; // uniqueName for the control and required
+	featureId: string; // feature id
+	headerText?: string; // header text coming from the selected menu item
+	handleShowUserMessage?: (messageText: string) => void;
+}
 
 interface IDownloadFileRecord {
 	GroupName?: string

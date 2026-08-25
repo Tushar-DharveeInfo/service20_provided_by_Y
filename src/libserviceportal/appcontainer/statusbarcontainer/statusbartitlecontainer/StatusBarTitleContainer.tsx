@@ -1,7 +1,7 @@
 
 import { JSX, useEffect, useState } from 'react';
 import { Close24x24, Copy24x24, Down24x24, NoInternet, Secured24x24, Up24x24 } from '@n20a/libicon';
-import '../../allcss/StatusBarTitleContainer.css'
+import './StatusBarTitleContainer.css';
 import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable.ts';
 import { FnCopyToClipboard } from '../../../shared/allcommon/basic/FnCopyToClipboard.ts';
 import { IStatusBarTitleContainer } from '../../allinterface/IStatusBarContainer.ts'

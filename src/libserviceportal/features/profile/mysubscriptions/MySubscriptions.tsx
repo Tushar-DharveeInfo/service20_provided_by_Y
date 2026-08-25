@@ -1,6 +1,6 @@
 
 import { ReactNode, useState } from 'react'
-import '../../allcss/profile/MySubscriptions.css'
+import './MySubscriptions.css'
 import { Label } from '../../../shared/basic/label/Label.tsx'
 import { CardLayout } from '../../../shared/cardlayout/CardLayout.tsx'
 import { FnConvertDateToUtcOrUtcToDate } from '../../../appcontainer/allcommon/FnConvertDateToUtcOrUtcToDate.ts'

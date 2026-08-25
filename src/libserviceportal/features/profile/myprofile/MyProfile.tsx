@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react'
-import '../../allcss/profile/MyProfile.css'
+import './MyProfile.css'
 import { Label } from '../../../shared/basic/label/Label.tsx'
 import { SettingsLibForm } from '../../../shared/settingsform/settingslibform/SettingsLibForm.tsx'
 import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks.ts'

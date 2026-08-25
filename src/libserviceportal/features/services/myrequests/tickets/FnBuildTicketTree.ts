@@ -2,15 +2,15 @@
 import { FnFormatTicketDateOnly } from "../../../../shared/allcommon/tree/FnFormatTicketDate";
 import { ITreeNode } from "../../../../shared/allinterface/entity/ITreeNode";
 import { IFeatureTree } from "../../../../shared/allinterface/tree/ITreeForHierarchicalDataContainer";
-import { ITicketFilterValues } from "../../../../shared/ticketexplorercontainer/TicketFilterForm";
-import { ITicket } from "../../../../shared/ticketexplorercontainer/TicketSampleData";
+import { ITicketFilterValues } from "./TicketFilterForm";
+import { ITicketRecord } from "./ITicket";
 import { TreeNodeIcon } from "../../../../shared/tree/treenodeicon/TreeNodeIcon";
 import { TreeNodeTitle } from "../../../../shared/tree/treenodetitle/TreeNodeTitle";
 
 type NodeContext = { featureTreeProps?: IFeatureTree; featureId?: string }
 
 // Main function: filters tickets and builds the tree based on the selected grouping.
-function FnBuildTicketTree(tickets: ITicket[], filter: ITicketFilterValues, featureTreeProps?: IFeatureTree, featureId?: string): ITreeNode[] {
+function FnBuildTicketTree(tickets: ITicketRecord[], filter: ITicketFilterValues, featureTreeProps?: IFeatureTree, featureId?: string): ITreeNode[] {
     const context = { featureTreeProps, featureId }
     const filteredTickets = filter.showAll ? [...tickets] : tickets.filter(ticket => ticket.Status === "Pending")
     const rootKey = filter.byMfg ? "root##by-mfg" : "root##by-requested-date"
@@ -41,19 +41,19 @@ function FnBuildTicketTree(tickets: ITicket[], filter: ITicketFilterValues, feat
 }
 
 // Creates an Mfg node and its ProdNo ticket children.
-function createMfgNode(mfg: string, tickets: ITicket[], mfgKey: string, parentKey: string, ticketKeyPrefix: string, context: NodeContext): ITreeNode {
+function createMfgNode(mfg: string, tickets: ITicketRecord[], mfgKey: string, parentKey: string, ticketKeyPrefix: string, context: NodeContext): ITreeNode {
     const mfgNode = createNode({ key: mfgKey, name: mfg, nodeType: "Mfg", parentEntID: parentKey, isLeaf: false, description: mfg })
     mfgNode.children = [...tickets].sort((a, b) => (a.ProdNo ?? "").localeCompare(b.ProdNo ?? "")).map(ticket => createTicketNode(ticket, mfgNode.key, `${ticketKeyPrefix}${ticket.ProdNo}##${ticket.Ticket}`, context))
     return finalizeNode(mfgNode, context)
 }
 
 // Creates a ProdNo leaf node for a ticket.
-function createTicketNode(ticket: ITicket, parentKey: string, key: string, context: NodeContext): ITreeNode {
+function createTicketNode(ticket: ITicketRecord, parentKey: string, key: string, context: NodeContext): ITreeNode {
     return finalizeNode(createNode({ key, name: ticket.ProdNo, nodeType: "ProdNo", parentEntID: parentKey, isLeaf: true, ticket, description: `${ticket.Ticket} · ${ticket.Status}` }), context)
 }
 
 // Creates the common tree-node structure used by Root, Date, Mfg and ProdNo nodes.
-function createNode(params: { key: string; name: string; nodeType: string; parentEntID: string | null; isLeaf: boolean; ticket?: ITicket; description?: string }): ITreeNode {
+function createNode(params: { key: string; name: string; nodeType: string; parentEntID: string | null; isLeaf: boolean; ticket?: ITicketRecord; description?: string }): ITreeNode {
     const { key, name, nodeType, parentEntID, isLeaf, ticket, description } = params
     return { key, NodeEntID: key, EntID: key, NodeEntityname: nodeType === "Mfg" ? name : nodeType, NodeType: nodeType, Name: name, TableLabel: name, Description: description ?? name, NodeState: ticket?.Status ?? null, IsAuthorized: false, title: name, icon: null, children: [], treetype: nodeType, Type: nodeType, parentEntID, stepNo: 0, HasChildren: isLeaf ? 0 : 1, isLeaf, checkable: false, ticketRecord: ticket, Status: ticket?.Status }
 }
