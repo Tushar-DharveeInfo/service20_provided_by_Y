@@ -1,9 +1,9 @@
 
 import './JsonViewer.css';
-import { ActionImage } from '../basic/actionimage/ActionImage';
+import { ActionImage } from '../../actionimage/ActionImage';
 import { Copy24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../appcontainer/allcommon/FnGetCssVariable';
-import { FnParseJsonSafely } from '../../appcontainer/allcommon/FnParseJsonSafely';
+import { FnGetCssVariable } from '../../../../appcontainer/allcommon/FnGetCssVariable';
+import { FnParseJsonSafely } from '../../../../appcontainer/allcommon/FnParseJsonSafely';
 
 interface IJsonViewer {
     uniqueName: string;

@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react'
 import { SimplePdfViewer } from '@n20a/libflippdf'
 import '@n20a/libflippdf/style.css'
 import './PdfDocumentViewer.css'
-import { Label } from '../basic/label/Label.tsx'
-import { DefaultPdfScale } from '../../features/alldefaultprops/DefaultPropsPrivatePdf.ts'
-import { FnGetPrivatePdfUrl } from '../../features/allcommon/FnGetPrivatePdfUrl.ts'
+import { Label } from '../../basic/label/Label.tsx'
+import { DefaultPdfScale } from '../../alldefaultprops/DefaultPropsPrivatePdf.ts'
+import { FnGetPrivatePdfUrl } from '../../allcommon/FnGetPrivatePdfUrl.ts'
 import { PdfDownloadOverlay } from './PdfDownloadOverlay.tsx'
-import { Loader } from '../loader/Loader.tsx'
+import { Loader } from '../../loader/Loader.tsx'
 
 interface IPdfDocumentViewer {
     uniqueName: string; // uniqueName for the control and required

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import '../../allcss/basic/JsonViewerControl.css'
 import { IJsonViewerControl } from "../../allinterface/basic/IJsonViewerControl.ts"
-import { JsonViewer } from "../../jsonviewer/JsonViewer.tsx"
+import { JsonViewer } from "./jsonviewer/JsonViewer.tsx"
 import { Label } from "../label/Label.tsx"
 
 const JsonViewerControl = (jsonViewerControlProps: IJsonViewerControl) => {

@@ -1,5 +1,5 @@
 
-import { ITreeNode } from "../tree/ITreeControl";
+import { ITreeNode } from "../../../shared/allinterface/tree/ITreeControl";
 
 /* DeviceModel component props and shared type definitions. */
 
@@ -11,8 +11,7 @@ type IExternalSearch = {
 }
 
 /* Props for the DeviceModel sidebar search and result pane. */
-interface IDeviceModel 
-{
+interface IDeviceModel {
     uniqueName: string;
     featureId: string;
     selectedNode: ITreeNode;

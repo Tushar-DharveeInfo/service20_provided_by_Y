@@ -13,7 +13,7 @@ import { YesNoFormContainer } from '../../basic/yesnoformcontainer/YesNoFormCont
 import { FnUpdateProfileStringForEnabled } from '../../allcommon/settingsform/FnUpdateProfileStringForEnabled.ts';
 import { unstable_batchedUpdates } from 'react-dom';
 import { SettingsLibForm } from '../settingslibform/SettingsLibForm.tsx';
-import Help from '../../../features/appqa/help/Help.tsx';
+import Help from '../../help/Help.tsx';
 import { FnParseJsonSafely } from '../../../appcontainer/allcommon/FnParseJsonSafely.ts';
 import { handleFormControlsKeyDown, handleFormControlsBubbleKeyDown } from '../../allcommon/basic/FnHandleContainerKeyDown';
 

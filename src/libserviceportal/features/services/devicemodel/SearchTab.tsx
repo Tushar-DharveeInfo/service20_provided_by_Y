@@ -1,14 +1,14 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import './SearchTab.css'
-import { ISearchControl, SearchControl } from '../searchfilter/searchcontrol/SearchControl'
-import { IDeviceModelProfileString, IDeviceSearchOption } from '../allinterface/devicemodel/IDeviceModel'
-import { DeviceModelFEnums } from '../alldefaultprops/devicemodel/DeviceModelEnums'
+import { ISearchControl, SearchControl } from '../../../shared/searchfilter/searchcontrol/SearchControl'
+import { IDeviceModelProfileString, IDeviceSearchOption } from '../../allinterface/devicemodel/IDeviceModel'
+import { DeviceModelFEnums } from '../../../shared/alldefaultprops/devicemodel/DeviceModelEnums'
 import { debounce } from 'lodash'
 import { CascadingComboForm, IChangeMeta, ICombo, IOptionItem, RadioButtonGroupControl } from '@n20a/libform'
-import { FnGenerateUID } from '../allcommon/settingsform/FnGenerateUID'
-import { IControl } from '../settingsform/settingslibform/SettingsLibForm'
-import { ITreeNode } from '../allinterface/tree/ITreeControl'
+import { FnGenerateUID } from '../../../shared/allcommon/settingsform/FnGenerateUID'
+import { IControl } from '../../../shared/settingsform/settingslibform/SettingsLibForm'
+import { ITreeNode } from '../../../shared/allinterface/tree/ITreeControl'
 
 /** Cascading combo option row built from manufacturer/equipment/product data. */
 interface ISearchComboOption {

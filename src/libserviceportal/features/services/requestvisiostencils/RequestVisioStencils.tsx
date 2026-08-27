@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { ServicesEnums } from '../../../constants/Feature';
-import { DeviceModel } from '../../../shared/devicemodel/DeviceModel';
+import { DeviceModel } from '../devicemodel/DeviceModel';
 
-import { Helptip } from '../../appqa/help/Help';
+import { Helptip } from '../../../shared/help/Help';
 import { useHelpTipContext } from '../../../shared/context/hooks/HelptipHooks';
 import { ITreeNode } from '../../../shared/allinterface/tree/ITreeControl';
 import { type IRequestShapeFormData } from '../requestdevicemodels/RequestDeviceModels';

@@ -2,7 +2,7 @@
 import { ReactNode, useState } from 'react'
 import './MySubscriptions.css'
 import { Label } from '../../../shared/basic/label/Label.tsx'
-import { CardLayout } from '../../../shared/cardlayout/CardLayout.tsx'
+import { CardLayout } from './cardlayout/CardLayout.tsx'
 import { FnConvertDateToUtcOrUtcToDate } from '../../../appcontainer/allcommon/FnConvertDateToUtcOrUtcToDate.ts'
 import sampleUserLicenses from '../../../../serviceSampledata/auth/MySubscriptionsSampleData.json'
 import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks.ts'

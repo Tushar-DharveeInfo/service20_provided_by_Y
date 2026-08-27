@@ -23,7 +23,7 @@ const FnGetPrivatePdfUrl = (fileName: string): string => {
     //     : `${import.meta.env.BASE_URL}/`;
 
 
-        return `/privatebrochures/${encodeURIComponent(documentName)}`;
+    return `/privatebrochures/${encodeURIComponent(documentName)}`;
 
 };
 

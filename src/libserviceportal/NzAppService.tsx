@@ -3,7 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider, DefaultTheme } from 'styled-components';
 import { ModuleRegistry as GridModuleRegistry, AllCommunityModule as GridAllCommunityModule } from 'ag-grid-community';
 import './NzAppService.css';
-import themes from './features/appqa/theme/theme-provider.json';
+import themes from './shared/theme-provider.json';
 import { useSessionContext } from './shared/context/hooks/SessionHooks';
 import { useMainAppContext } from './shared/context/hooks/MainAppHooks';
 import { AppContextWrapper } from './shared/context/AppContextWrapper';

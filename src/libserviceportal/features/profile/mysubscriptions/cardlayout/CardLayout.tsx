@@ -1,15 +1,15 @@
 
 import { ReactNode, KeyboardEvent, MouseEvent } from "react";
-import { IImage } from "../allinterface/basic/IImage";
-import { IActionImageForSubMenu } from "../allinterface/basic/IActionImageList";
+import { IImage } from "../../../../shared/allinterface/basic/IImage";
+import { IActionImageForSubMenu } from "../../../../shared/allinterface/basic/IActionImageList";
 import React, { useMemo } from 'react';
 import { YesNoControl } from '@n20a/libform';
-import DynamicCard from '../basic/dynamiccard/DynamicCard';
-import { Label } from '../basic/label/Label';
+import DynamicCard from "../../../../shared/basic/dynamiccard/DynamicCard";
+import { Label } from "../../../../shared/basic/label/Label";
 
 import { createCardKeyboardHandler, isCardKeyboardInteractiveTarget } from './CardLayoutKeyboard';
 import './CardLayout.css';
-import { IMenuItem } from "../allinterface/menu/IMainMenu";
+import { IMenuItem } from "../../../../shared/allinterface/menu/IMainMenu";
 
 
 interface ICardLayoutField {

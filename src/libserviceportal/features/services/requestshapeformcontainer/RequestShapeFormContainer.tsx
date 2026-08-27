@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Splitter } from 'primereact/splitter';
 import { ServicesEnums } from '../../../constants/Feature';
 
-import { Helptip } from '../../appqa/help/Help';
+import { Helptip } from '../../../shared/help/Help';
 import { useHelpTipContext } from '../../../shared/context/hooks/HelptipHooks';
 import { type IRequestShape } from '../requestdevicemodels/RequestDeviceModels';
 

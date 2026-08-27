@@ -8,7 +8,7 @@ import { IFeatureItem } from "../../shared/context/allinterface/IMainApp";
 import type { IFeatureContainer } from './FeatureContainer.tsx'
 
 import { Loader } from '../../shared/loader/Loader.tsx';
-import Help from '../../features/appqa/help/Help.tsx';
+import Help from '../../shared/help/Help.tsx';
 import AppQaContactUs from '../../features/appqa/contectus/ContactUs.tsx';
 
 const AppqaSignout = lazy(() => import('../../features/appqa/singout/Signout.tsx'))

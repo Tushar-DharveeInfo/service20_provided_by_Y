@@ -1,15 +1,15 @@
 
 import { Fragment, useEffect, useState } from 'react'
-import { handleContainerKeyDown } from '../allcommon/basic/FnHandleContainerKeyDown'
+import { handleContainerKeyDown } from '../../../shared/allcommon/basic/FnHandleContainerKeyDown'
 import { Splitter, SplitterPanel } from 'primereact/splitter'
 import { ICellRendererParams } from 'ag-grid-community'
 import './PropertyTab.css'
-import { NameRenderer } from '../tablegrid/NameRenderer'
-import { ViewContainer } from '../viewcontainer/ViewContainer';
-import { BasicGrid } from '../tablegrid/BasicGrid'
-import { IBasicGridColDef } from '../allinterface/tablegrid/IBasicGrid'
-import { Label } from '../basic/label/Label'
-import { IView } from '../allinterface/deviceview/IView'
+import { NameRenderer } from '../../../shared/tablegrid/NameRenderer'
+import { ViewContainer } from './viewcontainer/ViewContainer'
+import { BasicGrid } from '../../../shared/tablegrid/BasicGrid'
+import { IBasicGridColDef } from '../../../shared/allinterface/tablegrid/IBasicGrid'
+import { Label } from '../../../shared/basic/label/Label'
+import { IView } from '../../allinterface/deviceview/IView'
 
 /** Raw property field parsed from a Properties JSON string. */
 interface IRawPropertyField {
@@ -50,6 +50,7 @@ interface IPropertyTab {
     selectedRadio?: string;
     views?: IView[];
     selectedTabName?: string;
+    hideDeviceView?: boolean
 }
 
 /* Returns true when property data uses pre-formatted DescriptionObj sections. */

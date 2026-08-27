@@ -3,25 +3,25 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 
 import { Key } from 'rc-tree/lib/interface';
-import { useStatusBarContext } from '../context/hooks/StatusBarHooks';
-import { useMainAppContext } from '../context/hooks/MainAppHooks';
+import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks';
+import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
 import './DeviceModel.css'
-import { deviceModelTabs } from '../../constants/Feature';
-import { IFeatureTree, ITreeForHierarchicalDataContainer } from '../allinterface/tree/ITreeForHierarchicalDataContainer';
-import { IExpandedNodeInfo, ISelectedNodeInfo } from '../allinterface/tree/ITreeControl';
-import { ITreeNode } from '../allinterface/tree/ITreeControl';
+import { deviceModelTabs } from '../../../constants/Feature';
+import { IFeatureTree, ITreeForHierarchicalDataContainer } from '../../../shared/allinterface/tree/ITreeForHierarchicalDataContainer';
+import { IExpandedNodeInfo, ISelectedNodeInfo } from '../../../shared/allinterface/tree/ITreeControl';
+import { ITreeNode } from '../../../shared/allinterface/tree/ITreeControl';
 
 import { ResultTab } from './ResultTab';
 import { SearchTab } from './SearchTab';
-import { ActionLabelTabs } from '../basic/actionlabeltabs/ActionLabelTabs';
-import { OverlayTab } from '../basic/overlaytab/OverlayTab';
+import { ActionLabelTabs } from '../../../shared/basic/actionlabeltabs/ActionLabelTabs';
+import { OverlayTab } from '../../../shared/basic/overlaytab/OverlayTab';
 import { PropertyTab } from './PropertyTab';
-import { formControls } from '../allcommon/devicemodel/formControlsJsonDeviceModel';
-import { FnConvertFlatDataToHierarchyData } from '../allcommon/tree/FnConvertFlatDataToHierarchyData';
-import { FnGetAutoExpandNodeKeys } from '../allcommon/tree/FnGetAutoExpandNodeKeys';
-import { FnUpdateNodeWithTitleAndIcon } from '../allcommon/tree/FnUpdateNodeWithTitleAndIcon';
-import { IView } from '../allinterface/deviceview/IView';
-import { IActionLabelTabs } from '../allinterface/basic/IActionLabelTabs';
+import { formControls } from '../../../shared/allcommon/devicemodel/formControlsJsonDeviceModel';
+import { FnConvertFlatDataToHierarchyData } from '../../../shared/allcommon/tree/FnConvertFlatDataToHierarchyData';
+import { FnGetAutoExpandNodeKeys } from '../../../shared/allcommon/tree/FnGetAutoExpandNodeKeys';
+import { FnUpdateNodeWithTitleAndIcon } from '../../../shared/allcommon/tree/FnUpdateNodeWithTitleAndIcon';
+import { IView } from '../../allinterface/deviceview/IView';
+import { IActionLabelTabs } from '../../../shared/allinterface/basic/IActionLabelTabs';
 import {
 	IDeviceEqTypeRecord,
 	IDeviceFormFieldValue,
@@ -40,19 +40,19 @@ import {
 	IPropertyTabData,
 	IShapeRecord,
 	JsonRecord,
-} from '../allinterface/devicemodel/IDeviceModel';
-import { DeviceModelFEnums, Lib } from '../alldefaultprops/devicemodel/DeviceModelEnums'
-import { FnGetLibJson } from '../allcommon/devicemodel/FnGetLibJson';
-import { FnGetSearchResults, transformDeviceData } from '../allcommon/devicemodel/FnExtractKeyObjects';
-import { FnGetKeyFromEntId } from '../allcommon/tree/FnGetKeyFromEntId';
-import { FnProcessMfgAcronym } from '../allcommon/devicemodel/FnProcessMfgAcronym';
-import { FnGetEnvVariableByKey } from '../../appcontainer/allcommon/FnGetEnvVariableByKey';
-import { envVarEnums } from '../../appcontainer/alldefaultprops/DefaultPropsAppContainer';
+} from '../../allinterface/devicemodel/IDeviceModel';
+import { DeviceModelFEnums, Lib } from '../../../shared/alldefaultprops/devicemodel/DeviceModelEnums'
+import { FnGetLibJson } from '../../../shared/allcommon/devicemodel/FnGetLibJson';
+import { FnGetSearchResults, transformDeviceData } from '../../../shared/allcommon/devicemodel/FnExtractKeyObjects';
+import { FnGetKeyFromEntId } from '../../../shared/allcommon/tree/FnGetKeyFromEntId';
+import { FnProcessMfgAcronym } from '../../../shared/allcommon/devicemodel/FnProcessMfgAcronym';
+import { FnGetEnvVariableByKey } from '../../../appcontainer/allcommon/FnGetEnvVariableByKey';
+import { envVarEnums } from '../../../appcontainer/alldefaultprops/DefaultPropsAppContainer';
 import { wildSearch } from '@n20a/libmiscfn';
-import { YesNoFormContainer } from '../basic/yesnoformcontainer/YesNoFormContainer';
+import { YesNoFormContainer } from '../../../shared/basic/yesnoformcontainer/YesNoFormContainer';
 import '@n20a/libform/style.css'
 import { NodeDragEventParams } from 'rc-tree/lib/contextTypes';
-import { Label } from '../basic/label/Label';
+import { Label } from '../../../shared/basic/label/Label';
 
 /* True when DeviceModel is searching the local NetZoom device or cable library. */
 const isLocalLibRadio = (radio: string): boolean =>

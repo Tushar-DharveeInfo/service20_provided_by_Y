@@ -2,9 +2,9 @@
 import React, { useState } from 'react'
 import { TransformComponent, TransformWrapper, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch'
 import './DevicePreview.css'
-import { IImage } from '../../allinterface/basic/IImage'
-import { Image } from '../../basic/image/Image'
-import { Label } from '../../basic/label/Label'
+import { IImage } from '../../../../shared/allinterface/basic/IImage'
+import { Image } from '../../../../shared/basic/image/Image'
+import { Label } from '../../../../shared/basic/label/Label'
 
 interface IDevicePreview {
     uniqueName: string; // uniqueName for the control and required
