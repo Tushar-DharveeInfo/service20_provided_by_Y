@@ -2,7 +2,7 @@
 import { IDynamicCard } from '../../allinterface/basic/IDynamicCard';
 import { Cross, Edit24x24 } from "@n20a/libicon";
 import '../../allcss/basic/DynamicCard.css'
-import { FnGetCssVariable } from "../../../appcontainer/allcommon/FnGetCssVariable";
+import { FnGetCssVariable } from "../../allcommon/FnGetCssVariable";
 import { IActionImageForSubMenu } from "../../allinterface/basic/IActionImageList";
 import { NodeMenu } from "../../menu/nodemenu/NodeMenu";
 import { Image } from "../image/Image";

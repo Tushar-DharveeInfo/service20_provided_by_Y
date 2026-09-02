@@ -23,12 +23,7 @@ const FnUpdateTreeNodeBasedOnKeyForHierarchicalData = async (
                 // Update the matched node
                 item.title = TreeNodeTitle(
                     item,
-                    treeContainerProps.featureTreeProps,
-                    treeContainerProps.featureId,
-                    showKebabIcon,
-                    showCopyIcon,
-                    selectedNodeExplorer || undefined,
-                    handleKebabMenuSelect
+                    treeContainerProps.featureTreeProps
                 );
                 return treeData; // Return updated tree
             }

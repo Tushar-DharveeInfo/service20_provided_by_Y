@@ -2,7 +2,7 @@
 import { useRef, useCallback, useEffect } from "react";
 import Tree, { TreeNodeProps } from "rc-tree";
 import { CaretRight24x24 } from "@n20a/libicon";
-import { FnGetCssVariable } from "../../../appcontainer/allcommon/FnGetCssVariable";
+import { FnGetCssVariable } from "../../allcommon/FnGetCssVariable";
 import { IBaseTree } from '../../allinterface/tree/IBaseTree';
 import { Image } from "../../basic/image/Image";
 import { ITreeNode } from "../../allinterface/tree/ITreeControl";

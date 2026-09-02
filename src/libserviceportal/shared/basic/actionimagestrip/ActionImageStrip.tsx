@@ -3,7 +3,7 @@ import React, { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'r
 import '../../allcss/basic/ActionImageStrip.css';
 import { DefaultStylesActionImageStrip } from '../../alldefaultprops/basic/DefaultPropsActionImageStrip.ts';
 import { Close24x24, Kebab24x24, ThemeDark24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable.ts';
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable.ts';
 import themes from '../../theme-provider.json';
 import { IPropsComponent } from '../../allinterface/menu/IMainMenu.ts';
 import { IActionImageForSubMenu } from '../../allinterface/basic/IActionImageList.ts';

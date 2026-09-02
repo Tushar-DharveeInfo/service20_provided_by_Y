@@ -30,7 +30,7 @@ import { Image } from '../basic/image/Image';
 import { NodeHeight } from '../../appcontainer/alldefaultprops/DefaultPropsAppContainer';
 import { IActionImageForSubMenu } from '../allinterface/basic/IActionImageList';
 import { Copy24x24, Cross, Download24x24, Edit24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../appcontainer/allcommon/FnGetCssVariable';
+import { FnGetCssVariable } from '../allcommon/FnGetCssVariable';
 import { FnGetSessionVariableFromStorage } from '../allcommon/basic/FnGetSessionVariableFromStorage';
 
 // import { useSessionContext } from '../context/hooks/SessionHooks';

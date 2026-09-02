@@ -13,7 +13,7 @@ import { ISelectedNodeInfo, ITreeNode } from '../../../shared/allinterface/tree/
 import type { INoteItems } from '../../../shared/allinterface/sidebar/IFqaNotes';
 import { Label } from '../../../shared/basic/label/Label';
 import { ActionImage } from '../../../shared/basic/actionimage/ActionImage';
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable';
+import { FnGetCssVariable } from '../../../shared/allcommon/FnGetCssVariable';
 import { SidebarContainer } from '../../../appcontainer/sidebarcontainer/SidebarContainer';
 import { handleContainerKeyDown } from '../../../shared/allcommon/basic/FnHandleContainerKeyDown';
 import { ContactUsNotes } from '../../appqa/contectus/ContactUs';

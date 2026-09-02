@@ -2,7 +2,7 @@
 import { KeyboardEvent, useState } from 'react'
 import './SearchControl.css'
 import { Filter24x24, Lens24x24 } from '@n20a/libicon'
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable'
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable'
 import { IDirtyFlagImage } from '../../allinterface/basic/IDirtyFlagImage'
 import { DirtyFlagImage } from '../../basic/dirtyflagimage/DirtyFlagImage'
 import { OptionToggle } from '../../basic/optiontoggle/OptionToggle'

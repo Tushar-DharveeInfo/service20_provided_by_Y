@@ -1,34 +1,24 @@
 
 import { Fragment, MouseEvent } from 'react'
 import { Cart24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable';
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable';
 import { FnGetLeafStatusIconConfig } from '../../allcommon/tree/FnGetLeafStatusIconConfig';
-import { getfeaturesData } from '../../context/contextandprovider/MainApp';
-import { IActionImageForSubMenu } from '../../allinterface/basic/IActionImageList';
-import { IMenuItem } from '../../allinterface/menu/IMainMenu';
-import { ITreeNode, ISelectedNodeInfo } from '../../allinterface/tree/ITreeControl';
+import { ITreeNode } from '../../allinterface/tree/ITreeControl';
 import { IFeatureTree } from '../../allinterface/tree/ITreeForHierarchicalDataContainer';
 import { Image } from '../../basic/image/Image';
-import { NodeMenu } from '../../menu/nodemenu/NodeMenu';
 
-const TreeNodeTitle = (treeNode: ITreeNode, treeDataProps: IFeatureTree, featureId: string, showKebabIcon?: boolean, showCopyIcon?: boolean, selectedNodeExplorer?: ISelectedNodeInfo, handleKebabMenuSelect?: (selectedItem: IActionImageForSubMenu) => void) => {
-    console.log('treeNode TreeNodeTitle', treeNode)
-    const featureData = getfeaturesData() as IMenuItem[] ?? null
+const TreeNodeTitle = (treeNode: ITreeNode, treeDataProps: IFeatureTree) => {
     const clonedNode = { ...treeNode, title: "", icon: null, children: [] };
-    const nodeTooltip = `${treeNode.Description ?? ""}${treeNode.WOID ? ` (${treeNode.WOID})` : ""}`
-    const titleContent = `${treeNode.Name} ${treeNode.Desc250 ? ` (${treeNode.Desc250.trim()})` : ""}` || "";
+    const nodeTooltip = `${treeNode.Description ?? ""}`
+    const titleContent = `${treeNode.Name}` || "";
 
     const renderNodeName = () => {
         return (
             <Fragment key={`node-title-content-${treeNode.key}`}>
                 {treeNode.TableLabel || titleContent}
-                {treeNode.RecordCount >= 0 ? ` (${treeNode.RecordCount})` : ""}
-                {treeNode.HwEntityName ? ` (${treeNode.HwEntityName})` : ""}
             </Fragment>
         );
     };
-
-    const container = treeDataProps.instanceName ?? "explorer_tree"
 
     const handleDownloadClick = (event: MouseEvent<HTMLSpanElement>) => {
         event.preventDefault();
@@ -37,7 +27,6 @@ const TreeNodeTitle = (treeNode: ITreeNode, treeDataProps: IFeatureTree, feature
     };
 
     const renderIcon = () => {
-        const newTreeNode = { ...treeNode };
         const showDownloadIcon =
             treeNode.treetype?.toLowerCase() === "product" &&
             !!treeDataProps.onAddToDownloadCart;
@@ -48,24 +37,6 @@ const TreeNodeTitle = (treeNode: ITreeNode, treeDataProps: IFeatureTree, feature
 
         return (
             <span className="nz-tree-node-icons-wrapper" key={`node-icons-${treeNode.key}`}>
-
-                {(showCopyIcon || showKebabIcon) && (
-                    <span key={`node-icons-kebabmenu-${treeNode.key}`} className="nz-tree-node-nz-icon-div nz-node-kebab-copy-icon">
-                        {showKebabIcon && handleKebabMenuSelect && (
-                            <NodeMenu
-                                showIcon={true}
-                                uniqueName={`kebab-${treeNode.key}`}
-                                handleSelect={handleKebabMenuSelect}
-                                featureId={featureId}
-                                selectedNode={selectedNodeExplorer?.node || newTreeNode}
-                                container={container}
-                                featureData={featureData}
-                                allowAddCopyIconInOverlay={true}
-                            />
-                        )}
-                    </span>
-                )}
-
                 {StatusIcon && statusIconConfig && (
                     <span
                         key={`node-icons-status-${treeNode.key}`}
@@ -125,7 +96,6 @@ const TreeNodeTitle = (treeNode: ITreeNode, treeDataProps: IFeatureTree, feature
             title={nodeTooltip}
             data-html="true"
             className={'nz-tree-node-title'}
-            style={{ fontWeight: `${treeNode.IsNZ || treeNode.IsTemplate ? "600" : "inherit"}` }}
             id={treeNode.EntID || treeNode.key}
             node-info={JSON.stringify(clonedNode)}
         >

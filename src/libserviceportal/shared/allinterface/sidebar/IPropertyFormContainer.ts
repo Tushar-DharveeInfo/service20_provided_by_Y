@@ -3,7 +3,7 @@ import { IMenuItem } from "../menu/IMainMenu";
 import { ITreeNode } from "../tree/ITreeControl";
 
 interface IPropertyFormContainer {
-    uniqueName: string; // A unique identifier for the dc property
+    uniqueName: string; // A unique identifier for the property
     featureId: string;
     selectedNode: ITreeNode;
     selectedNodeMenu: IMenuItem | undefined// selected nodemenu data
@@ -29,7 +29,10 @@ interface IPropertyFormContainer {
 interface IPropertyColumn {
     PName: string;
     PropertyLabel: string;
-    DisplayControl: string;
+    DisplayControl?: string;
+    InputMask?: string;
+    Disabled?: boolean;
+    SortOrder?: number;
     [key: string]: string | number | boolean | any;
 }
 interface ITableFormMeta {

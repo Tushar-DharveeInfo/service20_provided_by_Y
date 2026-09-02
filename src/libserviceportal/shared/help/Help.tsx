@@ -12,7 +12,7 @@ import parse from 'html-react-parser';
 import { useEffect, useMemo, useState } from 'react';
 import { ActionImage } from '../basic/actionimage/ActionImage.tsx';
 import { Close24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../appcontainer/allcommon/FnGetCssVariable.ts';
+import { FnGetCssVariable } from '../allcommon/FnGetCssVariable.ts';
 import { Label } from '../basic/label/Label.tsx';
 import { OverlayTab } from '../basic/overlaytab/OverlayTab.tsx';
 import { PdfDownloadOverlay } from './pdfviewer/PdfDownloadOverlay.tsx';

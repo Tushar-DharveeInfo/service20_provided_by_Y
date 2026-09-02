@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Key } from 'rc-tree/lib/interface'
 import { Splitter, SplitterPanel } from 'primereact/splitter'
 import './MyRequests.css';
-import { useFetchTickets } from './tickets/Tickets'
 import { FnBuildTicketTree, findFirstTicketLeaf, getAncestorKeys } from './tickets/FnBuildTicketTree'
+import { useFetchTickets } from './tickets/Tickets'
+import { useServiceDataContext } from '../../../shared/context/hooks/ServiceDataHooks'
 
 import { FnSearchKeywordInLocalTree } from '../../../shared/allcommon/tree/FnSearchKeywordInLocalTree'
 import { ISelectedNodeInfo, ITreeNode } from '../../../shared/allinterface/tree/ITreeControl'
@@ -50,7 +51,7 @@ function buildFeatureTreeProps(): IFeatureTree {
         allowIcon: true,
         hideCopyIcon: true,
         reuseFromCache: false,
-        instanceName: 'dc_explorer_tree',
+        instanceName: 'my_requests_explorer_tree',
         isAllowDrag: false,
         isAllowDrop: false,
         allowCheckStrictly: false,
@@ -64,6 +65,7 @@ function buildFeatureTreeProps(): IFeatureTree {
 }
 
 const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
+    console.log('myRequestsProps', myRequestsProps)
     const featureTreeProps = useMemo(() => buildFeatureTreeProps(), [])
     const [treeData, setTreeData] = useState<ITreeNode[]>([])
     const [defaultExpandedKeys, setDefaultExpandedKeys] = useState<Key[]>([])
@@ -78,7 +80,13 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     const [appliedFilter, setAppliedFilter] = useState<ITicketFilterValues>(DEFAULT_FILTER)
     const [draftFilter, setDraftFilter] = useState<ITicketFilterValues>(DEFAULT_FILTER)
 
-    const { tickets, error, loading, fetchTickets } = useFetchTickets();
+    const serviceDataContext = useServiceDataContext()
+    const { tickets, isTicketsLoaded, ticketsError, selection, updateTickets } = serviceDataContext
+    const { error: fetchError, loading: fetching, fetchTickets } = useFetchTickets()
+    const loading = fetching || !isTicketsLoaded || treeData.length === 0
+    const error = ticketsError ?? fetchError
+    const bid = selection.bid
+    const cid = selection.cid
 
     const selectLeaf = (
         node: ITreeNode,
@@ -99,12 +107,14 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     }
 
     const setTicketTree = (filter: ITicketFilterValues) => {
+        console.time("setTicketTree")
         const nodes = FnBuildTicketTree(
             tickets,
             filter,
             featureTreeProps,
             myRequestsProps.featureId ?? 'ticket-explorer'
         )
+        console.timeEnd("setTicketTree")
         setTreeData(nodes)
         const firstLeaf = findFirstTicketLeaf(nodes)
         if (firstLeaf) {
@@ -120,18 +130,37 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     }
 
     useEffect(() => {
-        fetchTickets({
-            collectionName: 'tickets',
-        });
-    }, []);
-
-    // Rebuild tree once tickets data has loaded
-    useEffect(() => {
-        if (!loading && tickets.length > 0) {
-            setTicketTree(appliedFilter)
+        if (isTicketsLoaded) {
+            return
         }
+        const filters = []
+        if (bid) {
+            filters.push({ field: 'bid' as const, op: '==' as const, value: bid })
+        }
+        if (cid) {
+            filters.push({ field: 'cid' as const, op: '==' as const, value: cid })
+        }
+        let cancelled = false
+        void fetchTickets({
+            collectionName: 'tickets',
+            ...(filters.length ? { filters } : {}),
+        }).then((loadedTickets) => {
+            if (!cancelled && loadedTickets) {
+                updateTickets(loadedTickets)
+            }
+        })
+        return () => {
+            cancelled = true
+        }
+    }, [bid, cid, fetchTickets, isTicketsLoaded, updateTickets])
+
+    useEffect(() => {
+        if (!isTicketsLoaded || fetching) {
+            return
+        }
+        setTicketTree(appliedFilter)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tickets, loading])
+    }, [tickets, isTicketsLoaded, fetching, bid, cid])
 
     const handleFilterClick = () => {
         if (isShowFilterForm) {
@@ -188,6 +217,7 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         } else {
             setSelectedTicket(null)
         }
+        setDefaultExpandedKeys(expandedNodeKeys ?? [])
     }
 
     const handleNodeExpand = (expandedNodeKeys: Key[]) => {

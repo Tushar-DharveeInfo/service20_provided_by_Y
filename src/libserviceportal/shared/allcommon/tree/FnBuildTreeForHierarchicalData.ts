@@ -41,7 +41,7 @@ const FnBuildTreeForHierarchicalData = async (
                 if (!treeNode) continue;
 
                 if (treeNode) {
-                    treeNode.title = TreeNodeTitle(treeNode, treeContainerProps.featureTreeProps, treeContainerProps.featureId, false, false);
+                    treeNode.title = TreeNodeTitle(treeNode, treeContainerProps.featureTreeProps);
                     if (treeContainerProps.featureTreeProps.allowIcon) {
                         treeNode.icon = TreeNodeIcon(treeNode, treeContainerProps.featureTreeProps.instanceName ?? "");
                     }

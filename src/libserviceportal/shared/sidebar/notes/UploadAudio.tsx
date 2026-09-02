@@ -4,7 +4,7 @@ import { Modal, Box } from "@mui/material";
 import { ActionImage } from "../../basic/actionimage/ActionImage";
 import { Label } from "../../basic/label/Label";
 import { Close24x24 } from "@n20a/libicon";
-import { FnGetCssVariable } from "../../../appcontainer/allcommon/FnGetCssVariable";
+import { FnGetCssVariable } from "../../allcommon/FnGetCssVariable";
 import { IImage } from "../../allinterface/basic/IImage";
 import { IUploadAudio } from "../../allinterface/sidebar/IUploadAudio";
 

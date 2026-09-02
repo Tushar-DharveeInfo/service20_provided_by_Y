@@ -1,23 +1,8 @@
 import { useFirestore, type IQueryGroupRequest, type ICreateDocumentRequest, type IUpdateDocumentRequest, type IDeleteDocumentRequest, type IFirestoreWriteResult } from '@n20a/libfsdb';
 import { useState, useCallback, useRef } from 'react';
-import type { ITicketRecord, TicketId, TicketStatus } from './ITicket';
+import type { ITicketRecord } from './ITicket';
 import sampleTicketsJson from '../../../../../serviceSampledata/ticket/sampletickets.json';
-
-const normalizeTicket = (data: Record<string, unknown>): ITicketRecord => ({
-  Business: String(data.Business ?? ""),
-  Contact: String(data.Contact ?? ""),
-  Email: String(data.Email ?? ""),
-  Subscription: String(data.Subscription ?? ""),
-  Ticket: String(data.Ticket ?? "") as TicketId,
-  Mfg: String(data.Mfg ?? ""),
-  EqType: String(data.EqType ?? ""),
-  ProdNo: String(data.ProdNo ?? ""),
-  MoreInfo: String(data.MoreInfo ?? ""),
-  Status: String(data.Status ?? "Pending") as TicketStatus,
-  DateRequested: new Date(String(data.DateRequested ?? "")),
-  DateReleased: new Date(String(data.DateReleased ?? "")),
-  LastUpdated: new Date(String(data.LastUpdated ?? "")),
-});
+import { FnNormalizeTicket } from './FnNormalizeTicket';
 
 /*
 Usage in a component under FirestoreProvider:
@@ -50,26 +35,28 @@ export function useFetchTickets() {
     const requestId = ++fetchIdRef.current;
     setError(null);
     setLoading(true);
+    const fallbackTickets = (sampleTicketsJson as Record<string, unknown>[]).map((row) => FnNormalizeTicket(row));
     try {
       console.log('Fetching tickets with request:', ticketRequest);
       const result = await queryDocumentsGroup(ticketRequest);
-      if (requestId !== fetchIdRef.current) return; // discard stale response
+      if (requestId !== fetchIdRef.current) return undefined; // discard stale response
       if (!result.success) {
         console.warn('Firestore tickets query returned unauthenticated / error, using sample data:', result.error);
-        const fallbackTickets = (sampleTicketsJson as Record<string, unknown>[]).map(normalizeTicket);
         setTickets(fallbackTickets);
         setError(null);
-      } else {
-        const loadedTickets = (result.data ?? []).map(normalizeTicket);
-        setTickets(loadedTickets.length > 0 ? loadedTickets : (sampleTicketsJson as Record<string, unknown>[]).map(normalizeTicket));
-        console.log('Fetched tickets:', result.data);
+        return fallbackTickets;
       }
+      const loadedTickets = (result.data ?? []).map((row) => FnNormalizeTicket(row));
+      const ticketsToUse = loadedTickets.length > 0 ? loadedTickets : fallbackTickets;
+      setTickets(ticketsToUse);
+      console.log('Fetched tickets:', result.data);
+      return ticketsToUse;
     } catch (err) {
-      if (requestId !== fetchIdRef.current) return;
+      if (requestId !== fetchIdRef.current) return undefined;
       console.warn('Firestore tickets error, using sample data:', err);
-      const fallbackTickets = (sampleTicketsJson as Record<string, unknown>[]).map(normalizeTicket);
       setTickets(fallbackTickets);
       setError(null);
+      return fallbackTickets;
     } finally {
       if (requestId === fetchIdRef.current) setLoading(false);
     }

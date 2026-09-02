@@ -4,14 +4,12 @@ import { CheckInfo, DraggableConfig, DraggableFn } from "rc-tree/lib/Tree";
 import { NodeDragEventParams, NodeMouseEventHandler } from "rc-tree/lib/contextTypes";
 import { JSX } from "react";
 import { IActionImage } from "../basic/IActionImage";
-
 interface ITreeNode {
     key: string;
     NodeEntityname: string | null;
     NodeEntID: string | null;
     stepNo: number;
     parentEntID: string | null;
-    NodeState: string | null;
     Description: string | null;
     title: JSX.Element | string;
     children: ITreeNode[];
@@ -20,62 +18,23 @@ interface ITreeNode {
     Type: string | null;
     icon: JSX.Element | null;
     HasChildren: number | null;
-    IsNZ?: boolean;
     checkable?: boolean;
-    Secured?: boolean;
+    EQID?: string | number;
     ParentEQID?: string | number;
-    GroupName?: string;
-    IsAuthorized?: boolean;
-    IsPatchPort?: boolean;
-    className?: string;
-    PortStatus?: string | null;
     NodeType?: string;
     ViewShortName?: string;
-    SlotsNeeded?: number;
-    EntityPgClass?: string;
-    TableLabel?: string;
-    HasRelated?: boolean;
-    SubGroupEntID?: string | number;
-    DeviceID?: string | number;
-    EQID?: string | number;
-    ShapeID?: string | number;
-    disabled?: boolean;
-    checkStrictly?: boolean;
-    MountedDeviceEntID?: string;
-    MountedDeviceViewEntID?: string;
-    MountedDeviceName?: string;
-    MountedDeviceDescription?: string;
-    MountedDeviceHasPowerPort?: number;
-    MountedDeviceHasNetworkPort?: number;
-    MountedDeviceIntelDCMState?: string;
-    MountedDeviceEntityName?: string;
-    MountedDeviceNodeType?: string;
-    isLeaf?: boolean;
-    MaxInstances?: number;
-    DisplayControl?: string | unknown;
     ParentName?: string;
-    HasPowerPorts?: number;
-    HasNetworkPorts?: number;
-    PGClassName?: string;
-    NaturalSortorder?: number;
     DisplayOrder?: number;
-    MountPosition?: number;
-    IntelDCMState?: string;
     DetailsJson?: string | any;
     EQType?: string | any;
     Height?: string;
     Width?: string;
     Length?: string;
-    MountedDeviceWidth?: string,
-    MountedDeviceHeight?: string,
-    MountedDeviceLength?: string,
-    HasLayout?: boolean
-    TenantIDList?: string | null;
-    VendorIDList?: string | null;
-    TagIDList?: string | null;
-    TeamIDList?: string | null;
-    ContainedByDeviceID?: string;
-    [key: string]: string | any; // to allow dynamic properties
+    DeviceEntId?: string;
+    DeviceViewEntId?: string;
+    isLeaf?: boolean;
+    ParentNodeType?: string;
+    [key: string]: any;
 }
 
 interface ISelectedNodeInfo {

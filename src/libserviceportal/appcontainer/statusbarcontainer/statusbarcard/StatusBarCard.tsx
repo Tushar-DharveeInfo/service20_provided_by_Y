@@ -6,7 +6,7 @@ import parse from 'html-react-parser';
 import ReactDOMServer from "react-dom/server";
 import { Close24x24, Copy24x24, Warning, Critical } from '@n20a/libicon';
 import './StatusBarCard.css';
-import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable.ts';
+import { FnGetCssVariable } from '../../../shared/allcommon/FnGetCssVariable.ts';
 import { FnCopyToClipboard } from '../../../shared/allcommon/basic/FnCopyToClipboard.ts';
 import { IStatusBarCard } from '../../allinterface/IStatusBarContainer.ts';
 import { Label } from '../../../shared/basic/label/Label.tsx';

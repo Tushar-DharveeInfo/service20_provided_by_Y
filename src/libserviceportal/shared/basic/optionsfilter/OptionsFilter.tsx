@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Popover } from '@mui/material';
 import { Filter24x24, SelectColumns24x24 } from '@n20a/libicon';
 import '../../allcss/basic/OptionsFilter.css';
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable';
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable';
 import { IOptionItem, IOptionsFilter } from '../../allinterface/basic/IOptionsFilter';
 import { ActionImage } from '../actionimage/ActionImage';
 import { YesNoControl } from '@n20a/libform';

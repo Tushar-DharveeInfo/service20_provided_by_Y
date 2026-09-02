@@ -1,7 +1,7 @@
 
 import { ITreeNode } from "../../allinterface/tree/ITreeControl";
 // This function convert flat data to Hierarchy data 
-function FnBuildRcTreeData(data: any[], currentNodeId: string | null = null, featureId: string | null = null, instanceName?: string, disableSort?: boolean): ITreeNode[] {
+function FnBuildRcTreeData(data: any[], currentNodeId: string | null = null, disableSort?: boolean): ITreeNode[] {
     try {
         const nodeMap: { [key: string]: ITreeNode } = {};
 
@@ -34,71 +34,35 @@ function FnBuildRcTreeData(data: any[], currentNodeId: string | null = null, fea
                     if (!nodeMap[id]) {
                         const nodeData = extractProperties(item, nodeType);
 
-
                         nodeMap[id] = {
                             title: item[`${nodeType}Name`] || '',
                             key: id,
                             NodeEntID: id,
                             NodeEntityname: item[`${nodeType}EntityName`] || '',
                             Name: item[`${nodeType}Name`] || '',
-                            PGClassName: item[`${nodeType}PGClassName`] || '',
                             Description: item[`${nodeType}Description`] || '',
                             Type: item[`${nodeType}Type`] || '',
                             icon: null,
                             NodeType: item[`${nodeType}NodeType`] || '',
                             HasChildren: item[`${nodeType}HasChildren`] || 0,
-                            IsNZ: item[`${nodeType}IsNZ`] || false,
-                            Secured: item[`${nodeType}Secured`] || false,
-                            NodeState: item[`${nodeType}NodeState`] || "Ready",
                             stepNo: item[`${nodeType}StepNo`] || nodeTypes.indexOf(nodeType) + 1,
                             parentEntID: parentId || null,
                             treetype: nodeType,
                             checkable: false,
                             isLeaf: (item[`${nodeType}HasChildren`] || 0) >= 1 ? false : true,
-                            MountedDeviceEntID: item[`${nodeType}MountedDeviceEntID`] || "",
-                            MountedDeviceViewEntID: item[`${nodeType}MountedDeviceViewEntID`] || "",
-                            MountedDeviceName: item[`${nodeType}MountedDeviceName`] || "",
-                            MountedDeviceNodeType: item[`${nodeType}MountedDeviceNodeType`] || "",
-                            MountedDeviceDescription: item[`${nodeType}MountedDeviceDescription`] || "",
-                            MountedDeviceHasPowerPort: item[`${nodeType}MountedDeviceHasPowerPort`] || 0,
-                            MountedDeviceHasNetworkPort: item[`${nodeType}MountedDeviceHasNetworkPort`] || 0,
-                            MountedDeviceIntelDCMState: item[`${nodeType}MountedDeviceIntelDCMState`] || "",
-                            MountedDeviceEntityName: item[`${nodeType}MountedDeviceEntityName`] || "",
-                            MountedDeviceWidth: item[`${nodeType}MountedDeviceWidth`] || "",
-                            MountedDeviceHeight: item[`${nodeType}MountedDeviceHeight`] || "",
-                            MountedDeviceLength: item[`${nodeType}MountedDeviceLength`] || "",
-                            MountedDeviceSlotsNeeded: item[`${nodeType}MountedDeviceSlotsNeeded`] || "",
-                            MountedDeviceSecured: item[`${nodeType}MountedDeviceSecured`] || "",
                             EQID: item[`${nodeType}EQID`] || "",
                             ParentEQID: item[`${nodeType}ParentEQID`] || "",
-                            HasNetworkPorts: item[`${nodeType}HasNetworkPorts`] || 0,
-                            HasPowerPorts: item[`${nodeType}HasPowerPorts`] || 0,
-                            IntelDCMState: item[`${nodeType}IntelDCMState`] || "",
-                            Gender: item[`${nodeType}Gender`] || null,
-                            IsPortFiber: item[`${nodeType}IsPortFiber`] || null,
-                            PortStatus: item[`${nodeType}PortStatus`] || "Normal",
-                            SlotsNeeded: item[`${nodeType}SlotsNeeded`] || 0,
                             ShapeID: item[`${nodeType}ShapeID`] || null,
                             ViewShortName: item[`${nodeType}ShortName`] || null,
                             ParentName: item[`${nodeType}ParentName`] || null,
-                            MaxInstances: item[`${nodeType}MaxInstances`] || 0,
-                            IsPatchPort: item[`${nodeType}IsPatchPort`] || false,
                             DisplayOrder: item[`${nodeType}DisplayOrder`] || 0,
-                            MountPosition: item[`${nodeType}MountPosition`] || -1,
                             DetailsJson: item[`${nodeType}DetailsJson`] || "",
-                            HasLayout: item[`${nodeType}HasLayout`] ?? undefined,
                             EQType: item[`${nodeType}EQType`] || "",
                             Height: item[`${nodeType}Height`] || "0",
                             Width: item[`${nodeType}Width`] || "0",
                             Length: item[`${nodeType}Length`] || "0",
                             DeviceEntId: item[`${nodeType}DeviceEntId`] || "",
                             DeviceViewEntId: item[`${nodeType}DeviceViewEntId`] || "",
-                            WOID: item[`${nodeType}WOID`] || "",
-                            TeamIDList: item[`${nodeType}TeamIDList`],
-                            TagIDList: item[`${nodeType}TagIDList`],
-                            TenantIDList: item[`${nodeType}TenantIDList`],
-                            VendorIDList: item[`${nodeType}VendorIDList`],
-                            ContainedByDeviceID: item[`${nodeType}ContainedByDeviceID`],
                             children: [],
                             ParentNodeType: nodeType.toLowerCase() === "device" ? deviceParentType : "",
                             ...nodeData

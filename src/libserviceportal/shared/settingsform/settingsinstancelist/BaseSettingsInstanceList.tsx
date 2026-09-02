@@ -1,7 +1,7 @@
 
 import React from 'react'
 import { Cross, Edit24x24, Plus, Preflight24x24, TestAPI24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable.ts';
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable.ts';
 import { IImage } from '../../allinterface/basic/IImage.ts';
 import { IActionLabel } from '../../allinterface/basic/IActionLabel.ts';
 import { IActionLabelStrip } from '../../allinterface/basic/IActionLabelStrip.ts';

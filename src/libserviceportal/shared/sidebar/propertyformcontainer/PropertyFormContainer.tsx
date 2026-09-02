@@ -12,7 +12,7 @@ import { useMainAppContext } from '../../context/hooks/MainAppHooks'
 import { Label } from '../../basic/label/Label'
 import { IImage } from '../../allinterface/basic/IImage'
 import { Back24x24, Save24x24 } from '@n20a/libicon'
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable'
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable'
 import { DirtyFlagImage } from '../../basic/dirtyflagimage/DirtyFlagImage'
 import { getDiagnosticLevelData } from '../../context/contextandprovider/CommonVariable'
 import { ActionImage } from '../../basic/actionimage/ActionImage'
@@ -24,6 +24,7 @@ import { FnCheckPermissionToEditName, IFeaturePermission } from '../../allcommon
 import getTableVsPropertySample from '../../../../serviceSampledata/sidebar/GetTableVsPropertySample.json'
 import { ITreeNode } from '../../allinterface/entity/ITreeNode'
 import { IMenuItem } from '../../allinterface/menu/IMainMenu'
+import { IPropertyColumn } from '../../allinterface/sidebar/IPropertyFormContainer'
 
 const samplePropertyEntityTables = getTableVsPropertySample.data;
 
@@ -36,32 +37,6 @@ const addressFieldNames = new Set([
     "zip",
     "gps"
 ]);
-interface IPropertyColumn {
-    CanChange: number;
-    IsRequired: number;
-    IsRequiredToAddRecord: boolean;
-    IsRequiredToUpdateRecord: boolean;
-    IsVisible: boolean;
-    PName: string;
-    PNameDesc: string;
-    PropertyLabel: string;
-    RequiredToAddRecord: boolean;
-    RequiredToUpdateRecord: boolean;
-    SortOrder: number;
-    SystemType: string;
-    TableName: string;
-    Value: string | null;
-    ValueDesc: string;
-    disabled: boolean;
-    DisplayControl?: string;
-    InputMask?: string;
-    type?: string;
-    isNewLine?: boolean;
-    IsReadOnly?: boolean;
-    OldValue?: string | null;
-    [key: string]: any;
-}
-
 interface IPropertyFormContainer {
     uniqueName: string; // A unique identifier for the dc property
     featureId: string;
@@ -77,6 +52,7 @@ interface IPropertyFormContainer {
     isAllowCustomAction?: boolean;
     isReadOnly?: boolean;
     allowLog?: boolean;
+    kebabMenuData?: Record<string, Record<string, any>[]>;
     entityTables?: Record<string, unknown>[];
     handlePropertyChange?: (propertyData?: Record<string, any>) => boolean;
     handleValueChange?: (value: any, EntID: string, event: unknown, selectedData: unknown, instanceName?: string) => void; // ap form value change
@@ -200,25 +176,15 @@ const PropertyFormContainer = (propertyFormContainerProps: IPropertyFormContaine
         entId: selectedNode?.NodeEntID?.includes("00000000") ? selectedNode.EntID : selectedNode?.NodeEntID,
         type: selectedNode?.treetype,
         nodeType: selectedNode?.NodeType,
-        mountedId: selectedNode?.MountedDeviceID,
         parentEntId: selectedNode?.parentEntID,
         entityName: selectedNode?.NodeEntityname,
-        dateApproved: selectedNode?.DateApproved,
-        AuditSessionStatus: selectedNode?.AuditSessionStatus,
-        AuditSessionProgress: selectedNode?.AuditSessionProgress,
-        TotalAuditedDevices: selectedNode?.TotalAuditedDevices
     }), [
         selectedNode?.EntID,
         selectedNode?.NodeEntID,
         selectedNode?.treetype,
-        selectedNode?.MountedDeviceID,
         selectedNode?.parentEntID,
         selectedNode?.NodeEntityname,
-        selectedNode?.DateApproved,
-        selectedNode?.NodeType,
-        selectedNode?.AuditSessionStatus,
-        selectedNode?.AuditSessionProgress,
-        selectedNode?.TotalAuditedDevices
+        selectedNode?.NodeType
 
     ]);
 
@@ -229,11 +195,6 @@ const PropertyFormContainer = (propertyFormContainerProps: IPropertyFormContaine
     // Resolves the pg class table from entity tables based on node type.
     const pgClassTable = useMemo(() => {
         if (!entityTables.length) return undefined;
-        if (selectedNodeKey.type?.toLowerCase() === "deviceslot") {
-            return entityTables.find(
-                t => String(t.tableName ?? "").toLowerCase() === "pg.deviceslot"
-            );
-        }
         return entityTables.find(t => t.entityPgClass);
     }, [entityTables, selectedNodeKey.type]);
 
@@ -254,9 +215,8 @@ const PropertyFormContainer = (propertyFormContainerProps: IPropertyFormContaine
 
     // Determines whether the property form should be read-only for this context.
     const isReadOnly = useMemo(() => {
-
         return (
-            propertyFormContainerProps.isReadOnly || (selectedNodeKey.dateApproved)
+            propertyFormContainerProps.isReadOnly
         );
     }, [featureId, selectedNodeKey, propertyFormContainerProps.isReadOnly]);
 
@@ -311,7 +271,7 @@ const PropertyFormContainer = (propertyFormContainerProps: IPropertyFormContaine
                 !addressFieldNames.has(control.PName?.toLowerCase() ?? "")
             );
             const isOneToMany = pgTable?.isOneToManyRelation ? true : false;
-            const nodeEntID = selectedNodeKey.mountedId ?? selectedNodeKey.entId;
+            const nodeEntID = selectedNodeKey.entId;
             const kebabMenuPayload: Record<string, unknown> = {
                 entID: nodeEntID?.includes("##")
                     ? nodeEntID.split("##")[0]
@@ -324,12 +284,10 @@ const PropertyFormContainer = (propertyFormContainerProps: IPropertyFormContaine
 
 
             const kebabData = (
-                propertyFormContainerProps.kebabMenuData
-                    ? propertyFormContainerProps.kebabMenuData
-                    : await FnNodeGetKebabMenuData(
-                        kebabMenuPayload,
-                        statusBarContext
-                    )
+                await FnNodeGetKebabMenuData(
+                    kebabMenuPayload,
+                    statusBarContext
+                )
             ) as IKebabMenuData;
             if (requestId !== requestIdRef.current) return;
             if (pgClassTable.isOneToManyRelation) {
@@ -477,9 +435,7 @@ const PropertyFormContainer = (propertyFormContainerProps: IPropertyFormContaine
             requestIdRef.current++;
         };
     }, [entityTables, entityTablesEntityName, NodeEntityname, selectedNodeKey.entId,
-        selectedNodeKey.AuditSessionProgress,
-        selectedNodeKey.AuditSessionStatus,
-        selectedNodeKey.TotalAuditedDevices, pgClassTable, pgTable, featureId, isEditAllowedForFeature,
+        pgClassTable, pgTable, featureId, isEditAllowedForFeature,
         propertyFormContainerProps.kebabMenuData]);
 
     // Builds pg class data from updated property keys for a given table name.
@@ -763,8 +719,8 @@ const PropertyFormContainer = (propertyFormContainerProps: IPropertyFormContaine
                     </div>}
                 </div>
             </div> : <></>}
-            <div className={'nz-prop-form-content' + (isOneToManyPgTable || isAddressFormShow ? " nz-prop-form-with-onetomany-grid" : "")} onKeyDownCapture={handleFormControlsKeyDown}
-                onKeyDown={handleFormControlsBubbleKeyDown}>
+            <div className={'nz-prop-form-content' + (isOneToManyPgTable || isAddressFormShow ? " nz-prop-form-with-onetomany-grid" : "")}
+            >
                 {renderedFormElements ? <FormElementsRenderer
                     formElements={renderedFormElements}
                     onValuesChange={handleValueChange}

@@ -2,7 +2,7 @@
 import React from 'react'
 import { Check, Cross } from '@n20a/libicon';
 import '../../allcss/basic/ActionLabel.css';
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable.ts';
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable.ts';
 import { IActionLabel } from '../../allinterface/basic/IActionLabel.ts'
 import { DefaultStylesActionLabel } from '../../alldefaultprops/basic/DefaultPropsActionLabel.ts';
 import { Label } from '../label/Label.tsx'

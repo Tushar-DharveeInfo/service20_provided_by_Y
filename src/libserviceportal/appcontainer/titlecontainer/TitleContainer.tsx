@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Burger24x24 } from "@n20a/libicon"
 import './TitleContainer.css'
 import { useMainAppContext } from "../../shared/context/hooks/MainAppHooks"
-import { FnGetCssVariable } from "../allcommon/FnGetCssVariable"
+import { FnGetCssVariable } from "../../shared/allcommon/FnGetCssVariable"
 import { IMenuImage } from "../../shared/allinterface/menu/IMenuImage"
 import { IMenuItem } from "../../shared/allinterface/menu/IMainMenu"
 
@@ -147,7 +147,7 @@ const TitleContainer = (titleContainerProps: ITitleContainer) => {
 
             {menuImageObject && <MenuImage {...menuImageObject}
                 handleMouse={handleMouse}
-                // handleMouseEnter={!menuImageClick ? handleMouse : undefined} //uncomment if you want to allow hover to open menu when menuImageClick is false
+            // handleMouseEnter={!menuImageClick ? handleMouse : undefined} //uncomment if you want to allow hover to open menu when menuImageClick is false
 
             />}
             {appqaData && <AppQaMenuContainer

@@ -16,7 +16,7 @@ function FnUpdateNodeWithTitleAndIcon(treeData: ITreeNode[], treeDataProps: IFea
 
                 // }
                 node.NaturalSortorder = index;
-                node.title = TreeNodeTitle(node, treeDataProps, featureId);
+                node.title = TreeNodeTitle(node, treeDataProps);
                 if (treeDataProps.allowIcon) {
                     node.icon = TreeNodeIcon(node, treeDataProps.instanceName ?? "");
                 }

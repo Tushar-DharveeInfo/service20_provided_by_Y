@@ -11,7 +11,7 @@ import { ActionLabel } from '../actionlabel/ActionLabel';
 import { MovePanel24x24, Setting24x24 } from '@n20a/libicon';
 import { ActionImage } from '../actionimage/ActionImage';
 import { FnGetIconForSubMenu } from '../../allcommon/menu/FnGetIconForSubMenu';
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable';
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable';
 
 type TOverlayTabProps = IOverlayTab & {
     disableSelectionKey?: string[];

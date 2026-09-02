@@ -9,7 +9,6 @@ interface ISessionVars {
 interface ICommonVariable {
     menuOpenName: string | null,
     measurement: string | null,
-    isDcmConsoleLoaded: boolean,
     sidebarWidth: number,
     dragNodeDetails: ITreeNode[] // this will be used to handle drag and drop from node to form
     selectedNodeMenu: any;
@@ -23,7 +22,6 @@ interface ICommonVariable {
     hideFloorLayout?: boolean;
     setMenuOpenName: (data: string) => void
     setMeasurement: (data: string | null,) => void
-    setIsDcmConsoleLoaded: (isLoaded: boolean) => void
     setSidebarWidth: (width: number) => void
     setDragNodeDetails: (dragNodeDetails: ITreeNode[]) => void
     setSelectedNodeMenu: (data: any) => void

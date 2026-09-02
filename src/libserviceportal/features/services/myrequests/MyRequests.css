@@ -12,7 +12,15 @@
 .nz-dc-explorer-container .nz-dce-search-tree-container {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
+}
+
+.nz-ticket-explorer-container .nz-dce-tree-container {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
 }
 
 .nz-dce-filter-form>.nz-tree-action-control-container {

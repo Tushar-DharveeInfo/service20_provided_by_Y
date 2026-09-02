@@ -8,8 +8,7 @@ import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
 import './DeviceModel.css'
 import { deviceModelTabs } from '../../../constants/Feature';
 import { IFeatureTree, ITreeForHierarchicalDataContainer } from '../../../shared/allinterface/tree/ITreeForHierarchicalDataContainer';
-import { IExpandedNodeInfo, ISelectedNodeInfo } from '../../../shared/allinterface/tree/ITreeControl';
-import { ITreeNode } from '../../../shared/allinterface/tree/ITreeControl';
+import { IExpandedNodeInfo, ISelectedNodeInfo, ITreeNode } from '../../../shared/allinterface/tree/ITreeControl';
 
 import { ResultTab } from './ResultTab';
 import { SearchTab } from './SearchTab';
@@ -677,7 +676,7 @@ const DeviceModel = (props: IDeviceModel) => {
 				}
 
 				const apiData = await formatDataForFlatTree(filterData)
-				const hierarchyData = await FnConvertFlatDataToHierarchyData({ "deviceModel": apiData }, null, props.featureId, "DeviceModel", disableSort)
+				const hierarchyData = await FnConvertFlatDataToHierarchyData({ "deviceModel": apiData }, "DeviceModel", disableSort)
 				if (hierarchyData) {
 					const updatedTreeData = FnUpdateNodeWithTitleAndIcon(hierarchyData, treeProps.featureTreeProps, props.featureId)
 
@@ -1216,7 +1215,7 @@ const DeviceModel = (props: IDeviceModel) => {
 									featureId={props.featureId}
 									treeData={props.treeData}
 									isLensDirty={isLensDirty}
-									ShowOnlyLibraryRadioB={props.ShowOnlyLibraryRadioB}
+									ShowOnlyLibraryRadioB={props.ShowOnlyLibraryRadioB ?? false}
 									isDisableForm={disableFromWhileSearching}
 									handleValueChangeRadio={handleValueChange}
 									handleLensMouse={handleLensMouse}

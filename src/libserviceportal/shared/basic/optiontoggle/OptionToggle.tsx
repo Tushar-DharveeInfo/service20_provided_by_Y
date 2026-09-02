@@ -1,7 +1,7 @@
 
 import '../../allcss/basic/OptionToggle.css';
 import { Kebab24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable.ts';
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable.ts';
 import { IOptionToggle } from '../../allinterface/basic/IOptionToggle.ts';
 import { BaseOptionToggle } from './BaseOptionToggle.tsx';
 

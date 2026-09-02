@@ -2,7 +2,7 @@
 import './JsonViewer.css';
 import { ActionImage } from '../../actionimage/ActionImage';
 import { Copy24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../../../appcontainer/allcommon/FnGetCssVariable';
+import { FnGetCssVariable } from '../../../allcommon/FnGetCssVariable';
 import { FnParseJsonSafely } from '../../../../appcontainer/allcommon/FnParseJsonSafely';
 
 interface IJsonViewer {

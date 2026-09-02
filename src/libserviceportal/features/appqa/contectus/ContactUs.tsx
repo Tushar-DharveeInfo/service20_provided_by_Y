@@ -8,7 +8,7 @@ import './AppQaContactUs.css'
 import '../../../shared/sidebar/notes/FqaNotes.css'
 import '@n20a/libavnotes/style.css'
 import { Label } from "../../../shared/basic/label/Label.tsx"
-import { FnGetCssVariable } from "../../../appcontainer/allcommon/FnGetCssVariable.ts"
+import { FnGetCssVariable } from "../../../shared/allcommon/FnGetCssVariable.ts"
 import { Image } from "../../../shared/basic/image/Image.tsx"
 import type { ITreeNode } from "../../../shared/allinterface/entity/ITreeNode.ts"
 import notesSampleData from '../../../../serviceSampledata/sidebar/NotesSampleData.json'

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useSessionContext } from '../../context/hooks/SessionHooks'
 import { FnGetIconForSubMenu } from '../../allcommon/menu/FnGetIconForSubMenu'
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable'
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable'
 import { FnGetMainMenus } from '../../allcommon/menu/FnGetMainMenus'
 import { FnGetSubMenus } from '../../allcommon/menu/FnGetSubMenus'
 import { FnUpdateFeatureLabelFromSession } from '../../allcommon/basic/FnUpdateFeatureLabelFromSession'

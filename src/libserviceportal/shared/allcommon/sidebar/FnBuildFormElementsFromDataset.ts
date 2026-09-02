@@ -251,11 +251,16 @@ const FnBuildFormElementsFromDataset = (
                         }
                     }
 
-                    let isReadOnlyControl = col.DisplayControl === DisplayControlEnums.TextControl || col.Disabled || col.PName.toLowerCase() === "isnz"
+                    const displayControlName = col.DisplayControl ?? "";
+                    if (!displayControlName) return null;
+
+                    let isReadOnlyControl = displayControlName === DisplayControlEnums.TextControl || col.Disabled || col.PName.toLowerCase() === "isnz"
                     if (col.PName.toLowerCase() === "secured" && userBasicRole?.toLowerCase() !== "admin") {
                         isReadOnlyControl = true;
                     }
-                    const UpdatedDisplayControl = isEditNameAllowForFeature ? col.DisplayControl.startsWith('_') ? col.DisplayControl.slice(1) : col.DisplayControl : col.DisplayControl
+                    const UpdatedDisplayControl = isEditNameAllowForFeature && displayControlName.startsWith('_')
+                        ? displayControlName.slice(1)
+                        : displayControlName
                     const displayControl = FnGetDisplayControlForForm(UpdatedDisplayControl);
                     if (!displayControl) return null;
                     let value = row && Object.keys(row).length ? row[col.PName] : undefined;
@@ -335,7 +340,7 @@ const FnBuildFormElementsFromDataset = (
                             ) {
                                 const optionValues = await handleInputMask(
                                     col.InputMask,
-                                    col.DisplayControl,
+                                    displayControlName,
                                     statusBarContext,
                                     undefined,
                                     refTableRecords

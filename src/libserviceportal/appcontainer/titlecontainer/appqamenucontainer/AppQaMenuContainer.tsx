@@ -1,7 +1,7 @@
 import { KeyboardEvent, MouseEvent, useEffect, useMemo, useRef } from 'react'
 import { TitleLogoWithTagline } from '../titlelogowithtagline/TitleLogoWithTagline'
 import { MainMenu } from '../../../shared/menu/mainmenu/MainMenu';
-import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable';
+import { FnGetCssVariable } from '../../../shared/allcommon/FnGetCssVariable';
 import { IMenuItem } from '../../../shared/allinterface/menu/IMainMenu';
 import './AppQaMenuContainer.css'
 import { OverlayPanel } from 'primereact/overlaypanel';

@@ -8,7 +8,7 @@ import { useMainAppContext } from '../context/hooks/MainAppHooks';
 import './Sidebar.css';
 import { Label } from '../basic/label/Label';
 import { HideSidebar24x24, Maximize24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../appcontainer/allcommon/FnGetCssVariable';
+import { FnGetCssVariable } from '../allcommon/FnGetCssVariable';
 import { ActionImage } from '../basic/actionimage/ActionImage';
 import { SidebarContent } from './SidebarContent';
 import { MainMenu } from '../menu/mainmenu/MainMenu';

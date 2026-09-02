@@ -4,7 +4,7 @@ import { Box, Collapse, List, ListItemButton, ListItemIcon, ListItemText } from 
 import { isEqual } from 'lodash'
 import './ExpandableList.css'
 import { Up24x24 } from '@n20a/libicon'
-import { FnGetCssVariable } from '../../../appcontainer/allcommon/FnGetCssVariable'
+import { FnGetCssVariable } from '../../allcommon/FnGetCssVariable'
 import { FnGetIconForExpandableMenu } from '../../allcommon/menu/FnGetIconForExpandableMenu'
 import { handleExpandableMenuKeyDown } from '../../allcommon/basic/FnHandleContainerKeyDown'
 
