@@ -62,8 +62,6 @@ function FeatureRenderContainer(featureRenderContainerProps: IFeatureRenderConta
   } = featureRenderContainerProps;
   const mainAppContext = useMainAppContext();
   const userInfoAndSubscription = mainAppContext?.userInfoAndSubscription;
-  const purchaseBid = userInfoAndSubscription?.userInfo.tenantNickname?.trim();
-  const purchaseCid = userInfoAndSubscription?.userInfo.username?.trim();
 
   if (!allowFeatureToRender) {
     return null;

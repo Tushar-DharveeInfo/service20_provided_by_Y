@@ -112,21 +112,16 @@ const TitleContainer = (titleContainerProps: ITitleContainer) => {
     const handleAppqaChange = (event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement> | undefined, actionCode?: string | undefined, payload?: any) => {
         if (actionCode === "theme") {
             titleContainerProps.handleThemeChange(payload);
-        }
-        else if (actionCode === AppQA.Launch || actionCode === AppQA.Signout) {
-            const updatedPayload = { ...payload, IsAppqa: true };
-            navigate(`/feature/${actionCode}`, { state: updatedPayload });
+            return;
         }
 
-        else {
-            if (titleContainerProps.handleAppqaSelect) {
-                titleContainerProps.handleAppqaSelect(event, actionCode, payload)
-            }
-            else {
-                const updatedPayload = { ...payload, IsAppqa: true };
-                navigate(`/feature/${actionCode}`, { state: updatedPayload });
-            }
+        if (titleContainerProps.handleAppqaSelect) {
+            titleContainerProps.handleAppqaSelect(event, actionCode, payload)
+            return;
         }
+
+        const updatedPayload = { ...payload, IsAppqa: true };
+        navigate(`/feature/${actionCode}`, { state: updatedPayload });
     }
 
     // Toggle main menu open state when burger icon is clicked or hovered.

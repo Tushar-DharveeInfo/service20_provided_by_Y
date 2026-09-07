@@ -11,6 +11,14 @@ function asDate(value: unknown): Date {
     if (value instanceof Date) {
         return value;
     }
+    if (typeof value === "object" && value !== null && "toDate" in value
+        && typeof (value as { toDate: () => Date }).toDate === "function") {
+        return (value as { toDate: () => Date }).toDate();
+    }
+    if (typeof value === "object" && value !== null && "seconds" in value
+        && typeof (value as { seconds: number }).seconds === "number") {
+        return new Date((value as { seconds: number }).seconds * 1000);
+    }
     return new Date(String(value ?? ""));
 }
 

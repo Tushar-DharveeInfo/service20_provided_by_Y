@@ -6,12 +6,18 @@ import { FnGetCssVariable } from '../../../../shared/allcommon/FnGetCssVariable'
 import { Label } from '../../../../shared/basic/label/Label'
 import { ActionImage } from '../../../../shared/basic/actionimage/ActionImage'
 import { DirtyFlagImage } from '../../../../shared/basic/dirtyflagimage/DirtyFlagImage'
+import { useServiceDataContext } from '../../../../shared/context/hooks/ServiceDataHooks'
 
 export interface ITicketFilterValues {
     /** When true show all tickets; when false show Pending only. */
     showAll: boolean
     /** When true: Mfg → ProdNo. When false: DateRequested → Mfg → ProdNo. */
     byMfg: boolean
+}
+
+const DEFAULT_FILTER: ITicketFilterValues = {
+    showAll: true,
+    byMfg: true,
 }
 
 interface ITicketFilterForm {
@@ -28,6 +34,12 @@ interface ITicketFilterForm {
 
 const TicketFilterForm = (ticketFilterFormProps: ITicketFilterForm) => {
     const { filterValues, handleFilterChange } = ticketFilterFormProps
+    const { setFilterJson } = useServiceDataContext()
+
+    const persistFilterJson = (values: ITicketFilterValues) => {
+        setFilterJson(values)
+        handleFilterChange(values)
+    }
 
     const filterIcon: IDirtyFlagImage = {
         image: {
@@ -78,6 +90,7 @@ const TicketFilterForm = (ticketFilterFormProps: ITicketFilterForm) => {
                         h={'var(--node_height)'}
                         actionCode="close"
                         handleMouse={(event) => {
+                            setFilterJson(DEFAULT_FILTER)
                             ticketFilterFormProps.handleActionImageClick?.(event, 'close')
                         }}
                     />
@@ -86,6 +99,7 @@ const TicketFilterForm = (ticketFilterFormProps: ITicketFilterForm) => {
                             <DirtyFlagImage
                                 {...filterIcon}
                                 handleMouse={(event) => {
+                                    setFilterJson(filterValues)
                                     ticketFilterFormProps.handleActionImageClick?.(event, 'apply')
                                 }}
                                 isDirty={!!ticketFilterFormProps.isFilterChange}
@@ -101,7 +115,7 @@ const TicketFilterForm = (ticketFilterFormProps: ITicketFilterForm) => {
                             name={`${ticketFilterFormProps.uniqueName}-showAll`}
                             value={filterValues.showAll}
                             onChange={(checked) => {
-                                handleFilterChange({ ...filterValues, showAll: !!checked })
+                                persistFilterJson({ ...filterValues, showAll: !!checked })
                             }}
                         />
                         <span>All</span>
@@ -111,7 +125,7 @@ const TicketFilterForm = (ticketFilterFormProps: ITicketFilterForm) => {
                             name={`${ticketFilterFormProps.uniqueName}-byMfg`}
                             value={filterValues.byMfg}
                             onChange={(checked) => {
-                                handleFilterChange({ ...filterValues, byMfg: !!checked })
+                                persistFilterJson({ ...filterValues, byMfg: !!checked })
                             }}
                         />
                         <span>By Mfg</span>

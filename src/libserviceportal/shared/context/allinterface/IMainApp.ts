@@ -130,6 +130,8 @@ interface IUserInfo {
     email?: string;
     tenantNickname?: string;
     phoneNumber?: string;
+    bid?: string;
+    cid?: string;
 }
 
 /** Subscription / license row shared via MainApp context. */
@@ -153,6 +155,17 @@ interface IUserInfoAndSubscription {
     userInfo: IUserInfo;
     subscription: IUserSubscription[];
 }
+interface IUserAuthSession {
+    id: string;
+    username: string;
+    displayName: string;
+    email: string | null;
+    phoneNumber: string | null;
+    authType: string;
+    tenantNickname: string | null;
+    bid?: string,
+    cid?: string,
+}
 
 interface IMainApp {
     featureRecords: IFeatureItem[];
@@ -167,8 +180,8 @@ interface IMainApp {
     emRecords: IEmItem[];
     setEmRecords: React.Dispatch<React.SetStateAction<IEmItem[]>>;
 
-    authSession?: AuthSession;
-    setAuthSession: React.Dispatch<React.SetStateAction<AuthSession | undefined>>;
+    authSession?: IUserAuthSession;
+    setAuthSession: React.Dispatch<React.SetStateAction<IUserAuthSession | undefined>>;
 
     /** Auth user display info + subscription licenses for status bar and features. */
     userInfoAndSubscription?: IUserInfoAndSubscription;
@@ -222,4 +235,5 @@ export type {
     IUserInfo,
     IUserSubscription,
     IUserInfoAndSubscription,
+    IUserAuthSession
 };

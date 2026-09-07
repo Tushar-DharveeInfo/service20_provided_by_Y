@@ -105,6 +105,7 @@ function buildTicketControls(status?: string | null): IControl[] {
 }
 
 const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
+    console.log('ticketDetailPaneProps', ticketDetailPaneProps)
     const { ticket, uniqueName } = ticketDetailPaneProps
 
     const isLocked = isStatusLocked(ticket?.Status);

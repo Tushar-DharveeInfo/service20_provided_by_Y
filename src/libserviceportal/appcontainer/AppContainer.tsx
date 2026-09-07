@@ -15,6 +15,8 @@ import { useMainAppContext } from '../shared/context/hooks/MainAppHooks'
 import { IFeatureItem } from '../shared/context/allinterface/IMainApp'
 import { FnUpdateFeatureLabelFromSession } from '../shared/allcommon/basic/FnUpdateFeatureLabelFromSession'
 import { MainMenu } from '../shared/menu/mainmenu/MainMenu'
+import { useActivities } from '@n20a/libfsdb'
+import { FnLogLoginActivity } from './allcommon/FnLogLoginActivity'
 
 interface IAppContainer {
     uniqueName: string;//unique identifier for the control
@@ -46,6 +48,9 @@ const AppContainer = (appContainerProps: IAppContainer) => {
     const sessionContext = useSessionContext();
     const mainAppContext = useMainAppContext();
     const selectedFeatureIdRef = useRef<string | undefined>(undefined);
+    const userInfo = mainAppContext.userInfoAndSubscription?.userInfo;
+    const bid = String(userInfo?.bid ?? "").trim();
+    const { createActivity } = useActivities(bid);
 
     const isManualFeatureChangeRef = useRef(false);
 
@@ -121,39 +126,45 @@ const AppContainer = (appContainerProps: IAppContainer) => {
         actionCode?: string,
         payload?: unknown
     ) => {
-        if (selectedAppQAData && actionCode && selectedAppQAData._Feature === actionCode) {
+        const selectedAppqaId = selectedAppQAData?._Feature != null
+            ? String(selectedAppQAData._Feature)
+            : "";
+        const nextAppqaId = actionCode != null ? String(actionCode) : "";
+
+        if (selectedAppqaId && nextAppqaId && selectedAppqaId === nextAppqaId) {
             setSelectedAppQAData(null);
-            const filteredSession = FnGetSessionVariableFromStorage("Feature", "FeatureID", sessionContext.SessionList);
-            if (filteredSession && filteredSession.length > 0) {
-                const featureFromSession = mainAppContext.featureRecords.find((item) => { return item._Feature === filteredSession[0].SessionValue });
-                if (featureFromSession) {
-                    const updatedPayload = { ...featureFromSession, IsAppqa: false };
-                    setSelectedFeatureData(featureFromSession)
-                    await callApiToUpdateSession(true, featureFromSession);
-                    navigate(`/feature/${featureFromSession._Feature}`, { state: updatedPayload });
-                    return;
-                }
+            const previousFeature = selectedFeatureData
+                ?? mainAppContext.featureRecords.find((item) => {
+                    const filteredSession = FnGetSessionVariableFromStorage("Feature", "FeatureID", sessionContext.SessionList);
+                    return filteredSession?.[0]?.SessionValue != null
+                        && String(item._Feature) === String(filteredSession[0].SessionValue);
+                });
+            if (previousFeature) {
+                const updatedPayload = { ...previousFeature, IsAppqa: false };
+                setSelectedFeatureData(previousFeature);
+                navigate(`/feature/${previousFeature._Feature}`, { state: updatedPayload });
+                await callApiToUpdateSession(true, previousFeature);
             }
+            return;
         }
         // Validate payload
         if (!isMenuItem(payload) || !payload._Feature) {
             return;
         }
 
-        setSelectedFeatureData(null);
+        // Keep the current side-menu feature selected. Clearing it retriggers DefaultQA
+        // and steals the first App QA click.
         setSelectedAppQAData(payload);
 
-        // Update help context
-        if (payload._Feature !== AppQA.Help) {
-
+        if (String(payload._Feature) !== AppQA.Help) {
             mainAppContext.setSelectedFeatureForHelp({
                 featureID: String(payload._Feature),
                 featureName: payload.Label
             });
         }
-        await callApiToUpdateSession(false, payload);
         const updatedPayload = { ...payload, IsAppqa: true };
-        navigate(`/feature/${actionCode}`, { state: updatedPayload });
+        navigate(`/feature/${nextAppqaId || payload._Feature}`, { state: updatedPayload });
+        await callApiToUpdateSession(false, payload);
     }
 
     const handleSelectForSubMenu = (value: any, actionCode?: string | undefined, payload?: any): void => {
@@ -170,11 +181,18 @@ const AppContainer = (appContainerProps: IAppContainer) => {
     useEffect(() => {
         if (location.state && isMenuItem(location.state)) {
             const featureId = location.state._Feature?.toString();
-            if (featureId === AppQA.Help || featureId === AppQA.ContactUs) {
+            const isAppqa = Boolean((location.state as IMenuItem & { IsAppqa?: boolean }).IsAppqa)
+                || featureId === AppQA.Help
+                || featureId === AppQA.ContactUs
+                || featureId === AppQA.Signout
+                || featureId === AppQA.Launch
+                || featureId === AppQA.Message;
+            if (isAppqa) {
                 setSelectedAppQAData(location.state)
             }
             else {
                 setSelectedFeatureData(location.state);
+                setSelectedAppQAData(null)
             }
         }
     }, [location?.state])
@@ -184,6 +202,17 @@ const AppContainer = (appContainerProps: IAppContainer) => {
             selectedFeatureIdRef.current = undefined;
         }
     }, [])
+
+    useEffect(() => {
+        if (!bid || !userInfo?.cid) {
+            return;
+        }
+        void FnLogLoginActivity({
+            createActivity,
+            userInfo,
+            bid,
+        });
+    }, [bid, createActivity, userInfo])
 
 
     /*

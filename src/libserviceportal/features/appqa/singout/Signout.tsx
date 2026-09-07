@@ -1,8 +1,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { getRuntimeConfig, signOut } from "@n20a/libauth";
+import { useActivities } from '@n20a/libfsdb';
 import { YesNoFormContainer } from '../../../shared/basic/yesnoformcontainer/YesNoFormContainer.tsx';
 import sampleOpenSessions from '../../../../serviceSampledata/appqa/SignoutSampleData.json';
+import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
+import { FnLogSignoutActivity } from '../../../appcontainer/allcommon/FnLogLoginActivity';
 interface ISignout {
   uniqueName: string;//unique identifier for the control
   handleCloseFailed?: (error: Error) => void; // Optional callback for handling close failures
@@ -11,6 +14,10 @@ function Signout(signoutprops: ISignout) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [openSessions, setOpenSessions] = useState<Record<string, any>[]>();
   const { AUTH_TYPE } = getRuntimeConfig();
+  const mainAppContext = useMainAppContext();
+  const userInfo = mainAppContext.userInfoAndSubscription?.userInfo;
+  const bid = String(userInfo?.bid ?? '').trim();
+  const { createActivity } = useActivities(bid);
 
   useEffect(() => {
     // API DISABLED: SESSION.GetOpenSession.
@@ -28,27 +35,28 @@ function Signout(signoutprops: ISignout) {
   };
 
   const handleYesButtonClick = useCallback(async () => {
-    if (!openSessions?.length) {
-      return;
-    }
     try {
-      // API DISABLED: skip FnCreateForensiclog for static signout.
-      const promises: Promise<void>[] = [];
-      for (const session of openSessions) {
-        if (session.UserSessionID) {
-          promises.push(
-            closeSession(session.UserSessionID)
-          );
+      await FnLogSignoutActivity({
+        createActivity,
+        userInfo,
+        bid,
+      });
+
+      if (openSessions?.length) {
+        const promises: Promise<void>[] = [];
+        for (const session of openSessions) {
+          if (session.UserSessionID) {
+            promises.push(
+              closeSession(session.UserSessionID)
+            );
+          }
         }
-      }
 
-      // Use allSettled to ensure all sessions are attempted even if any one fails
-      const results = await Promise.allSettled(promises);
-
-      // Check for any failures and log them
-      const failures = results.filter(r => r.status === 'rejected');
-      if (failures.length > 0) {
-        console.warn(`Failed to close ${failures.length} of ${results.length} sessions:`, failures);
+        const results = await Promise.allSettled(promises);
+        const failures = results.filter(r => r.status === 'rejected');
+        if (failures.length > 0) {
+          console.warn(`Failed to close ${failures.length} of ${results.length} sessions:`, failures);
+        }
       }
 
       // Sign out all browser tabs whose label begins with "NZ-"
@@ -106,7 +114,10 @@ function Signout(signoutprops: ISignout) {
   }, [
     openSessions,
     AUTH_TYPE,
-    signoutprops
+    signoutprops,
+    createActivity,
+    userInfo,
+    bid,
   ]);
 
   const handleNoButtonClick = useCallback(() => {

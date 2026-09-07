@@ -90,6 +90,7 @@ const ExpandableList = (props: IExpandableList) => {
                 const canAutoSelect =
                     props.uniqueName === "Menu" &&
                     !props.selectedFeature &&
+                    originalMenuMenu === null &&
                     !hasAutoSelectedDefaultQaRef.current;
 
                 if (canAutoSelect) {

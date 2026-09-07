@@ -1,9 +1,7 @@
 import type {
-    IUserInfoAndSubscription,
-    IUserProfileRecord,
+    IUserAuthSession,
     IUserSubscription,
 } from "../../shared/context/allinterface/IMainApp";
-import type { AuthSession } from "@n20a/libauth";
 
 type TSubscriberProduct = "NetZoom" | "Visio Stencils" | string;
 
@@ -37,8 +35,8 @@ const FnGetSubscriberProduct = (
     return first || undefined;
 };
 
-/* Resolves display name from auth session (Authentication user object). */
-const FnGetAuthDisplayName = (authSession?: AuthSession | null): string => {
+/* Resolves display name from the signed-in IUserAuthSession. */
+const FnGetAuthDisplayName = (authSession?: IUserAuthSession | null): string => {
     if (!authSession) {
         return "";
     }
@@ -46,35 +44,36 @@ const FnGetAuthDisplayName = (authSession?: AuthSession | null): string => {
 };
 
 /*
- * Builds the status-bar login identity line from auth user name + subscription.
- * Example: "You are logged in as Jane Doe as a NetZoom subscriber"
+ * Builds the status-bar login identity line from IUserAuthSession + subscription.
+ * Example: "You are logged in as Jane Doe NetZoom. bid=bid_103. cid=cid_bid_103_1"
  */
 const FnGetLoggedInStatusMessage = (
-    userInfoAndSubscription?: IUserInfoAndSubscription,
-    authSession?: AuthSession | null,
+    authSession?: IUserAuthSession | null,
+    licenses?: IUserSubscription[],
 ): string => {
-    const displayName =
-        authSession?.displayName ||
-        userInfoAndSubscription?.userInfo.displayName?.trim()
+    const displayName = FnGetAuthDisplayName(authSession);
+    const subscriberProduct = FnGetSubscriberProduct(licenses);
+    const bid = String(authSession?.bid ?? "").trim();
+    const cid = String(authSession?.cid ?? "").trim();
 
-
-    const subscriberProduct = FnGetSubscriberProduct(userInfoAndSubscription?.subscription);
-
-    if (!displayName && !subscriberProduct && !authSession) {
-        return "You are logged in as a guest user";
+    let identity = "You are logged in as a guest user";
+    if (displayName && subscriberProduct) {
+        identity = `You are logged in as ${displayName} ${subscriberProduct}`;
+    } else if (displayName) {
+        identity = `You are logged in as ${displayName}`;
+    } else if (subscriberProduct) {
+        identity = `You are logged in as a ${subscriberProduct}`;
+    } else if (!authSession) {
+        identity = "You are logged in as a guest user";
     }
 
-    if (!subscriberProduct) {
-        return displayName
-            ? `You are logged in as ${displayName}`
-            : "You are logged in as a guest user";
+    const scopeParts: string[] = [];
+    if (bid) scopeParts.push(`bid=${bid}`);
+    if (cid) scopeParts.push(`cid=${cid}`);
+    if (!scopeParts.length) {
+        return identity;
     }
-
-    if (displayName) {
-        return `You are logged in as ${displayName} ${subscriberProduct}`;
-    }
-
-    return `You are logged in as a ${subscriberProduct}`;
+    return `${identity}. ${scopeParts.join(". ")}`;
 };
 
 export { FnGetLoggedInStatusMessage, FnGetAuthDisplayName, FnGetSubscriberProduct };

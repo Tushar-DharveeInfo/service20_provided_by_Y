@@ -18,10 +18,12 @@ import sampleUserLicenses from '../serviceSampledata/auth/MySubscriptionsSampleD
 
 const { sampleSessionId, sampleSessionVariables } = authSampleData;
 
-import type { IFeatureItem, IUserInfoAndSubscription } from './shared/context/allinterface/IMainApp';
+import type { IFeatureItem, IUserAuthSession, IUserInfoAndSubscription } from './shared/context/allinterface/IMainApp';
 import { FnGetAuthDisplayName } from './appcontainer/allcommon/FnGetLoggedInStatusMessage';
+import { FnGetBidCid } from './appcontainer/allcommon/FnGetBidCid';
 
 import { FirestoreProvider, CloudStorageProvider, type ICloudStorageDeps } from '@n20a/libfsdb'
+import { ServiceDataProvider } from './shared/context/contextandprovider/ServiceData'
 import type { IAxiosInterceptorDeps } from '@n20a/libaxios'
 import { AuthSession, getFirebaseServices } from '@n20a/libauth'
 
@@ -183,15 +185,32 @@ function NzLoadContextAndVariables({ uniqueName, user, fbToken, onError, onSucce
             mainAppContext.setFeatureRecords(featureRecords);
             mainAppContext.setAllFeatureRecords(featureRecords);
 
-            mainAppContext.setAuthSession(user);
+            const bidCid = FnGetBidCid(user?.email);
+            const bid = bidCid?.bid;
+            const cid = bidCid?.cid;
 
-            const displayName = FnGetAuthDisplayName(user);
+            const authSession: IUserAuthSession = {
+                id: user.id,
+                username: user.username,
+                displayName: user.displayName,
+                email: user.email ?? null,
+                phoneNumber: user.phoneNumber ?? null,
+                authType: String(user.authType ?? ""),
+                tenantNickname: user.tenantNickname ?? null,
+                bid,
+                cid,
+            };
+            mainAppContext.setAuthSession(authSession);
+
+            const displayName = FnGetAuthDisplayName(authSession);
             const userInfoAndSubscription: IUserInfoAndSubscription = {
                 userInfo: {
                     displayName: displayName || "User",
                     username: user?.username ?? "",
                     email: user?.email as string,
                     tenantNickname: user?.tenantNickname as string,
+                    bid,
+                    cid,
                 },
                 subscription: sampleUserLicenses,
             };
@@ -279,11 +298,13 @@ function NzAppService(props: INzApp) {
     return (
         <AppContextWrapper>
             <FirestoreProvider deps={firestoreDeps}>
-                <CloudStorageProvider deps={cloudStorageDeps}>
-                    <Router>
-                        <NzLoadContextAndVariables {...props} />
-                    </Router>
-                </CloudStorageProvider>
+                <ServiceDataProvider>
+                    <CloudStorageProvider deps={cloudStorageDeps}>
+                        <Router>
+                            <NzLoadContextAndVariables {...props} />
+                        </Router>
+                    </CloudStorageProvider>
+                </ServiceDataProvider>
             </FirestoreProvider>
         </AppContextWrapper>
     );

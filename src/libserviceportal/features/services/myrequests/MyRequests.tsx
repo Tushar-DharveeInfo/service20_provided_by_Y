@@ -3,7 +3,6 @@ import { Key } from 'rc-tree/lib/interface'
 import { Splitter, SplitterPanel } from 'primereact/splitter'
 import './MyRequests.css';
 import { FnBuildTicketTree, findFirstTicketLeaf, getAncestorKeys } from './tickets/FnBuildTicketTree'
-import { useFetchTickets } from './tickets/Tickets'
 import { useServiceDataContext } from '../../../shared/context/hooks/ServiceDataHooks'
 
 import { FnSearchKeywordInLocalTree } from '../../../shared/allcommon/tree/FnSearchKeywordInLocalTree'
@@ -81,10 +80,9 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     const [draftFilter, setDraftFilter] = useState<ITicketFilterValues>(DEFAULT_FILTER)
 
     const serviceDataContext = useServiceDataContext()
-    const { tickets, isTicketsLoaded, ticketsError, selection, updateTickets } = serviceDataContext
-    const { error: fetchError, loading: fetching, fetchTickets } = useFetchTickets()
-    const loading = fetching || !isTicketsLoaded || treeData.length === 0
-    const error = ticketsError ?? fetchError
+    const { tickets, isTicketsLoaded, isTicketsLoading, ticketsError, selection } = serviceDataContext
+    const loading = isTicketsLoading || !isTicketsLoaded || treeData.length === 0
+    const error = ticketsError
     const bid = selection.bid
     const cid = selection.cid
 
@@ -102,6 +100,7 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         }
         setDefaultSelectedKeys([node.key])
         setDefaultSelectedNodeInfo(info)
+
         setSelectedTicket((node.ticketRecord as ITicketRecord) ?? null)
 
     }
@@ -130,37 +129,12 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     }
 
     useEffect(() => {
-        if (isTicketsLoaded) {
-            return
-        }
-        const filters = []
-        if (bid) {
-            filters.push({ field: 'bid' as const, op: '==' as const, value: bid })
-        }
-        if (cid) {
-            filters.push({ field: 'cid' as const, op: '==' as const, value: cid })
-        }
-        let cancelled = false
-        void fetchTickets({
-            collectionName: 'tickets',
-            ...(filters.length ? { filters } : {}),
-        }).then((loadedTickets) => {
-            if (!cancelled && loadedTickets) {
-                updateTickets(loadedTickets)
-            }
-        })
-        return () => {
-            cancelled = true
-        }
-    }, [bid, cid, fetchTickets, isTicketsLoaded, updateTickets])
-
-    useEffect(() => {
-        if (!isTicketsLoaded || fetching) {
+        if (!isTicketsLoaded || isTicketsLoading) {
             return
         }
         setTicketTree(appliedFilter)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tickets, isTicketsLoaded, fetching, bid, cid])
+    }, [tickets, isTicketsLoaded, isTicketsLoading, bid, cid])
 
     const handleFilterClick = () => {
         if (isShowFilterForm) {
@@ -209,15 +183,16 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         info: ISelectedNodeInfo,
         expandedNodeKeys?: Key[]
     ) => {
-        console.log('handleNodeSelect called with info:', info, 'selectedKeys:', selectedKeys);
         setDefaultSelectedKeys(selectedKeys)
         setDefaultSelectedNodeInfo(info)
         if (info.node.NodeType?.toLowerCase() === 'prodno' && info.node.ticketRecord) {
-            setSelectedTicket(info.node.ticketRecord as ITicketRecord)    //selectedTicket
+            setSelectedTicket(info.node.ticketRecord as ITicketRecord)
         } else {
             setSelectedTicket(null)
         }
-        setDefaultExpandedKeys(expandedNodeKeys ?? [])
+        if (expandedNodeKeys) {
+            setDefaultExpandedKeys(expandedNodeKeys)
+        }
     }
 
     const handleNodeExpand = (expandedNodeKeys: Key[]) => {
