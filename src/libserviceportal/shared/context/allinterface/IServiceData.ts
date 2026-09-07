@@ -1,4 +1,4 @@
-import type { ITicketRecord } from "../../../features/services/myrequests/tickets/ITicket";
+import type { ITicketDoc } from '@n20a/libfsdb';
 
 /** Applied filter json stored on service context (keys/values from the active filter form). */
 interface ITicketFilterValues {
@@ -16,7 +16,7 @@ interface IServiceSelection {
 
 interface IServiceData {
     selection: IServiceSelection;
-    tickets: ITicketRecord[];
+    tickets: ITicketDoc[];
     isTicketsLoaded: boolean;
     isTicketsLoading: boolean;
     ticketsError: string | null;
@@ -27,7 +27,7 @@ interface IServiceData {
     /** Convert filter key/values to json string and store when the value changes. */
     setFilterJson: (filterJson: ITicketFilterValues) => void;
     /** Always read/write through the session ticket cache. */
-    updateTickets: (tickets: ITicketRecord[]) => void;
+    updateTickets: (tickets: ITicketDoc[]) => void;
 }
 
 export type { IServiceData, ITicketFilterValues, IServiceSelection };

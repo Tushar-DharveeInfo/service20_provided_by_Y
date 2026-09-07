@@ -1,9 +1,8 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useBusinessTickets } from "@n20a/libfsdb";
+import { useBusinessTickets, type ITicketDoc } from "@n20a/libfsdb";
 import { IAppContextWrapper } from "../allinterface/IAppContextWrapper";
 import { IServiceData, IServiceSelection, ITicketFilterValues } from "../allinterface/IServiceData";
 import { useMainAppContext } from "../hooks/MainAppHooks";
-import type { ITicketRecord } from "../../../features/services/myrequests/tickets/ITicket";
 import { FnNormalizeTicket } from "../../../features/services/myrequests/tickets/FnNormalizeTicket";
 
 const DEFAULT_TICKET_FILTER: ITicketFilterValues = {
@@ -51,7 +50,7 @@ function ServiceDataProvider({ children }: IAppContextWrapper) {
     const [filterJson, setFilterJson] = useState<string>(
         toFilterJsonString(DEFAULT_TICKET_FILTER)
     );
-    const [tickets, setTickets] = useState<ITicketRecord[]>([]);
+    const [tickets, setTickets] = useState<ITicketDoc[]>([]);
     const [isTicketsLoaded, setIsTicketsLoaded] = useState(false);
     const [isTicketsLoading, setIsTicketsLoading] = useState(false);
     const [ticketsError, setTicketsError] = useState<string | null>(null);
@@ -127,7 +126,7 @@ function ServiceDataProvider({ children }: IAppContextWrapper) {
         };
     }, [bid, cid, getTickets, mainAppContext.userInfoAndSubscription]);
 
-    const updateTickets = useCallback((records: ITicketRecord[]) => {
+    const updateTickets = useCallback((records: ITicketDoc[]) => {
         setTickets(records);
         setIsTicketsLoaded(true);
         setIsTicketsLoading(false);

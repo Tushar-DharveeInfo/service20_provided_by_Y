@@ -2,12 +2,12 @@ import { useMemo } from 'react'
 import { Label } from '../../../../shared/basic/label/Label'
 import { IControl } from '../../../../shared/allinterface/settingsform/ISettingsLibForm'
 import { SettingsLibForm } from '../../../../shared/settingsform/settingslibform/SettingsLibForm'
-import type { ITicketRecord } from './ITicket'
+import type { ITicketDoc } from '@n20a/libfsdb'
 import { FnFormatTicketDate } from '../../../../shared/allcommon/tree/FnFormatTicketDate'
 
 interface ITicketDetailPane {
     uniqueName: string
-    ticket: ITicketRecord | null
+    ticket: ITicketDoc | null
 }
 
 /**
@@ -15,22 +15,9 @@ interface ITicketDetailPane {
  * - names starting/ending with "date" → forced YYYY-MM-DD
  * - names containing "lastupdated" → app datetime with time
  */
-/*
-  ticketid: string;
-  subscription: string;
-  mfg: string;
-  eqtype: string;
-  prodno: string;
-  moreinfo: string;
-  status: string;
-  daterequested: Date;
-  datereleased: Date;
-  lastupdated: Date;
-*/
-
 
 const TICKET_FIELD_DEFS: {
-    ticketKey: keyof ITicketRecord
+    ticketKey: keyof ITicketDoc
     formName: string
     label: string
     displayControl: string
@@ -38,19 +25,18 @@ const TICKET_FIELD_DEFS: {
     formatAsDate?: boolean
     editableIfUnlocked?: boolean
 }[] = [
-        { ticketKey: "Ticket", formName: "Ticket", label: "Ticket", displayControl: "TextControl", sortOrder: 1 },
-        { ticketKey: "Status", formName: "Status", label: "Status", displayControl: "TextControl", sortOrder: 2 },
-        { ticketKey: "Business", formName: "Business", label: "Business", displayControl: "TextControl", sortOrder: 3 },
-        { ticketKey: "Contact", formName: "Contact", label: "Contact", displayControl: "TextControl", sortOrder: 4 },
-        { ticketKey: "Email", formName: "Email", label: "Email", displayControl: "TextControl", sortOrder: 5 },
-        { ticketKey: "Subscription", formName: "Subscription", label: "Subscription", displayControl: "TextControl", sortOrder: 6 },
-        { ticketKey: "Mfg", formName: "Mfg", label: "Mfg", displayControl: "EditTextControl", sortOrder: 7, editableIfUnlocked: true },
-        { ticketKey: "EqType", formName: "EqType", label: "Eq Type", displayControl: "EditTextControl", sortOrder: 8, editableIfUnlocked: true },
-        { ticketKey: "ProdNo", formName: "ProdNo", label: "Prod No", displayControl: "EditTextControl", sortOrder: 9, editableIfUnlocked: true },
-        { ticketKey: "MoreInfo", formName: "MoreInfo", label: "More Info", displayControl: "TextareaControl", sortOrder: 10, editableIfUnlocked: true },
-        { ticketKey: "DateRequested", formName: "RequestedOn", label: "Date Requested", displayControl: "TextControl", sortOrder: 11, formatAsDate: true },
-        { ticketKey: "DateReleased", formName: "ReleasedOn", label: "Date Released", displayControl: "TextControl", sortOrder: 12, formatAsDate: true },
-        { ticketKey: "LastUpdated", formName: "UpdatedOn", label: "Last Updated", displayControl: "TextControl", sortOrder: 13, formatAsDate: true },
+        { ticketKey: "ticketid", formName: "Ticket", label: "Ticket", displayControl: "TextControl", sortOrder: 1 },
+        { ticketKey: "status", formName: "Status", label: "Status", displayControl: "TextControl", sortOrder: 2 },
+        { ticketKey: "bid", formName: "Business", label: "Business", displayControl: "TextControl", sortOrder: 3 },
+        { ticketKey: "cid", formName: "Contact", label: "Contact", displayControl: "TextControl", sortOrder: 4 },
+        { ticketKey: "subscription", formName: "Subscription", label: "Subscription", displayControl: "TextControl", sortOrder: 5 },
+        { ticketKey: "mfg", formName: "Mfg", label: "Mfg", displayControl: "EditTextControl", sortOrder: 6, editableIfUnlocked: true },
+        { ticketKey: "eqtype", formName: "EqType", label: "Eq Type", displayControl: "EditTextControl", sortOrder: 7, editableIfUnlocked: true },
+        { ticketKey: "prodno", formName: "ProdNo", label: "Prod No", displayControl: "EditTextControl", sortOrder: 8, editableIfUnlocked: true },
+        { ticketKey: "moreinfo", formName: "MoreInfo", label: "More Info", displayControl: "TextareaControl", sortOrder: 9, editableIfUnlocked: true },
+        { ticketKey: "daterequested", formName: "RequestedOn", label: "Date Requested", displayControl: "TextControl", sortOrder: 10, formatAsDate: true },
+        { ticketKey: "datereleased", formName: "ReleasedOn", label: "Date Released", displayControl: "TextControl", sortOrder: 11, formatAsDate: true },
+        { ticketKey: "lastupdated", formName: "UpdatedOn", label: "Last Updated", displayControl: "TextControl", sortOrder: 12, formatAsDate: true },
     ]
 
 const isStatusLocked = (status?: string | null): boolean => {
@@ -108,8 +94,8 @@ const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
     console.log('ticketDetailPaneProps', ticketDetailPaneProps)
     const { ticket, uniqueName } = ticketDetailPaneProps
 
-    const isLocked = isStatusLocked(ticket?.Status);
-    const controls = useMemo(() => buildTicketControls(ticket?.Status), [ticket?.Status]);
+    const isLocked = isStatusLocked(ticket?.status);
+    const controls = useMemo(() => buildTicketControls(ticket?.status), [ticket?.status]);
 
     const profileString = useMemo(() => {
         if (!ticket) return ''
@@ -134,16 +120,16 @@ const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
     return (
         <div className="nz-wh-100" style={{ overflow: 'auto' }}>
             <SettingsLibForm
-                key={`${uniqueName}-${ticket.Ticket}-${ticket.ProdNo}-${isLocked ? 'locked' : 'unlocked'}`}
+                key={`${uniqueName}-${ticket.ticketid}-${ticket.prodno}-${isLocked ? 'locked' : 'unlocked'}`}
                 uniqueName={`${uniqueName}-form`}
                 controls={controls}
                 profileString={profileString}
                 allowShowHeader={true}
                 allowShowSectionHeader={true}
-                headerText={`${ticket.Ticket} -> ${ticket.ProdNo}`}
+                headerText={`${ticket.ticketid} -> ${ticket.prodno}`}
                 isDisableForm={isLocked}
                 isAutoSave={false}
-                id={ticket.ProdNo}
+                id={ticket.prodno}
             />
         </div>
     )

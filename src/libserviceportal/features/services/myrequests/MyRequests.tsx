@@ -12,7 +12,7 @@ import { TreeControl } from '../../../shared/tree/treecontrol/TreeControl'
 import { TicketDetailPane } from './tickets/TicketDetailPane'
 import { TicketFilterForm, type ITicketFilterValues } from './tickets/TicketFilterForm'
 import { Label } from '../../../shared/basic/label/Label';
-import type { ITicketRecord } from './tickets/ITicket';
+import type { ITicketDoc } from '@n20a/libfsdb';
 
 interface IFeatureTree {
     hideKebabMenu?: boolean;// if true kebab menu on node will not show
@@ -71,7 +71,7 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     const [defaultSelectedKeys, setDefaultSelectedKeys] = useState<Key[]>([])
     const [defaultSelectedNodeInfo, setDefaultSelectedNodeInfo] = useState<ISelectedNodeInfo | null>(null)
 
-    const [selectedTicket, setSelectedTicket] = useState<ITicketRecord | null>(null)
+    const [selectedTicket, setSelectedTicket] = useState<ITicketDoc | null>(null)
     const [searchText, setSearchText] = useState('')
     const [searchHistory, setSearchHistory] = useState<string[]>([])
     const [isShowFilterForm, setIsShowFilterForm] = useState(false)
@@ -101,7 +101,7 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         setDefaultSelectedKeys([node.key])
         setDefaultSelectedNodeInfo(info)
 
-        const ticketRecord = (node as any).ticket as ITicketRecord | undefined
+        const ticketRecord = (node as any).ticket as ITicketDoc | undefined
         if (ticketRecord) {
             setSelectedTicket(ticketRecord)
             return
@@ -109,7 +109,7 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
 
         const ticketId = node.ticketId as string | null | undefined
         const record = ticketId
-            ? tickets.find(t => String(t.Ticket).trim().toLowerCase() === String(ticketId).trim().toLowerCase()) ?? null
+            ? tickets.find(t => String(t.ticketid).trim().toLowerCase() === String(ticketId).trim().toLowerCase()) ?? null
             : null
         setSelectedTicket(record)
     }
@@ -196,14 +196,14 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         setDefaultSelectedNodeInfo(info)
 
         const isProdNo = info.node.NodeType?.toLowerCase() === 'prodno'
-        const ticketRecord = (info.node as any).ticket as ITicketRecord | undefined
+        const ticketRecord = (info.node as any).ticket as ITicketDoc | undefined
         const ticketId = info.node.ticketId as string | undefined
 
         if (isProdNo && (ticketRecord || ticketId)) {
             const record =
                 ticketRecord ??
                 (tickets.find(
-                    t => String(t.Ticket).trim().toLowerCase() === String(ticketId).trim().toLowerCase()
+                    t => String(t.ticketid).trim().toLowerCase() === String(ticketId).trim().toLowerCase()
                 ) ?? null)
             setSelectedTicket(record)
         } else if (info.event === 'select') {

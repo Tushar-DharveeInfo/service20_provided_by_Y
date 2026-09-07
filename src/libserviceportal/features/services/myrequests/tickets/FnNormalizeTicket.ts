@@ -1,4 +1,4 @@
-import type { ITicketRecord, TicketId, TicketStatus } from "./ITicket";
+import type { ITicketDoc } from '@n20a/libfsdb';
 
 function asString(value: unknown, fallback = ""): string {
     if (value === undefined || value === null || value === "") {
@@ -7,37 +7,39 @@ function asString(value: unknown, fallback = ""): string {
     return String(value);
 }
 
-function asDate(value: unknown): Date {
-    if (value instanceof Date) {
-        return value;
-    }
+function asDateStr(value: unknown): string {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    if (value instanceof Date) return value.toISOString();
     if (typeof value === "object" && value !== null && "toDate" in value
         && typeof (value as { toDate: () => Date }).toDate === "function") {
-        return (value as { toDate: () => Date }).toDate();
+        return (value as { toDate: () => Date }).toDate().toISOString();
     }
     if (typeof value === "object" && value !== null && "seconds" in value
         && typeof (value as { seconds: number }).seconds === "number") {
-        return new Date((value as { seconds: number }).seconds * 1000);
+        return new Date((value as { seconds: number }).seconds * 1000).toISOString();
     }
-    return new Date(String(value ?? ""));
+    return String(value);
 }
 
-/** Maps sample (PascalCase) or Firestore (lowercase) ticket docs onto the tree record shape. */
-function FnNormalizeTicket(data: Record<string, unknown>): ITicketRecord {
+/** Maps Firestore (lowercase) ticket docs onto ITicketDoc from @n20a/libfsdb. */
+function FnNormalizeTicket(data: Record<string, unknown>): ITicketDoc {
     return {
-        Business: asString(data.Business ?? data.bname),
-        Contact: asString(data.Contact ?? data.cname),
-        Email: asString(data.Email ?? data.email),
-        Subscription: asString(data.Subscription ?? data.subscription),
-        Ticket: asString(data.Ticket ?? data.ticketid) as TicketId,
-        Mfg: asString(data.Mfg ?? data.mfg),
-        EqType: asString(data.EqType ?? data.eqtype),
-        ProdNo: asString(data.ProdNo ?? data.prodno),
-        MoreInfo: asString(data.MoreInfo ?? data.moreinfo),
-        Status: asString(data.Status ?? data.status, "Pending") as TicketStatus,
-        DateRequested: asDate(data.DateRequested ?? data.daterequested),
-        DateReleased: asDate(data.DateReleased ?? data.datereleased),
-        LastUpdated: asDate(data.LastUpdated ?? data.lastupdated),
+        bid: asString(data.bid ?? data.Business),
+        cid: asString(data.cid ?? data.Contact),
+        monitor: Boolean(data.monitor ?? false),
+        monitorupdated: asDateStr(data.monitorupdated ?? data.LastUpdated),
+        ticketid: asString(data.ticketid ?? data.Ticket),
+        tickettype: asString(data.tickettype ?? ''),
+        subscription: asString(data.subscription ?? data.Subscription),
+        mfg: asString(data.mfg ?? data.Mfg),
+        eqtype: asString(data.eqtype ?? data.EqType),
+        prodno: asString(data.prodno ?? data.ProdNo),
+        moreinfo: asString(data.moreinfo ?? data.MoreInfo),
+        status: asString(data.status ?? data.Status, "Pending"),
+        daterequested: asDateStr(data.daterequested ?? data.DateRequested),
+        datereleased: asDateStr(data.datereleased ?? data.DateReleased),
+        lastupdated: asDateStr(data.lastupdated ?? data.LastUpdated),
     };
 }
 

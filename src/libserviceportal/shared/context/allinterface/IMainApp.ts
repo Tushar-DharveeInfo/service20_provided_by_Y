@@ -220,6 +220,14 @@ interface IMainApp {
     >;
 
     fetchAlertProfileRecords: (statusBarContext: IStatusBar) => void;
+
+    /**
+     * Writes a single activity-log document to Firestore.
+     * User identity (bid, cid, displayName, username, email) is taken
+     * automatically from the current `authSession` stored in this context —
+     * the caller only needs to supply the human-readable message string.
+     */
+    createActivityLog: (message: string) => Promise<void>;
 }
 
 

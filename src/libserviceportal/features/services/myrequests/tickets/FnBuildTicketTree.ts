@@ -2,7 +2,7 @@ import { FnFormatTicketDateOnly } from "../../../../shared/allcommon/tree/FnForm
 import { ITreeNode } from "../../../../shared/allinterface/entity/ITreeNode";
 import { IFeatureTree } from "../../../../shared/allinterface/tree/ITreeForHierarchicalDataContainer";
 import { ITicketFilterValues } from "./TicketFilterForm";
-import { ITicketRecord } from "./ITicket";
+import type { ITicketDoc } from "@n20a/libfsdb";
 import { TreeNodeIcon } from "../../../../shared/tree/treenodeicon/TreeNodeIcon";
 import { TreeNodeTitle } from "../../../../shared/tree/treenodetitle/TreeNodeTitle";
 
@@ -13,7 +13,7 @@ type NodeContext = {
 
 type DateGroup = {
     dateValue: Date | string | null | undefined;
-    manufacturers: Map<string, ITicketRecord[]>;
+    manufacturers: Map<string, ITicketDoc[]>;
 };
 
 
@@ -22,7 +22,7 @@ type DateGroup = {
 // =========================================================
 
 function FnBuildTicketTree(
-    tickets: ITicketRecord[],
+    tickets: ITicketDoc[],
     filter: ITicketFilterValues,
     featureTreeProps?: IFeatureTree,
     featureId?: string
@@ -39,7 +39,7 @@ function FnBuildTicketTree(
     const filteredTickets = filter.showAll
         ? tickets
         : tickets.filter(
-            ticket => ticket.Status === "Pending"
+            ticket => ticket.status === "Pending"
         );
 
     if (filteredTickets.length === 0) {
@@ -123,7 +123,7 @@ function FnBuildTicketTree(
 // =========================================================
 
 function buildMfgTreeOptimized(
-    tickets: ITicketRecord[],
+    tickets: ITicketDoc[],
     rootKey: string,
     context: NodeContext
 ): ITreeNode[] {
@@ -147,12 +147,12 @@ function buildMfgTreeOptimized(
      * Map insertion order is preserved.
      */
     const mfgMap =
-        new Map<string, ITicketRecord[]>();
+        new Map<string, ITicketDoc[]>();
 
     for (const ticket of sortedTickets) {
 
         const mfg =
-            ticket.Mfg ?? "";
+            ticket.mfg ?? "";
 
         let group =
             mfgMap.get(mfg);
@@ -217,7 +217,7 @@ function buildMfgTreeOptimized(
 // =========================================================
 
 function buildDateTreeOptimized(
-    tickets: ITicketRecord[],
+    tickets: ITicketDoc[],
     rootKey: string,
     context: NodeContext
 ): ITreeNode[] {
@@ -234,7 +234,7 @@ function buildDateTreeOptimized(
 
         const dateKey =
             daySortKey(
-                ticket.DateRequested
+                ticket.daterequested
             );
 
         let dateGroup =
@@ -244,12 +244,12 @@ function buildDateTreeOptimized(
 
             dateGroup = {
                 dateValue:
-                    ticket.DateRequested,
+                    ticket.daterequested,
 
                 manufacturers:
                     new Map<
                         string,
-                        ITicketRecord[]
+                        ITicketDoc[]
                     >()
             };
 
@@ -260,7 +260,7 @@ function buildDateTreeOptimized(
         }
 
         const mfg =
-            ticket.Mfg ?? "";
+            ticket.mfg ?? "";
 
         let mfgTickets =
             dateGroup.manufacturers.get(mfg);
@@ -414,7 +414,7 @@ function buildDateTreeOptimized(
 
 function createMfgNodeOptimized(
     mfg: string,
-    tickets: ITicketRecord[],
+    tickets: ITicketDoc[],
     mfgKey: string,
     parentKey: string,
     ticketKeyPrefix: string,
@@ -467,7 +467,7 @@ function createMfgNodeOptimized(
             createTicketNode(
                 ticket,
                 mfgNode.key,
-                `${ticketKeyPrefix}${ticket.ProdNo}##${ticket.Ticket}`,
+                `${ticketKeyPrefix}${ticket.prodno}##${ticket.ticketid}`,
                 context
             );
     }
@@ -487,7 +487,7 @@ function createMfgNodeOptimized(
 // =========================================================
 
 function createTicketNode(
-    ticket: ITicketRecord,
+    ticket: ITicketDoc,
     parentKey: string,
     key: string,
     context: NodeContext
@@ -497,7 +497,7 @@ function createTicketNode(
         createNode({
             key,
             name:
-                ticket.ProdNo,
+                ticket.prodno,
 
             nodeType:
                 "ProdNo",
@@ -511,7 +511,7 @@ function createTicketNode(
             ticket,
 
             description:
-                `${ticket.Ticket} · ${ticket.Status}`
+                `${ticket.ticketid} · ${ticket.status}`
         });
 
     /*
@@ -536,7 +536,7 @@ function createNode(params: {
     nodeType: string;
     parentEntID: string | null;
     isLeaf: boolean;
-    ticket?: ITicketRecord;
+    ticket?: ITicketDoc;
     description?: string;
 }): ITreeNode {
 
@@ -577,7 +577,7 @@ function createNode(params: {
             description ?? name,
 
         NodeState:
-            ticket?.Status ?? null,
+            ticket?.status ?? null,
 
         IsAuthorized:
             false,
@@ -613,10 +613,10 @@ function createNode(params: {
             false,
 
         ticketId:
-            ticket?.Ticket ?? null,
+            ticket?.ticketid ?? null,
 
         Status:
-            ticket?.Status
+            ticket?.status
     };
 }
 
@@ -690,14 +690,14 @@ function compareString(
 
 
 function compareProdNo(
-    a: ITicketRecord,
-    b: ITicketRecord
+    a: ITicketDoc,
+    b: ITicketDoc
 ): number {
 
     return (
-        (a.ProdNo ?? "")
+        (a.prodno ?? "")
             .localeCompare(
-                b.ProdNo ?? ""
+                b.prodno ?? ""
             )
     );
 }
