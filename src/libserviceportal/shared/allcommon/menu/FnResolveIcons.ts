@@ -246,7 +246,6 @@ const FnResolveIcons = (options?: ResolverOptions) => {
         );
 
         return (fileName?: string): ComponentType<any> => {
-            console.log('fileName FnResolveIcons:', fileName);
             try {
                 if (!fileName) return defaultIcon;
 

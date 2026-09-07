@@ -12,7 +12,7 @@ import { TreeControl } from '../../../shared/tree/treecontrol/TreeControl'
 import { TicketDetailPane } from './tickets/TicketDetailPane'
 import { TicketFilterForm, type ITicketFilterValues } from './tickets/TicketFilterForm'
 import { Label } from '../../../shared/basic/label/Label';
-import { ITicketRecord } from './tickets/ITicket';
+import type { ITicketRecord } from './tickets/ITicket';
 
 interface IFeatureTree {
     hideKebabMenu?: boolean;// if true kebab menu on node will not show
@@ -101,8 +101,17 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         setDefaultSelectedKeys([node.key])
         setDefaultSelectedNodeInfo(info)
 
-        setSelectedTicket((node.ticketRecord as ITicketRecord) ?? null)
+        const ticketRecord = (node as any).ticket as ITicketRecord | undefined
+        if (ticketRecord) {
+            setSelectedTicket(ticketRecord)
+            return
+        }
 
+        const ticketId = node.ticketId as string | null | undefined
+        const record = ticketId
+            ? tickets.find(t => String(t.Ticket).trim().toLowerCase() === String(ticketId).trim().toLowerCase()) ?? null
+            : null
+        setSelectedTicket(record)
     }
 
     const setTicketTree = (filter: ITicketFilterValues) => {
@@ -185,11 +194,22 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     ) => {
         setDefaultSelectedKeys(selectedKeys)
         setDefaultSelectedNodeInfo(info)
-        if (info.node.NodeType?.toLowerCase() === 'prodno' && info.node.ticketRecord) {
-            setSelectedTicket(info.node.ticketRecord as ITicketRecord)
-        } else {
+
+        const isProdNo = info.node.NodeType?.toLowerCase() === 'prodno'
+        const ticketRecord = (info.node as any).ticket as ITicketRecord | undefined
+        const ticketId = info.node.ticketId as string | undefined
+
+        if (isProdNo && (ticketRecord || ticketId)) {
+            const record =
+                ticketRecord ??
+                (tickets.find(
+                    t => String(t.Ticket).trim().toLowerCase() === String(ticketId).trim().toLowerCase()
+                ) ?? null)
+            setSelectedTicket(record)
+        } else if (info.event === 'select') {
             setSelectedTicket(null)
         }
+
         if (expandedNodeKeys) {
             setDefaultExpandedKeys(expandedNodeKeys)
         }

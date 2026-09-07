@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AddressForm, ChangedValueMap, FormElementsRenderer, IAddress, IFormData, IFormElements } from '@n20a/libform'
+import { ChangedValueMap, FormElementsRenderer, IFormData, IFormElements } from '@n20a/libform'
 import { Help24x24, Save24x24, TestAPI24x24 } from '@n20a/libicon'
 
 import '@n20a/libform/style.css'
@@ -111,6 +111,7 @@ import { Label } from '../../basic/label/Label'
 import { OneToManyPropertyFormWithGrid } from '../onetomanypropertyformwithgrid/OneToManyPropertyFormWithGrid'
 import { useSessionContext } from '../../context/hooks/SessionHooks'
 import { FnCheckPermissionToEditName, IFeaturePermission } from '../../allcommon/FnCheckPermissionToEditName'
+import { AddressForm, IAddress } from '@n20a/libcountry'
 
 // Normalizes libform changed values to string values expected by save handlers.
 function normalizeChangedControlValue(rawValue: unknown): unknown {

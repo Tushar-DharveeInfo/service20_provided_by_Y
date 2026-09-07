@@ -1,6 +1,6 @@
 
 import type { AuthSession } from "@n20a/libauth";
-import type { IAddress } from "@n20a/libform";
+import type { IAddress } from "@n20a/libcountry";
 
 type TMyProfileAuthUser = Pick<AuthSession, "tenantNickname" | "username" | "displayName" | "email"> & {
     phoneNumber?: string | null;

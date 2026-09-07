@@ -612,8 +612,8 @@ function createNode(params: {
         checkable:
             false,
 
-        ticketRecord:
-            ticket,
+        ticketId:
+            ticket?.Ticket ?? null,
 
         Status:
             ticket?.Status
@@ -827,31 +827,10 @@ export function findFirstTicketLeaf(
         return null;
     }
 
-    if (nodes.length > 1) {
-        return nodes[0];
-    }
+    let current = nodes[0];
 
-    let current =
-        nodes[0];
-
-    while (
-        current.children?.length
-    ) {
-
-        if (
-            current.children.length === 1
-        ) {
-
-            current =
-                current.children[0];
-
-        } else {
-
-            current =
-                current.children[0];
-
-            break;
-        }
+    while (current.children?.length) {
+        current = current.children[0];
     }
 
     return current;

@@ -1,7 +1,7 @@
 
 
 
-import { AddressForm, FormElementsRenderer, IAddress, IFormData, IFormElements } from '@n20a/libform'
+import { FormElementsRenderer, IFormData, IFormElements } from '@n20a/libform'
 import '@n20a/libform/style.css'
 import './PropertyFormContainer.css'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -25,6 +25,7 @@ import getTableVsPropertySample from '../../../../serviceSampledata/sidebar/GetT
 import { ITreeNode } from '../../allinterface/entity/ITreeNode'
 import { IMenuItem } from '../../allinterface/menu/IMainMenu'
 import { IPropertyColumn } from '../../allinterface/sidebar/IPropertyFormContainer'
+import { AddressForm, IAddress } from '@n20a/libcountry'
 
 const samplePropertyEntityTables = getTableVsPropertySample.data;
 

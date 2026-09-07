@@ -1,7 +1,7 @@
 /*
  * SAMPLE DATA: user address for Profile/MyProfile while address APIs are disabled.
  */
-import type { IAddress } from "@n20a/libform";
+import type { IAddress } from "@n20a/libcountry";
 
 /* Address in the shape AddressForm expects for initialAddress. */
 const sampleUserAddress: IAddress = {
