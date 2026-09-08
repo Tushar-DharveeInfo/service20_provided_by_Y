@@ -1,5 +1,7 @@
 
-import { useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 import { AgGridReact } from 'ag-grid-react'
 import type { ICellRendererParams } from 'ag-grid-community'
 import { useActivities } from '@n20a/libfsdb'
@@ -34,6 +36,42 @@ function formatActivityDate(value: unknown): string {
     return String(value);
 }
 
+function parseActivityDate(value: unknown, row?: Record<string, unknown>): number {
+    if (value != null && value !== '') {
+        if (typeof value === 'number') {
+            return value;
+        }
+        if (value instanceof Date) {
+            return value.getTime();
+        }
+        if (typeof value === 'object') {
+            if ('toDate' in value && typeof (value as { toDate: () => Date }).toDate === 'function') {
+                return (value as { toDate: () => Date }).toDate().getTime();
+            }
+            if ('seconds' in value && typeof (value as { seconds: number }).seconds === 'number') {
+                return (value as { seconds: number }).seconds * 1000;
+            }
+        }
+        if (typeof value === 'string') {
+            const parsed = Date.parse(value);
+            if (!isNaN(parsed)) {
+                return parsed;
+            }
+        }
+    }
+    // Fallback: extract timestamp if activityid ends with numeric timestamp (e.g. activity_cid_1788857795000)
+    if (row && typeof row.activityid === 'string') {
+        const match = row.activityid.match(/_(\d{10,13})$/);
+        if (match) {
+            const ts = Number(match[1]);
+            if (!isNaN(ts)) {
+                return ts;
+            }
+        }
+    }
+    return 0;
+}
+
 const MyActivities = (myActivitiesProps: IMyActivities) => {
     const headerTitle = myActivitiesProps.headerText ?? "My Activities";
     const mainAppContext = useMainAppContext();
@@ -59,6 +97,13 @@ const MyActivities = (myActivitiesProps: IMyActivities) => {
             field: 'datecreated',
             width: 180,
             resizable: true,
+            sortable: myActivitiesProps.allowSort ?? true,
+            sort: 'desc',
+            comparator: (valueA: unknown, valueB: unknown, nodeA, nodeB) => {
+                const timeA = parseActivityDate(valueA, nodeA?.data as Record<string, unknown> | undefined);
+                const timeB = parseActivityDate(valueB, nodeB?.data as Record<string, unknown> | undefined);
+                return timeA - timeB;
+            },
             cellRenderer: (params: ICellRendererParams) => (
                 <span>{formatActivityDate(params.value)}</span>
             ),
@@ -69,28 +114,60 @@ const MyActivities = (myActivitiesProps: IMyActivities) => {
             flex: 1,
             minWidth: 220,
             resizable: true,
+            sortable: myActivitiesProps.allowSort ?? true,
         },
-        {
-            headerName: 'Activity ID',
-            field: 'activityid',
-            width: 200,
-            resizable: true,
-        },
-        {
-            headerName: 'Bid',
-            field: 'bid',
-            width: 120,
-            resizable: true,
-        },
-        {
-            headerName: 'Cid',
-            field: 'cid',
-            width: 160,
-            resizable: false,
-        },
-    ], []);
+    ], [myActivitiesProps.allowSort]);
 
-    const rowData = activities ?? [];
+    const rowData = useMemo(() => {
+        if (!activities?.length) return [];
+        return [...activities].sort((a, b) => {
+            const timeA = parseActivityDate(a?.datecreated, a as Record<string, unknown>);
+            const timeB = parseActivityDate(b?.datecreated, b as Record<string, unknown>);
+            return timeB - timeA; // Descending: newest record on top
+        });
+    }, [activities]);
+
+    const handleDownloadExcel = useCallback(() => {
+        const api = gridRef.current?.api;
+        const rows: (string | number)[][] = [
+            ['Date Created', 'Message']
+        ];
+
+        if (api) {
+            api.forEachNodeAfterFilterAndSort((node) => {
+                if (node.group) return;
+                const dateVal = formatActivityDate(node.data?.datecreated);
+                const msgVal = node.data?.message != null ? String(node.data.message) : '';
+                rows.push([dateVal, msgVal]);
+            });
+        } else if (rowData.length > 0) {
+            rowData.forEach((row) => {
+                const dateVal = formatActivityDate(row.datecreated);
+                const msgVal = row.message != null ? String(row.message) : '';
+                rows.push([dateVal, msgVal]);
+            });
+        }
+
+        if (rows.length <= 1) {
+            return;
+        }
+
+        try {
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.aoa_to_sheet(rows);
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'MyActivities');
+
+            const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            saveAs(blob, 'myactivities.xlsx');
+        } catch (error) {
+            console.error('MyActivities: failed to export Excel', error);
+            myActivitiesProps.handleShowUserMessage?.('Unable to export activities. Please try again.');
+        }
+    }, [rowData, myActivitiesProps]);
+
     const showGrid = !loading && !error && rowData.length > 0;
 
     return (
@@ -118,6 +195,8 @@ const MyActivities = (myActivitiesProps: IMyActivities) => {
                             featureId={myActivitiesProps.featureId}
                             allowColumnResize={true}
                             isExportOnCopy={true}
+                            handleDownloadData={handleDownloadExcel}
+                            exportFileName='myactivities'
                             rowData={rowData}
                             isReadOnly={true}
                             allowColumnFilter={true}

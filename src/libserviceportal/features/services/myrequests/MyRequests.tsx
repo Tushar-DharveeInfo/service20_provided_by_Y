@@ -206,6 +206,22 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
                     t => String(t.ticketid).trim().toLowerCase() === String(ticketId).trim().toLowerCase()
                 ) ?? null)
             setSelectedTicket(record)
+        } else if (info.node.children?.length) {
+            const firstLeaf = findFirstTicketLeaf([info.node as ITreeNode])
+            if (firstLeaf) {
+                const leafTicket = (firstLeaf as any).ticket as ITicketDoc | undefined
+                const leafTicketId = firstLeaf.ticketId as string | undefined
+                const record =
+                    leafTicket ??
+                    (leafTicketId
+                        ? tickets.find(
+                            t => String(t.ticketid).trim().toLowerCase() === String(leafTicketId).trim().toLowerCase()
+                        ) ?? null
+                        : null)
+                if (record) {
+                    setSelectedTicket(record)
+                }
+            }
         } else if (info.event === 'select') {
             setSelectedTicket(null)
         }

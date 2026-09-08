@@ -43,7 +43,7 @@ interface ISearchTab {
 	/** When true, only the NetZoom Device Library radio is shown. */
 	ShowOnlyLibraryRadioB: boolean;
 	handleValueChangeRadio: (value: string, name: string, isDefault?: boolean) => void;
-	handleLensMouse: (selectedRtmValue: string) => void;
+	handleLensMouse: (selectedRtmValue: string, searchKeywords?: string) => void;
 	searchValueChange: (value: string) => void;
 	handeleValueChangeForForm: (value: string, name: string | undefined, isDefault?: boolean | undefined) => void;
 }
@@ -283,7 +283,8 @@ export const SearchTab = (searchTabProps: ISearchTab) => {
 						searchInputValue={searchText}
 						handleFilterMouse={() => undefined}
 						handleLensMouse={(value) => {
-							searchTabProps.handleLensMouse(value);
+							debouncedSearch.flush();
+							searchTabProps.handleLensMouse(value, searchText);
 						}}
 						searchValueChange={searchValueChange}
 					/>

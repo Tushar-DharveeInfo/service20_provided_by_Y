@@ -117,19 +117,21 @@ const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
         )
     }
 
+    const formId = ticket.ticketid || ticket.prodno || 'ticket';
+
     return (
         <div className="nz-wh-100" style={{ overflow: 'auto' }}>
             <SettingsLibForm
-                key={`${uniqueName}-${ticket.ticketid}-${ticket.prodno}-${isLocked ? 'locked' : 'unlocked'}`}
+                key={`${uniqueName}-${ticket.ticketid || 'ticket'}-${ticket.prodno || 'noprod'}-${isLocked ? 'locked' : 'unlocked'}`}
                 uniqueName={`${uniqueName}-form`}
                 controls={controls}
                 profileString={profileString}
                 allowShowHeader={true}
                 allowShowSectionHeader={true}
-                headerText={`${ticket.ticketid} -> ${ticket.prodno}`}
+                headerText={`${ticket.ticketid || 'Ticket'} -> ${ticket.prodno || 'No Product Number'}`}
                 isDisableForm={isLocked}
                 isAutoSave={false}
-                id={ticket.prodno}
+                id={formId}
             />
         </div>
     )

@@ -9,6 +9,7 @@ import { useSubs } from '@n20a/libfsdb'
 interface ISampleUserLicense {
     ProductName: string;
     _NZLicenseKey: string;
+    licenseKey?: string;
     StartDate: any;
     EndDate: any;
     UserCount: number;
@@ -76,9 +77,8 @@ const isSubscriptionExpired = (endDateValue: unknown): boolean => {
 };
 
 const normalizeSub = (sub: Record<string, any>): ISampleUserLicense => {
-    const entId = String(sub.EntID ?? sub.entid ?? sub.subsid ?? sub.id ?? '').trim();
     const licenseKey = String(
-        sub._NZLicenseKey ?? sub._nzlicensekey ?? sub.subsid ?? sub.licensekey ?? entId
+        sub._NZLicenseKey ?? sub._nzlicensekey ?? sub.subsid ?? sub.licensekey ?? sub.subsid ?? sub.id
     ).trim();
     const productName = String(
         sub.ProductName ?? sub.productname ?? sub.product ?? 'NetZoom'
@@ -104,8 +104,8 @@ const normalizeSub = (sub: Record<string, any>): ISampleUserLicense => {
         RackCount: rackCount,
         Secured: Boolean(sub.Secured ?? sub.secured ?? false),
         IsNZ: Boolean(sub.IsNZ ?? sub.isnz ?? true),
-        EntID: entId || `sub-${Math.random().toString(36).slice(2, 9)}`,
-        RecID: String(sub.RecID ?? sub.recid ?? entId).trim(),
+        EntID: (sub.subsid ?? sub.id) || `sub-${Math.random().toString(36).slice(2, 9)}`,
+        RecID: String(sub.RecID ?? sub.recid ?? sub.subsid ?? sub.id).trim(),
         LastUpdated: String(sub.LastUpdated ?? sub.lastupdated ?? sub.dateupdated ?? '').trim(),
         EntityName: String(sub.EntityName ?? sub.entityname ?? 'NZLicenseKey').trim(),
         status: status || undefined,
@@ -137,13 +137,21 @@ const getLicenseFields = (license: ISampleUserLicense): ICardLayoutField[] => {
         // Header slots (Header: 1 and Header: 2 trigger CardLayout's built-in header-row--space-between)
         {
             Name: "",
-            Value: productTitle,
+            Value: license._NZLicenseKey,
             Header: 1,
         },
         {
             Name: "",
+            Value: productTitle,
+            Group: "header-info-row",
+            Row: "space-between",
+        },
+        {
+            Name: "",
             Value: datesStr,
-            Header: 2,
+            Group: "header-info-row",
+            Row: "space-between",
+
         },
         // Detail row with Row: 'space-between'
         {

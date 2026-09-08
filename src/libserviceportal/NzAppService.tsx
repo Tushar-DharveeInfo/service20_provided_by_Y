@@ -22,7 +22,7 @@ import type { IFeatureItem, IUserAuthSession, IUserInfoAndSubscription } from '.
 import { FnGetAuthDisplayName } from './appcontainer/allcommon/FnGetLoggedInStatusMessage';
 import { FnGetBidCid } from './appcontainer/allcommon/FnGetBidCid';
 
-import { FirestoreProvider, CloudStorageProvider, type ICloudStorageDeps } from '@n20a/libfsdb'
+import { FirestoreProvider, FirebaseStorageProvider, type IFirebaseStorageDeps } from '@n20a/libfsdb'
 import { ServiceDataProvider } from './shared/context/contextandprovider/ServiceData'
 import type { IAxiosInterceptorDeps } from '@n20a/libaxios'
 import { AuthSession, getFirebaseServices } from '@n20a/libauth'
@@ -289,9 +289,8 @@ function NzAppService(props: INzApp) {
         defaultTimeoutMs: 30000,
     }), [firebaseToken]);
 
-    const cloudStorageDeps = useMemo<ICloudStorageDeps>(() => ({
-        getBaseApiUrl: () => cfg.CLOUDRUN_URL || (import.meta.env.DEV ? 'http://localhost:8080' : ''),
-        getValidationCode: () => cfg.VALIDATION_CODE ?? '',
+    const firebaseStorageDeps = useMemo<IFirebaseStorageDeps>(() => ({
+        getFirebaseApp: () => getFirebaseServices().app,
     }), []);
     if (!firebaseToken) return null;
 
@@ -299,11 +298,11 @@ function NzAppService(props: INzApp) {
         <FirestoreProvider deps={firestoreDeps}>
             <AppContextWrapper>
                 <ServiceDataProvider>
-                    <CloudStorageProvider deps={cloudStorageDeps}>
+                    <FirebaseStorageProvider deps={firebaseStorageDeps}>
                         <Router>
                             <NzLoadContextAndVariables {...props} />
                         </Router>
-                    </CloudStorageProvider>
+                    </FirebaseStorageProvider>
                 </ServiceDataProvider>
             </AppContextWrapper>
         </FirestoreProvider>

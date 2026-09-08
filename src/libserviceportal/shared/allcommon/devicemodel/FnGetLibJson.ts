@@ -22,14 +22,18 @@ const FnGetLibJson = async (
 
         // Case 2: API call if absoluteurl exists
         else if (name && absoluteurl) {
+            const cfg = (window as Window & { APP_CONFIG?: Record<string, string> }).APP_CONFIG ?? {};
+            const validationCode = cfg.VALIDATION_CODE || "your-code";
+            const bucketName = cfg.FIREBASE_BUCKET || "n20-bucket-01";
+            const baseFolder = cfg.FIREBASE_LIBFOLDER || "libfolder-01";
 
             if (!multiple) {
                 if (typeof name !== "string") return;
 
                 const body = {
-                    validationCode: "your-code",
-                    bucketName: "n20-bucket-01",
-                    baseFolder: "libfolder-01",
+                    validationCode,
+                    bucketName,
+                    baseFolder,
                     filePath: `${name}.json`
                 };
 
@@ -45,9 +49,9 @@ const FnGetLibJson = async (
                 if (!Array.isArray(name)) return;
 
                 const body = {
-                    validationCode: "your-code",
-                    bucketName: "n20-bucket-01",
-                    baseFolder: "libfolder-01",
+                    validationCode,
+                    bucketName,
+                    baseFolder,
                     filePaths: name
                 };
 

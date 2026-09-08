@@ -1,25 +1,26 @@
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { handleContainerKeyDown } from '../../../shared/allcommon/basic/FnHandleContainerKeyDown.ts';
 import { Notes } from "@n20a/libavnotes"
 import type { INote } from "@n20a/libavnotes"
-import { Delete24x24, Info24x24 } from "@n20a/libicon"
+import { Attach24x24, Delete24x24, Info24x24 } from "@n20a/libicon"
 import './AppQaContactUs.css'
 import '../../../shared/sidebar/notes/FqaNotes.css'
 import '@n20a/libavnotes/style.css'
 import { Label } from "../../../shared/basic/label/Label.tsx"
 import { FnGetCssVariable } from "../../../shared/allcommon/FnGetCssVariable.ts"
 import { Image } from "../../../shared/basic/image/Image.tsx"
-import type { ITreeNode } from "../../../shared/allinterface/entity/ITreeNode.ts"
 import { FnConvertDateToUtcOrUtcToDate } from "../../../appcontainer/allcommon/FnConvertDateToUtcOrUtcToDate.ts"
 import { FilterKeywordControl } from "../../../shared/searchfilter/filterkeywordcontrol/FilterKeywordControl.tsx"
-import { ActionImage } from "../../../shared/basic/actionimage/ActionImage.tsx"
 import { YesNoFormContainer } from "../../../shared/basic/yesnoformcontainer/YesNoFormContainer.tsx"
-import type { IImage } from "../../../shared/allinterface/basic/IImage.ts"
-import { useBusinessNotes } from "@n20a/libfsdb"
+import { useBusinessNotes, useFileUpload, useFileDownload, useFileDelete } from "@n20a/libfsdb"
 import type { INoteDoc } from "@n20a/libfsdb"
+import { CLOUD_BUCKET } from "../../allcommon/FnGetCloudFilePublicUrl.ts"
 import { useMainAppContext } from "../../../shared/context/hooks/MainAppHooks.ts"
 import { useStatusBarContext } from "../../../shared/context/hooks/StatusBarHooks.ts"
+import { IImage } from "../../../shared/allinterface/basic/IImage.ts";
+import { ActionImage } from "../../../shared/basic/actionimage/ActionImage.tsx";
+import { ITreeNode } from "../../../shared/allinterface/tree/ITreeControl.ts";
 
 interface IContactUsNotes {
     uniqueName: string;
@@ -54,6 +55,99 @@ function resolveFirestoreDate(value: unknown): string {
     return "";
 }
 
+/**
+ * Converts a note document / row into a numeric timestamp for chronological sorting.
+ */
+function parseNoteDate(item: Record<string, any>): number {
+    const rawDate = item.datecreated ?? item.LastUpdated ?? item.monitorupdated;
+    if (rawDate != null && rawDate !== '') {
+        if (typeof rawDate === 'number') {
+            return rawDate;
+        }
+        if (rawDate instanceof Date) {
+            return rawDate.getTime();
+        }
+        if (typeof rawDate === 'object') {
+            if ('toDate' in rawDate && typeof (rawDate as { toDate: () => Date }).toDate === 'function') {
+                return (rawDate as { toDate: () => Date }).toDate().getTime();
+            }
+            if ('seconds' in rawDate && typeof (rawDate as { seconds: number }).seconds === 'number') {
+                return (rawDate as { seconds: number }).seconds * 1000;
+            }
+        }
+        if (typeof rawDate === 'string') {
+            const parsed = Date.parse(rawDate);
+            if (!isNaN(parsed)) {
+                return parsed;
+            }
+        }
+    }
+    // Fallback: extract timestamp from noteid if available (e.g. note_cid_1788857795000)
+    const noteId = String(item.id ?? item.noteid ?? item._noteid ?? "");
+    const match = noteId.match(/_(\d{10,13})$/);
+    if (match) {
+        const ts = Number(match[1]);
+        if (!isNaN(ts)) return ts;
+    }
+    return 0;
+}
+
+/**
+ * Prepares a unique file name prefixed with "{bid}-{cid}-{yymmddhhmmss}".
+ */
+function generateUniqueFileName(bid: string, cid: string, originalName: string, defaultExt = "png"): string {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const yymmddhhmmss = `${String(now.getFullYear()).slice(-2)}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    let cleanName = getCleanFileName(originalName.trim());
+    if (!cleanName) {
+        cleanName = `attachment.${defaultExt}`;
+    } else if (!cleanName.includes(".")) {
+        cleanName = `${cleanName}.${defaultExt}`;
+    }
+    return `${bid}-${cid}-${yymmddhhmmss}-${cleanName}`;
+}
+
+/**
+ * Strips the "{bid}-{cid}-{yymmddhhmmss}-" prefix to return the original clean file name.
+ */
+function getCleanFileName(rawName: string): string {
+    if (!rawName) return "";
+    const base = rawName.split("/").pop() || rawName;
+    const match = base.match(/^[^-]+-[^-]+-\d{12}[-_]?(.*)$/);
+    return match && match[1] ? match[1] : base;
+}
+
+/**
+ * Builds the Firebase Cloud Storage path for tickets attachments.
+ * Format: ${bucketName}/${baseFolder}/sm/smfiles/tickets/${filename}
+ */
+function buildStoragePathForTickets(filename: string): string {
+    if (!filename) return "";
+    if (filename.includes("/")) return filename;
+    const cfg = () => (window as Window & { APP_CONFIG?: Record<string, string> }).APP_CONFIG ?? {};
+    const c = cfg();
+    const baseFolder = c.BASE_FOLDER ?? 'sm';
+    const bucketName = c.BUCKET_NAME ?? c.FIREBASE_BUCKET ?? CLOUD_BUCKET ?? 'n20-bucket-01';
+    return `${bucketName}/${baseFolder}/smfiles/tickets/${filename}`;
+}
+
+/**
+ * Reads a Blob/File as pure Base64 (without the "data:<type>;base64," prefix).
+ */
+function fileToBase64(file: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = String(reader.result ?? "");
+            const base64 = result.includes(",") ? result.split(",")[1] : result;
+            resolve(base64);
+        };
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+    });
+}
+
 /*
  * ContactUs notes panel.
  * Uses useBusinessNotes hook for live load / create / edit / delete.
@@ -66,6 +160,12 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
     const bid = String(authSession?.bid ?? "").trim();
     const cid = String(authSession?.cid ?? "").trim();
     const noteby = authSession?.displayName ?? authSession?.username ?? "unknown";
+
+    // ── firebase storage hooks ───────────────────────────────────────────────
+    const { uploadSingleFile, uploadMultipleFiles, uploading, progress, error: uploadError } = useFileUpload();
+    const { downloadSingleFile } = useFileDownload();
+    const { deleteFiles } = useFileDelete();
+    const [fileUploading, setFileUploading] = useState(false);
 
     // ── notes hook ───────────────────────────────────────────────────────────
     const {
@@ -81,11 +181,11 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
 
     // ── sync loader with status bar ───────────────────────────────────────────
     useEffect(() => {
-        statusBarContext.setIsLoading(loading);
+        statusBarContext.setIsLoading(loading || uploading || fileUploading);
         return () => {
             statusBarContext.setIsLoading(false);
         };
-    }, [loading, statusBarContext]);
+    }, [loading, uploading, fileUploading, statusBarContext]);
 
     // ── local UI state ───────────────────────────────────────────────────────
     const [notesItems, setNotesItems] = useState<Record<string, any>[]>([]);
@@ -100,6 +200,14 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
     const [refreshToken, setRefreshToken] = useState(0);
     /** The note card currently loaded into the editor for editing. null = create-new mode. */
     const [editingItem, setEditingItem] = useState<Record<string, any> | null>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    // ── auto-scroll to bottom when notes list changes ─────────────────────────
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [notesItems.length]);
 
     // ── reset editor to blank new-note state ─────────────────────────────────
     const resetEditor = useCallback(() => {
@@ -118,26 +226,111 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         setRefreshToken((v) => v + 1);
     }, []);
 
+    // ── download attached file from cloud storage ────────────────────────────
+    const handleDownloadFile = useCallback(async (item: Record<string, any>, e?: React.MouseEvent) => {
+        e?.stopPropagation?.();
+        const rawFileName = String(item.filename || item.FileUID || "").trim();
+        if (!rawFileName) return;
+
+        const storagePath = buildStoragePathForTickets(rawFileName);
+        statusBarContext.setIsLoading(true);
+        try {
+            const res = await downloadSingleFile(storagePath);
+
+            const downloadUrl = res?.blobUrl;
+            if (downloadUrl) {
+                const cleanName = getCleanFileName(rawFileName);
+                const link = document.createElement("a");
+                link.href = downloadUrl;
+                link.download = cleanName || "download";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                console.error("ContactUsNotes: downloadSingleFile failed", res?.error);
+            }
+        } catch (err) {
+            console.error("ContactUsNotes: handleDownloadFile error", err);
+        } finally {
+            statusBarContext.setIsLoading(false);
+        }
+    }, [downloadSingleFile, statusBarContext]);
+
     // ── select a card to edit in the below notes control ──────────────────────
-    const handleSelectCardToEdit = useCallback((item: Record<string, any>) => {
+    const handleSelectCardToEdit = useCallback(async (item: Record<string, any>) => {
         setEditingItem(item);
         const textContent = String(item.NotesMAX ?? item.message ?? "");
+        const rawFileName = String(item.filename || item.FileUID || "").trim();
+        const noteId = String(item.id ?? item.noteid ?? item._noteid ?? Date.now());
+
+        if (onSelectNote) {
+            onSelectNote(item);
+        }
+
+        if (!rawFileName) {
+            setNoteDetails({
+                maxAudioRecordingTime: 60000,
+                maxVideoRecordingTime: 60000,
+                noteId,
+                noteTitle: "",
+                notecontent: textContent,
+                notefile: undefined,
+                notefileName: undefined,
+                noteaudio: undefined,
+                notevideo: undefined,
+                noteCreatedAt: new Date(),
+            });
+            setRefreshToken((v) => v + 1);
+            return;
+        }
+
+        const cleanName = getCleanFileName(rawFileName);
+
+        // Show note text immediately while file is being fetched
         setNoteDetails({
             maxAudioRecordingTime: 60000,
             maxVideoRecordingTime: 60000,
-            noteId: String(item.id ?? item.noteid ?? item._noteid ?? Date.now()),
+            noteId,
             noteTitle: "",
             notecontent: textContent,
             notefile: undefined,
+            notefileName: cleanName,
             noteaudio: undefined,
             notevideo: undefined,
             noteCreatedAt: new Date(),
         });
         setRefreshToken((v) => v + 1);
-        if (onSelectNote) {
-            onSelectNote(item);
+
+        const storagePath = buildStoragePathForTickets(rawFileName);
+
+        statusBarContext.setIsLoading(true);
+        try {
+            const res = await downloadSingleFile(storagePath);
+            const downloadUrl = res?.blobUrl;
+            if (downloadUrl) {
+                const response = await fetch(downloadUrl);
+                const fileBlob = await response.blob();
+
+                setNoteDetails({
+                    maxAudioRecordingTime: 60000,
+                    maxVideoRecordingTime: 60000,
+                    noteId,
+                    noteTitle: "",
+                    notecontent: textContent,
+                    notefile: fileBlob,
+                    notefileName: cleanName,
+                    noteaudio: undefined,
+                    notevideo: undefined,
+                    noteCreatedAt: new Date(),
+                });
+                setRefreshToken((v) => v + 1);
+            }
+        } catch (err) {
+            console.error("ContactUsNotes: failed to fetch attached file for note editor", err);
+        } finally {
+            statusBarContext.setIsLoading(false);
         }
-    }, [onSelectNote]);
+    }, [downloadSingleFile, onSelectNote, statusBarContext]);
 
     // ── LOAD: fetch from hook whenever selected node / bid changes ────────────
     useEffect(() => {
@@ -145,10 +338,12 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         getNotes()
             .then((fetched) => {
                 const rows = Array.isArray(fetched) ? fetched : [];
-                setNotesItems(rows);
-                setOriginalNotesItems(rows);
-                if (rows.length > 0 && onSelectNote && !selectedNoteItem) {
-                    onSelectNote(rows[0]);
+                // Sort ascending by date so new messages appear at the end of the list
+                const sortedRows = [...rows].sort((a, b) => parseNoteDate(a) - parseNoteDate(b));
+                setNotesItems(sortedRows);
+                setOriginalNotesItems(sortedRows);
+                if (sortedRows.length > 0 && onSelectNote && !selectedNoteItem) {
+                    onSelectNote(sortedRows[sortedRows.length - 1]);
                 }
             })
             .catch((err) => console.error("ContactUsNotes: getNotes failed", err));
@@ -161,8 +356,10 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
     // replace the state with a non-iterable and crash .map().
     useEffect(() => {
         if (!Array.isArray(notes)) return;
-        setNotesItems(notes);
-        setOriginalNotesItems(notes);
+        // Sort ascending by date so new messages appear at the end of the list
+        const sortedRows = [...notes].sort((a, b) => parseNoteDate(a) - parseNoteDate(b));
+        setNotesItems(sortedRows);
+        setOriginalNotesItems(sortedRows);
     }, [notes]);
 
     // ── SAVE / UPDATE ─────────────────────────────────────────────────────────
@@ -181,11 +378,50 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
 
         const now = new Date().toISOString();
 
+        // ── Upload attached file if present ───────────────────────────────────
+        let uploadedFileName = "";
+        const attachedData = message.notefile || message.noteaudio || message.notevideo;
+
+        if (attachedData) {
+            const rawFileName = message.notefileName
+                || (attachedData instanceof File ? attachedData.name : "")
+                || (message.notevideo ? "video.mp4" : message.noteaudio ? "audio.webm" : "image.png");
+
+            // If editing and user kept the original attachment without replacing it:
+            const existingFileName = editingItem
+                ? String(editingItem.filename || editingItem.FileUID || "").trim()
+                : "";
+            const isSameAsExisting = Boolean(
+                existingFileName && getCleanFileName(existingFileName) === rawFileName
+            );
+
+            if (isSameAsExisting) {
+                uploadedFileName = existingFileName;
+            } else {
+                const defaultExt = message.notevideo ? "mp4" : message.noteaudio ? "webm" : "png";
+                uploadedFileName = generateUniqueFileName(bid, cid, rawFileName, defaultExt);
+
+                const filepath = buildStoragePathForTickets(uploadedFileName);
+                setFileUploading(true);
+                try {
+                    const uploadResult = await uploadSingleFile(attachedData, filepath);
+                    if (!uploadResult?.success) {
+                        console.error("ContactUsNotes: uploadSingleFile failed", uploadResult?.error, uploadResult?.message, uploadResult);
+                    }
+                } catch (err) {
+                    console.error("ContactUsNotes: uploadSingleFile error", err);
+                } finally {
+                    setFileUploading(false);
+                }
+            }
+        }
+
         // ── EDIT MODE: If user selected an existing note card, call updateNote ──
         if (editingItem) {
             const noteIdToUpdate = String(
                 editingItem.id ?? editingItem.noteid ?? editingItem._noteid ?? ""
             );
+            const finalFileName = uploadedFileName || "";
 
             // Optimistic update in local list
             const applyUpdate = (prev: Record<string, any>[]) =>
@@ -198,6 +434,8 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                             message: noteText,
                             LastUpdated: now,
                             monitorupdated: now,
+                            FileUID: finalFileName,
+                            filename: finalFileName,
                         };
                     }
                     return item;
@@ -208,11 +446,12 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
             resetEditor();
 
             if (noteIdToUpdate) {
-                const updatePayload = {
+                const updatePayload: Record<string, unknown> = {
                     message: noteText,
                     monitorupdated: now,
+                    filename: finalFileName,
                 };
-                const result = await updateNote(noteIdToUpdate, updatePayload as unknown as Record<string, unknown>);
+                const result = await updateNote(noteIdToUpdate, updatePayload);
                 if (!result?.success) {
                     console.error("ContactUsNotes: updateNote failed", result?.error);
                 }
@@ -227,6 +466,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         else if (message.notefile) notesType = "Image";
 
         const noteid = `note_${cid}_${Date.now()}`;
+        const finalFilename = uploadedFileName || (notesType !== "Message" ? `file-${Date.now()}` : "");
 
         const notePayload: INoteDoc = {
             bid,
@@ -234,7 +474,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
             noteid,
             noteby,
             message: noteText,
-            filename: notesType !== "Message" ? `file-${Date.now()}` : "",
+            filename: finalFilename,
             datecreated: now,
             monitorupdated: now,
             monitor: false,
@@ -250,17 +490,18 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
             UserName: noteby,
             Status: "Accepted",
             _noteid: noteid,
-            ...(notesType !== "Message" ? { FileUID: notePayload.filename } : {}),
+            filename: finalFilename,
+            ...(finalFilename ? { FileUID: finalFilename } : {}),
         };
-        setNotesItems((prev) => [optimisticRow, ...prev]);
-        setOriginalNotesItems((prev) => [optimisticRow, ...prev]);
+        setNotesItems((prev) => [...prev, optimisticRow]);
+        setOriginalNotesItems((prev) => [...prev, optimisticRow]);
         resetEditor();
 
         const result = await createNote(notePayload as unknown as Record<string, unknown>);
         if (!result?.success) {
             console.error("ContactUsNotes: createNote failed", result?.error);
         }
-    }, [editingItem, resetEditor, updateNote, cid, bid, noteby, selectedNode, createNote]);
+    }, [editingItem, resetEditor, updateNote, cid, bid, noteby, selectedNode, createNote, uploadSingleFile]);
 
     // ── SEARCH ────────────────────────────────────────────────────────────────
     const searchValueChange = (value: string) => {
@@ -287,31 +528,63 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
     };
 
     const handleConfirmYesClick = async () => {
-        if (deleteItem) {
-            const noteid = String(deleteItem.id ?? deleteItem.noteid ?? deleteItem._noteid ?? "");
-            setNotesItems((prev) => prev.filter((i) => i !== deleteItem));
-            setOriginalNotesItems((prev) => prev.filter((i) => i !== deleteItem));
-            if (editingItem === deleteItem) {
-                resetEditor();
-            }
-            if (noteid) {
-                const result = await deleteNote(noteid);
-                if (!result?.success) {
-                    console.error("ContactUsNotes: deleteNote failed", result?.error);
-                }
-            }
-        }
+        const itemToDelete = deleteItem;
         setDeleteItem(null);
         setDeleteOpen(false);
+
+        if (itemToDelete) {
+            const rawFileName = String(itemToDelete.filename || itemToDelete.FileUID || "").trim();
+            const noteid = String(itemToDelete.id ?? itemToDelete.noteid ?? itemToDelete._noteid ?? "");
+
+            if (editingItem === itemToDelete) {
+                resetEditor();
+            }
+            setNotesItems((prev) => prev.filter((i) => i !== itemToDelete));
+            setOriginalNotesItems((prev) => prev.filter((i) => i !== itemToDelete));
+
+            statusBarContext.setIsLoading(true);
+            try {
+                // 1. If file exists, delete the file FIRST from Cloud Storage
+                if (rawFileName) {
+                    try {
+                        const storagePath = buildStoragePathForTickets(rawFileName);
+                        await deleteFiles([storagePath]);
+                    } catch (storageErr) {
+                        console.warn("ContactUsNotes: Cloud storage file deletion failed or file already removed", storageErr);
+                    }
+                }
+
+                // 2. Then delete the note document from Firestore
+                if (noteid) {
+                    const result = await deleteNote(noteid);
+                    if (!result?.success) {
+                        console.error("ContactUsNotes: deleteNote failed", result?.error);
+                    }
+                }
+            } catch (err) {
+                console.error("ContactUsNotes: delete operation failed", err);
+            } finally {
+                statusBarContext.setIsLoading(false);
+            }
+        }
     };
 
-    const handleDeleteAttachment = (
-        _objectType: "file" | "audio" | "video",
-        _objectData?: Blob | File
-    ) => {
-        void _objectType;
-        void _objectData;
-    };
+    const handleDeleteAttachment = useCallback(
+        (objectType: "file" | "audio" | "video", _objectData?: Blob | File) => {
+            if (objectType === "file") {
+                setNoteDetails((prev) =>
+                    prev
+                        ? {
+                            ...prev,
+                            notefile: undefined,
+                            notefileName: undefined,
+                        }
+                        : undefined
+                );
+            }
+        },
+        []
+    );
 
     // ── delete icon ───────────────────────────────────────────────────────────
     const deleteImage: IImage = {
@@ -360,7 +633,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                     </div>
 
                     {/* Notes list */}
-                    <div className="nz-notes-list-scroll">
+                    <div className="nz-notes-list-scroll" ref={scrollRef}>
                         {notesItems.map((item, index) => {
                             const isSelected = editingItem
                                 ? editingItem === item || (editingItem.id && item.id === editingItem.id) || (editingItem.noteid && item.noteid === editingItem.noteid)
@@ -410,20 +683,44 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                                         </div>
                                     </div>
                                     <div className="nz-info-div">
-                                        <div className="nz-info-image">
-                                            <Image
-                                                uniqueName={`${uniqueName}-info-${index}`}
-                                                source={
-                                                    <Info24x24
-                                                        size={FnGetCssVariable("--image-size-1")}
-                                                        fill="none"
-                                                        strokeWidth={1}
-                                                    />
-                                                }
-                                                w="var(--image-size-2)"
-                                                tooltip={item.NotesType ?? "Message"}
-                                            />
-                                        </div>
+                                        {Boolean((item.filename && String(item.filename).trim() !== "") || (item.FileUID && String(item.FileUID).trim() !== "")) ? (
+                                            <div
+                                                className="nz-info-image"
+                                                style={{ cursor: "pointer" }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    void handleDownloadFile(item, e);
+                                                }}
+                                            >
+                                                <Image
+                                                    uniqueName={`${uniqueName}-attach-${index}`}
+                                                    source={
+                                                        <Attach24x24
+                                                            size={FnGetCssVariable("--image-size-1")}
+                                                            fill="none"
+                                                            strokeWidth={1}
+                                                        />
+                                                    }
+                                                    w="var(--image-size-2)"
+                                                    tooltip={`Click to download ${getCleanFileName(String(item.filename || item.FileUID || "")) || "file"}`}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="nz-info-image">
+                                                <Image
+                                                    uniqueName={`${uniqueName}-info-${index}`}
+                                                    source={
+                                                        <Info24x24
+                                                            size={FnGetCssVariable("--image-size-1")}
+                                                            fill="none"
+                                                            strokeWidth={1}
+                                                        />
+                                                    }
+                                                    w="var(--image-size-2)"
+                                                    tooltip={item.NotesType ?? "Message"}
+                                                />
+                                            </div>
+                                        )}
                                         <div className="nz-nodes-text">
                                             <Label
                                                 uniqueName={`${uniqueName}-note-${index}`}

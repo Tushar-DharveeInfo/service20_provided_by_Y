@@ -152,7 +152,7 @@ const DeviceModel = (props: IDeviceModel) => {
 	const BASE_URL_DEVICE_MODEL = FnGetEnvVariableByKey(envVarEnums.BASE_URL_LIB);
 	const [isDeviceURLAvailable, setIsDeviceURLAvailable] = useState<boolean>(true);
 	const [isDeviceUrlValidated, setIsDeviceUrlValidated] = useState<boolean>(true);
-	const [leftSideSelectedTab, setLeftSideSelectedTab] = useState<string>('')
+	const [leftSideSelectedTab, setLeftSideSelectedTab] = useState<string>(deviceModelTabs.Result)
 	const [rightSideSelectedTab, setRightSideSelectedTab] = useState<string>('Search library')
 	const [leftSideTabsObj, setLeftSideTabsObj] = useState<IActionLabelTabs>(leftSideTabs)
 	const [wildsearchData, setWildsearchData] = useState<IDeviceWildSearchItem[] | null>(null)
@@ -676,7 +676,7 @@ const DeviceModel = (props: IDeviceModel) => {
 				}
 
 				const apiData = await formatDataForFlatTree(filterData)
-				const hierarchyData = await FnConvertFlatDataToHierarchyData({ "deviceModel": apiData }, "DeviceModel", disableSort)
+				const hierarchyData = await FnConvertFlatDataToHierarchyData({ "deviceModel": apiData }, null, disableSort)
 				if (hierarchyData) {
 					const updatedTreeData = FnUpdateNodeWithTitleAndIcon(hierarchyData, treeProps.featureTreeProps, props.featureId)
 
@@ -717,9 +717,11 @@ const DeviceModel = (props: IDeviceModel) => {
 			}
 
 			setLeftSideTabsObj(leftSideTabs)
+			setLeftSideSelectedTab(deviceModelTabs.Result)
 		} catch (error) {
 			console.error('DeviceModel: makeResultTree failed', error)
 			setLeftSideTabsObj(leftSideTabs)
+			setLeftSideSelectedTab(deviceModelTabs.Result)
 		}
 	}
 	/* Runs keyword or filtered search and populates the Result tab tree. */

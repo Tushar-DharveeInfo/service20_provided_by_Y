@@ -1,10 +1,10 @@
 import { FnFormatTicketDateOnly } from "../../../../shared/allcommon/tree/FnFormatTicketDate";
-import { ITreeNode } from "../../../../shared/allinterface/entity/ITreeNode";
 import { IFeatureTree } from "../../../../shared/allinterface/tree/ITreeForHierarchicalDataContainer";
 import { ITicketFilterValues } from "./TicketFilterForm";
 import type { ITicketDoc } from "@n20a/libfsdb";
 import { TreeNodeIcon } from "../../../../shared/tree/treenodeicon/TreeNodeIcon";
 import { TreeNodeTitle } from "../../../../shared/tree/treenodetitle/TreeNodeTitle";
+import { ITreeNode } from "../../../../shared/allinterface/tree/ITreeControl";
 
 type NodeContext = {
     featureTreeProps?: IFeatureTree;
@@ -152,7 +152,7 @@ function buildMfgTreeOptimized(
     for (const ticket of sortedTickets) {
 
         const mfg =
-            ticket.mfg ?? "";
+            (ticket.mfg && ticket.mfg.trim()) ? ticket.mfg.trim() : "Unknown Manufacturer";
 
         let group =
             mfgMap.get(mfg);
@@ -260,7 +260,7 @@ function buildDateTreeOptimized(
         }
 
         const mfg =
-            ticket.mfg ?? "";
+            (ticket.mfg && ticket.mfg.trim()) ? ticket.mfg.trim() : "Unknown Manufacturer";
 
         let mfgTickets =
             dateGroup.manufacturers.get(mfg);
@@ -467,7 +467,7 @@ function createMfgNodeOptimized(
             createTicketNode(
                 ticket,
                 mfgNode.key,
-                `${ticketKeyPrefix}${ticket.prodno}##${ticket.ticketid}`,
+                `${ticketKeyPrefix}${ticket.prodno || ticket.ticketid || i}##${ticket.ticketid || i}`,
                 context
             );
     }
@@ -493,11 +493,14 @@ function createTicketNode(
     context: NodeContext
 ): ITreeNode {
 
+    const prodNoName =
+        (ticket.prodno && ticket.prodno.trim()) ? ticket.prodno.trim() : (ticket.ticketid || "Ticket");
+
     const node =
         createNode({
             key,
             name:
-                ticket.prodno,
+                prodNoName,
 
             nodeType:
                 "ProdNo",
@@ -511,7 +514,7 @@ function createTicketNode(
             ticket,
 
             description:
-                `${ticket.ticketid} · ${ticket.status}`
+                `${ticket.ticketid || 'Ticket'} · ${ticket.status || 'Pending'}`
         });
 
     /*
@@ -616,7 +619,9 @@ function createNode(params: {
             ticket?.ticketid ?? null,
 
         Status:
-            ticket?.status
+            ticket?.status,
+
+        ticket,
     };
 }
 
@@ -693,13 +698,9 @@ function compareProdNo(
     a: ITicketDoc,
     b: ITicketDoc
 ): number {
-
-    return (
-        (a.prodno ?? "")
-            .localeCompare(
-                b.prodno ?? ""
-            )
-    );
+    const aLabel = (a.prodno && a.prodno.trim()) ? a.prodno.trim() : (a.ticketid || "");
+    const bLabel = (b.prodno && b.prodno.trim()) ? b.prodno.trim() : (b.ticketid || "");
+    return aLabel.localeCompare(bLabel);
 }
 
 
