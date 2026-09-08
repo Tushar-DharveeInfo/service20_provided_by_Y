@@ -296,8 +296,8 @@ function NzAppService(props: INzApp) {
     if (!firebaseToken) return null;
 
     return (
-        <AppContextWrapper>
-            <FirestoreProvider deps={firestoreDeps}>
+        <FirestoreProvider deps={firestoreDeps}>
+            <AppContextWrapper>
                 <ServiceDataProvider>
                     <CloudStorageProvider deps={cloudStorageDeps}>
                         <Router>
@@ -305,8 +305,8 @@ function NzAppService(props: INzApp) {
                         </Router>
                     </CloudStorageProvider>
                 </ServiceDataProvider>
-            </FirestoreProvider>
-        </AppContextWrapper>
+            </AppContextWrapper>
+        </FirestoreProvider>
     );
 }
 

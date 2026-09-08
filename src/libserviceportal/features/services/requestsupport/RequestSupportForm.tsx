@@ -1,9 +1,13 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { SettingsLibForm } from '../../../shared/settingsform/settingslibform/SettingsLibForm';
 import { DisplayControlEnums } from '../../../shared/alldefaultprops/basic/DefaultPropsFormContainer';
 import { IControl } from '../../../shared/allinterface/settingsform/ISettingsLibForm';
 import { Label } from '../../../shared/basic/label/Label';
+import { useBusinessTickets } from '@n20a/libfsdb';
+import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
+import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks';
 import type { INoteItems } from '../../../shared/allinterface/sidebar/IFqaNotes';
+import type { ITicketDoc } from '@n20a/libfsdb';
 import './RequestSupport.css';
 
 interface IRequestSupportFormData {
@@ -19,8 +23,10 @@ interface IRequestSupportFormData {
 
 interface IRequestSupportFormProps {
     uniqueName?: string;
-    selectedNote: INoteItems | null;
+    selectedNote?: INoteItems | null;
+    selectedTicket?: ITicketDoc | null;
     onSave?: (savedData: IRequestSupportFormData) => void;
+    onTicketUpdated?: (updatedTicket: ITicketDoc) => void;
 }
 
 const isClosedStatus = (status?: string | null): boolean => {
@@ -88,28 +94,68 @@ const buildSupportControls = (status?: string | null): IControl[] => {
 const RequestSupportForm = ({
     uniqueName = 'request-support-form',
     selectedNote,
+    selectedTicket,
     onSave,
+    onTicketUpdated,
 }: IRequestSupportFormProps) => {
-    const isClosed = isClosedStatus(selectedNote?.Status);
-    const controls = useMemo(() => buildSupportControls(selectedNote?.Status), [selectedNote?.Status]);
+    const mainAppContext = useMainAppContext();
+    const { setIsLoading } = useStatusBarContext();
+    const authSession = mainAppContext.authSession;
+    const bid = String(authSession?.bid ?? '').trim();
+    const cid = String(authSession?.cid ?? '').trim();
+    const { updateTicket } = useBusinessTickets(bid);
 
-    // Converts selected card from left side pane into profile JSON string
+    // Unify either selectedTicket or selectedNote into a standard display record
+    const activeItem = useMemo(() => {
+        if (selectedTicket) {
+            return {
+                id: selectedTicket.ticketid,
+                UserName: selectedTicket.ticketid || 'Ticket',
+                LastUpdated: selectedTicket.lastupdated || selectedTicket.daterequested || '',
+                Status: selectedTicket.status || 'Pending',
+                NotesType: selectedTicket.tickettype || 'Support Request',
+                EntityName: selectedTicket.mfg || selectedTicket.subscription || 'Ticket',
+                NodeType: selectedTicket.eqtype || 'Support',
+                NotesMAX: selectedTicket.moreinfo || '',
+                FileUID: selectedTicket.prodno || '',
+            };
+        }
+        if (selectedNote) {
+            return {
+                id: `${selectedNote.LastUpdated ?? ''}-${selectedNote.UserName ?? ''}`,
+                UserName: selectedNote.UserName ?? '',
+                LastUpdated: selectedNote.LastUpdated ?? '',
+                Status: selectedNote.Status ?? 'Accepted',
+                NotesType: selectedNote.NotesType ?? 'Message',
+                EntityName: selectedNote.EntityName ?? 'ContactUs',
+                NodeType: selectedNote.NodeType ?? 'ContactUs',
+                NotesMAX: selectedNote.NotesMAX ?? '',
+                FileUID: selectedNote.FileUID ?? '',
+            };
+        }
+        return null;
+    }, [selectedTicket, selectedNote]);
+
+    const isClosed = isClosedStatus(activeItem?.Status);
+    const controls = useMemo(() => buildSupportControls(activeItem?.Status), [activeItem?.Status]);
+
+    // Converts selected card into profile JSON string
     const profileString = useMemo(() => {
-        if (!selectedNote) return '';
+        if (!activeItem) return '';
         const profileData: IRequestSupportFormData = {
-            UserName: selectedNote.UserName ?? '',
-            LastUpdated: selectedNote.LastUpdated ?? '',
-            Status: selectedNote.Status ?? 'Accepted',
-            NotesType: selectedNote.NotesType ?? 'Message',
-            EntityName: selectedNote.EntityName ?? 'ContactUs',
-            NodeType: selectedNote.NodeType ?? 'ContactUs',
-            NotesMAX: selectedNote.NotesMAX ?? '',
-            FileUID: selectedNote.FileUID ?? '',
+            UserName: activeItem.UserName,
+            LastUpdated: activeItem.LastUpdated,
+            Status: activeItem.Status,
+            NotesType: activeItem.NotesType,
+            EntityName: activeItem.EntityName,
+            NodeType: activeItem.NodeType,
+            NotesMAX: activeItem.NotesMAX,
+            FileUID: activeItem.FileUID,
         };
         return JSON.stringify([profileData]);
-    }, [selectedNote]);
+    }, [activeItem]);
 
-    const handleSaveForm = (profileDataJson: string) => {
+    const handleSaveForm = useCallback(async (profileDataJson: string) => {
         let parsedData: Record<string, unknown> = {};
         try {
             const parsed = JSON.parse(profileDataJson);
@@ -118,14 +164,55 @@ const RequestSupportForm = ({
             parsedData = { raw: profileDataJson };
         }
 
+        const newNotes = String(
+            parsedData.NotesMAX ??
+            parsedData['Request Details_NotesMAX'] ??
+            parsedData.moreinfo ??
+            parsedData.message ??
+            ''
+        ).trim();
+
+        if (selectedTicket?.ticketid) {
+            const ticketIdToUpdate = selectedTicket.ticketid;
+            const now = new Date().toISOString();
+            const updatePayload = {
+                moreinfo: newNotes,
+                lastupdated: now,
+                monitorupdated: now,
+            };
+
+            setIsLoading(true);
+            try {
+                const result = await updateTicket(ticketIdToUpdate, updatePayload as unknown as Record<string, unknown>);
+                if (result && result.success !== false) {
+                    await mainAppContext.createActivityLog(
+                        `${cid} of ${bid} updated ticket ${ticketIdToUpdate} successfully.`
+                    );
+                    const updatedTicket: ITicketDoc = {
+                        ...selectedTicket,
+                        moreinfo: newNotes,
+                        lastupdated: now,
+                        monitorupdated: now,
+                    };
+                    if (onTicketUpdated) {
+                        onTicketUpdated(updatedTicket);
+                    }
+                } else {
+                    console.error('RequestSupportForm: updateTicket failed', result?.error);
+                }
+            } catch (err) {
+                console.error('RequestSupportForm: updateTicket error', err);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
         if (onSave) {
             onSave(parsedData as unknown as IRequestSupportFormData);
         }
+    }, [selectedTicket, updateTicket, bid, cid, mainAppContext, onTicketUpdated, onSave, setIsLoading]);
 
-        alert('Updated Support Request Data:\n\n' + JSON.stringify(parsedData, null, 2));
-    };
-
-    if (!selectedNote) {
+    if (!activeItem) {
         return (
             <div className="nz-request-support-empty-pane nz-wh-100 nz-d-flex-hv-left" style={{ padding: 'var(--spacing-2)' }}>
                 <Label
@@ -136,9 +223,9 @@ const RequestSupportForm = ({
         );
     }
 
-    const noteId = `${selectedNote.LastUpdated ?? ''}-${selectedNote.UserName ?? ''}`;
-    const statusSuffix = selectedNote.Status ? ` [${selectedNote.Status}]` : '';
-    const headerTitle = `Details (${selectedNote.UserName || 'demo.user'})${statusSuffix}`;
+    const noteId = activeItem.id || `${activeItem.LastUpdated}-${activeItem.UserName}`;
+    const statusSuffix = activeItem.Status ? ` [${activeItem.Status}]` : '';
+    const headerTitle = `Details (${activeItem.UserName || 'Support Request'})${statusSuffix}`;
 
     return (
         <div className="nz-request-support-form-container nz-wh-100" key={uniqueName}>

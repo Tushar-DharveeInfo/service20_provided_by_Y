@@ -3,6 +3,7 @@ import { IAlertProfileItem, IApItem, IEmItem, IFeatureForHelp, IFeatureItem, IMa
 import { IAppContextWrapper } from "../allinterface/IAppContextWrapper";
 import { IStatusBar } from "../allinterface/IStatusBar";
 import { AuthSession } from "@n20a/libauth";
+import { useActivities } from "@n20a/libfsdb";
 
 
 let featuresData: IFeatureItem[] | null = null;
@@ -65,6 +66,54 @@ function MainAppProvider({ children }: IAppContextWrapper) {
         // SAMPLE DATA: Alert profile API not called.
     }, []);
 
+    // Derive bid from authSession for useActivities (bid maps to authSession.bid).
+    const bid = String(authSession?.bid ?? "").trim();
+    const { createActivity } = useActivities(bid);
+
+    /**
+     * Writes an activity-log document for the currently signed-in user.
+     * All identity fields (bid, cid, displayName, username, email) are read
+     * automatically from `authSession` stored in this context — the caller
+     * only needs to supply the human-readable `message` string.
+     *
+     * Usage:
+     *   // Login log
+     *   await createActivityLog("User logged in");
+     *   // Signout log
+     *   await createActivityLog("User logged out");
+     */
+    const createActivityLog = useCallback(async (message: string): Promise<void> => {
+        const cid = String(authSession?.cid ?? "").trim();
+        if (!bid || !cid || !authSession) {
+            // Not enough identity info to write a log — silently skip.
+            return;
+        }
+
+        const now = new Date().toISOString();
+
+        try {
+            const result = await createActivity({
+                bid,
+                cid,
+                activityid: `activity_${cid}_${Date.now()}`,
+                message,
+                monitorupdated: now,
+                monitor: false,
+                datecreated: now,
+            });
+            if (!result) {
+                console.error("createActivityLog: createActivity returned null for message:", message);
+                return;
+            }
+
+            if (!result.success) {
+                console.error("createActivityLog failed:", result.error);
+            }
+        } catch (error) {
+            console.error("createActivityLog error:", error);
+        }
+    }, [authSession, bid, createActivity]);
+
     const providers = useMemo(
         (): IMainApp => ({
             apRecords,
@@ -92,6 +141,7 @@ function MainAppProvider({ children }: IAppContextWrapper) {
             selectedFeatureForHelp,
             setSelectedFeatureForHelp,
             fetchAlertProfileRecords,
+            createActivityLog,
         }),
         [
             apRecords,
@@ -107,6 +157,7 @@ function MainAppProvider({ children }: IAppContextWrapper) {
             authSession,
             userInfoAndSubscription,
             fetchAlertProfileRecords,
+            createActivityLog,
         ]
     );
 

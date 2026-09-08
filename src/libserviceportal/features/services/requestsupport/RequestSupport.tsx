@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { OpenSidebar24x24 } from '@n20a/libicon';
 import { Splitter, SplitterPanel, SplitterResizeEndEvent } from 'primereact/splitter';
 import { FeatureQARange, ServicesEnums } from '../../../constants/Feature';
@@ -10,14 +10,13 @@ import { ISession } from '../../../shared/context/allinterface/ISession';
 import { IFeatureItem } from '../../../shared/context/allinterface/IMainApp';
 import { IMenuItem } from '../../../shared/allinterface/menu/IMainMenu';
 import { ISelectedNodeInfo, ITreeNode } from '../../../shared/allinterface/tree/ITreeControl';
-import type { INoteItems } from '../../../shared/allinterface/sidebar/IFqaNotes';
 import { Label } from '../../../shared/basic/label/Label';
 import { ActionImage } from '../../../shared/basic/actionimage/ActionImage';
 import { FnGetCssVariable } from '../../../shared/allcommon/FnGetCssVariable';
-import { SidebarContainer } from '../../../appcontainer/sidebarcontainer/SidebarContainer';
 import { handleContainerKeyDown } from '../../../shared/allcommon/basic/FnHandleContainerKeyDown';
-import { ContactUsNotes } from '../../appqa/contectus/ContactUs';
+import { RequestSupportTickets } from './RequestSupportTickets';
 import { RequestSupportForm } from './RequestSupportForm';
+import type { ITicketDoc } from '@n20a/libfsdb';
 import './RequestSupport.css';
 
 interface IRequestSupportProps {
@@ -38,7 +37,6 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
     const featureId = props.featureId ?? ServicesEnums.RequestSupport;
 
     const [selectedNodeInfo, setSelectedNodeInfo] = useState<ISelectedNodeInfo>();
-    const [selectedNoteItem, setSelectedNoteItem] = useState<INoteItems | null>(null);
     const [isShowSidebar, setIsShowSidebar] = useState<boolean>(false);
     const [featureQAData, setFeatureQAData] = useState<IFeatureItem[]>([]);
     const [showSidebarFullWidth, setShowSidebarFullWidth] = useState<boolean>(false);
@@ -52,25 +50,25 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
     const sessionContext = useSessionContext();
     const selectedNodeContext = useSelectedNodeContext();
 
-    const contactUsSelectedNode = useMemo<ITreeNode>(() => ({
-        key: 'contact-us',
-        NodeEntityname: 'ContactUs',
-        NodeEntID: 'CONTACT-US',
+    const requestSupportSelectedNode = useMemo<ITreeNode>(() => ({
+        key: 'request-support',
+        NodeEntityname: 'RequestSupport',
+        NodeEntID: 'REQUEST-SUPPORT',
         stepNo: 0,
         parentEntID: null,
         NodeState: null,
-        Description: 'ContactUs',
-        title: 'ContactUs',
+        Description: 'RequestSupport',
+        title: 'RequestSupport',
         children: [],
-        treetype: 'ContactUs',
-        Name: 'ContactUs',
-        Type: 'ContactUs',
+        treetype: 'RequestSupport',
+        Name: 'RequestSupport',
+        Type: 'RequestSupport',
         icon: null,
         HasChildren: 0,
-        NodeType: 'ContactUs',
+        NodeType: 'RequestSupport',
     }), []);
 
-    const activeSelectedNode = props.selectedNode ?? selectedNodeInfo?.node ?? contactUsSelectedNode;
+    const activeSelectedNode = props.selectedNode ?? selectedNodeInfo?.node ?? requestSupportSelectedNode;
 
     // Builds sidebar QA tabs from smFeatures (featureRecords) for the selected menu.
     useEffect(() => {
@@ -143,9 +141,15 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
         }
     };
 
-    function handleSelectNote(item: Record<string, any>): void {
-        setSelectedNoteItem(item as INoteItems);
-    }
+    const [selectedTicket, setSelectedTicket] = useState<ITicketDoc | null>(null);
+
+    const handleSelectTicket = useCallback((ticket: ITicketDoc | null): void => {
+        setSelectedTicket(ticket);
+    }, []);
+
+    const handleTicketUpdated = useCallback((ticket: ITicketDoc): void => {
+        setSelectedTicket(ticket);
+    }, []);
 
     return (
         <div key={uniqueName} id="FeatureContainer" className="nz-explorer-container nz-request-support-container" tabIndex={1} onKeyDown={handleContainerKeyDown}>
@@ -184,18 +188,18 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
                 <div className="nz-feature-explorer-container">
                     <Splitter className="nz-w-100 nz-h-100" onResizeEnd={handleExplorerResizeEnd} tabIndex={-1}>
                         <SplitterPanel tabIndex={-1} size={50} minSize={20} className="nz-d-flex-column nz-explorer-pane nz-pane-1">
-                            <ContactUsNotes
-                                uniqueName={`${uniqueName}-notes`}
-                                selectedNode={activeSelectedNode}
-                                onSelectNote={handleSelectNote}
-                                selectedNoteItem={selectedNoteItem}
+                            <RequestSupportTickets
+                                uniqueName={`${uniqueName}-tickets`}
+                                onSelectTicket={handleSelectTicket}
+                                selectedTicket={selectedTicket}
                             />
                         </SplitterPanel>
                         <SplitterPanel tabIndex={-1} size={50} minSize={20} className="nz-d-flex-column nz-align-center nz-layout-with-sidebar-pane nz-pane-2">
                             <div className="nz-wh-100 " style={{ overflow: 'hidden' }}>
                                 <RequestSupportForm
                                     uniqueName={`${uniqueName}-details-form`}
-                                    selectedNote={selectedNoteItem}
+                                    selectedTicket={selectedTicket}
+                                    onTicketUpdated={handleTicketUpdated}
                                 />
                             </div>
                         </SplitterPanel>
@@ -203,28 +207,6 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
                 </div>
 
             </div >
-            {activeSelectedNode && isSidebar && featureQAData?.length ? (
-                <SidebarContainer
-                    uniqueName={`${uniqueName}-sidebar`}
-                    isShowSidebar={isShowSidebar}
-                    featureQaList={featureQAData ?? []}
-                    selectedNode={activeSelectedNode}
-                    featureId={featureId}
-                    fullView={showSidebarFullWidth}
-                    headerText={""}
-                    selectedFeatureQa={selectedKebabMenuExplorer ?? null}
-                    showPopupSidebar={false}
-                    treeData={treeData ?? null}
-                    handleCloseSidebar={() => {
-                        setIsSidebar('sidebarClose');
-                        setIsShowSidebar(false);
-                        if (props.handleCloseSidebar) {
-                            props.handleCloseSidebar();
-                        }
-                    }}
-                    handleReloadTree={props.handleReloadTree}
-                />
-            ) : null}
         </div >
     );
 };

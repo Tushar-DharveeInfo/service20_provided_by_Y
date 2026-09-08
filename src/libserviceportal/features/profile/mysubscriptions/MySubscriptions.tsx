@@ -1,7 +1,7 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './MySubscriptions.css'
 import { Label } from '../../../shared/basic/label/Label.tsx'
-import { CardLayout } from './cardlayout/CardLayout.tsx'
+import { CardLayout, ICardLayoutField } from './cardlayout/CardLayout.tsx'
 import { FnConvertDateToUtcOrUtcToDate } from '../../../appcontainer/allcommon/FnConvertDateToUtcOrUtcToDate.ts'
 import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks.ts'
 import { useSubs } from '@n20a/libfsdb'
@@ -23,16 +23,6 @@ interface ISampleUserLicense {
     purchaser?: string;
     orderid?: string;
     [key: string]: unknown;
-}
-
-interface ICardLayoutField {
-    Name: string;
-    Value: string;
-    ValueContent?: ReactNode;
-    Header?: number | boolean;
-    Group?: string;
-    Row?: 'space-between' | 'inline';
-    disabledCheckbox?: boolean;
 }
 
 interface IMySubscriptions {
@@ -125,74 +115,50 @@ const normalizeSub = (sub: Record<string, any>): ISampleUserLicense => {
     };
 };
 
-/* Card rows matching the NZLicenseKey license-card layout. */
+
+/* Card fields configured to render:
+ * Top Header row (space-between):
+ *   Left:  Active Product: <ProductName>
+ *   Right: Start Date: <StartDate>   End Date: <EndDate>
+ * Bottom Detail row (space-between):
+ *   Left:  Order ID: <OrderID>
+ *   Right: Purchaser: <Purchaser>
+ */
 const getLicenseFields = (license: ISampleUserLicense): ICardLayoutField[] => {
-    const fields: ICardLayoutField[] = [
-        { Name: "", Value: license._NZLicenseKey || license.EntID, Header: 1 },
+    const isExpired = isSubscriptionExpired(license.EndDate);
+    const statusText = license.status
+        ? (license.status.charAt(0).toUpperCase() + license.status.slice(1).toLowerCase())
+        : (isExpired ? 'Expired' : 'Active');
+
+    const productTitle = `${statusText} Product: ${license.ProductName || 'NetZoom'}`;
+    const datesStr = `Start Date: ${formatSubDate(license.StartDate) || 'N/A'}   End Date: ${formatSubDate(license.EndDate) || 'N/A'}`;
+
+    return [
+        // Header slots (Header: 1 and Header: 2 trigger CardLayout's built-in header-row--space-between)
         {
-            Name: "Start Date",
-            Value: formatSubDate(license.StartDate) || 'N/A',
-            Group: "dates",
-            Row: "inline"
+            Name: "",
+            Value: productTitle,
+            Header: 1,
         },
         {
-            Name: "End Date",
-            Value: formatSubDate(license.EndDate) || 'N/A',
-            Group: "dates",
-            Row: "inline"
+            Name: "",
+            Value: datesStr,
+            Header: 2,
         },
+        // Detail row with Row: 'space-between'
         {
-            Name: "Product Name",
-            Value: license.ProductName,
-            Group: "product",
-            Row: "inline"
-        }
-    ];
-
-    if (license.status) {
-        fields.push({
-            Name: "Status",
-            Value: String(license.status),
-            Group: "status",
-            Row: "inline"
-        });
-    }
-
-    if (license.purchaser) {
-        fields.push({
-            Name: "Purchaser",
-            Value: String(license.purchaser),
-            Group: "purchaser",
-            Row: "inline"
-        });
-    }
-
-    if (license.orderid) {
-        fields.push({
             Name: "Order ID",
-            Value: String(license.orderid),
-            Group: "order",
-            Row: "inline"
-        });
-    }
-
-    if (license.RackCount > 0) {
-        fields.push({
-            Name: "Rack Count",
-            Value: String(license.RackCount),
-            Group: "product",
-            Row: "inline"
-        });
-    } else if (license.UserCount > 0) {
-        fields.push({
-            Name: "User Count",
-            Value: String(license.UserCount),
-            Group: "product",
-            Row: "inline"
-        });
-    }
-
-    return fields;
+            Value: license.orderid || license.EntID || 'N/A',
+            Group: "sub-info-row",
+            Row: "space-between",
+        },
+        {
+            Name: "Purchaser",
+            Value: license.purchaser || 'N/A',
+            Group: "sub-info-row",
+            Row: "space-between",
+        },
+    ];
 };
 
 const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
@@ -262,7 +228,8 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                             hideRightMouseMenu={true}
                             keyboardNavigationOrientation={'vertical'}
                             tabIndex={0}
-                            onClick={() => setSelectedLicenseId(license.EntID)} />
+                            onClick={() => setSelectedLicenseId(license.EntID)}
+                        />
                     );
                 })}
             </div>

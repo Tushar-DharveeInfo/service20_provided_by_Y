@@ -11,14 +11,15 @@ import { Label } from "../../../shared/basic/label/Label.tsx"
 import { FnGetCssVariable } from "../../../shared/allcommon/FnGetCssVariable.ts"
 import { Image } from "../../../shared/basic/image/Image.tsx"
 import type { ITreeNode } from "../../../shared/allinterface/entity/ITreeNode.ts"
-import notesSampleData from '../../../../serviceSampledata/sidebar/NotesSampleData.json'
-const { sampleNotesEntityRecordsResponse } = notesSampleData;
-import { FnHandleAPIResponse } from "../../../shared/allcommon/basic/FnHandleAPIResponse.ts"
 import { FnConvertDateToUtcOrUtcToDate } from "../../../appcontainer/allcommon/FnConvertDateToUtcOrUtcToDate.ts"
 import { FilterKeywordControl } from "../../../shared/searchfilter/filterkeywordcontrol/FilterKeywordControl.tsx"
 import { ActionImage } from "../../../shared/basic/actionimage/ActionImage.tsx"
 import { YesNoFormContainer } from "../../../shared/basic/yesnoformcontainer/YesNoFormContainer.tsx"
 import type { IImage } from "../../../shared/allinterface/basic/IImage.ts"
+import { useBusinessNotes } from "@n20a/libfsdb"
+import type { INoteDoc } from "@n20a/libfsdb"
+import { useMainAppContext } from "../../../shared/context/hooks/MainAppHooks.ts"
+import { useStatusBarContext } from "../../../shared/context/hooks/StatusBarHooks.ts"
 
 interface IContactUsNotes {
     uniqueName: string;
@@ -33,12 +34,60 @@ interface IContactUs {
     handleShowUserMessage?: (messageText: string) => void;
 }
 
+/**
+ * Converts a Firestore Timestamp object  { seconds, nanoseconds }
+ * OR a plain ISO string into a standard ISO-8601 string.
+ * Returns "" when the input is missing or unrecognisable.
+ */
+function resolveFirestoreDate(value: unknown): string {
+    if (!value) return "";
+    // Plain ISO string (e.g. optimistic rows we create locally)
+    if (typeof value === "string") return value;
+    // Firestore Timestamp serialised as { seconds, nanoseconds, type? }
+    if (typeof value === "object") {
+        const ts = value as Record<string, unknown>;
+        const seconds = typeof ts.seconds === "number" ? ts.seconds : Number(ts.seconds ?? 0);
+        if (!isNaN(seconds) && seconds > 0) {
+            return new Date(seconds * 1000).toISOString();
+        }
+    }
+    return "";
+}
+
 /*
- * ContactUs copy of the sidebar FqaNotes component.
- * It intentionally uses the same note editor, list, search, delete confirmation,
- * sample response, class names and local add/delete behavior as the sidebar.
+ * ContactUs notes panel.
+ * Uses useBusinessNotes hook for live load / create / edit / delete.
  */
 const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteItem, isAppQa }: IContactUsNotes) => {
+    // ── identity from context ────────────────────────────────────────────────
+    const mainAppContext = useMainAppContext();
+    const statusBarContext = useStatusBarContext();
+    const authSession = mainAppContext.authSession;
+    const bid = String(authSession?.bid ?? "").trim();
+    const cid = String(authSession?.cid ?? "").trim();
+    const noteby = authSession?.displayName ?? authSession?.username ?? "unknown";
+
+    // ── notes hook ───────────────────────────────────────────────────────────
+    const {
+        notes,
+        loading,
+        error,
+        getNotes,
+        createNote,
+        updateNote,
+        deleteNote,
+    } = useBusinessNotes(bid);
+    console.log('notes', notes)
+
+    // ── sync loader with status bar ───────────────────────────────────────────
+    useEffect(() => {
+        statusBarContext.setIsLoading(loading);
+        return () => {
+            statusBarContext.setIsLoading(false);
+        };
+    }, [loading, statusBarContext]);
+
+    // ── local UI state ───────────────────────────────────────────────────────
     const [notesItems, setNotesItems] = useState<Record<string, any>[]>([]);
     const [originalNotesItems, setOriginalNotesItems] = useState<Record<string, any>[]>([]);
     const [noteDetails, setNoteDetails] = useState<INote>();
@@ -49,8 +98,12 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
     const [confirmMessage, setConfirmMessage] = useState("");
     const [showOkButton, setShowOkButton] = useState(false);
     const [refreshToken, setRefreshToken] = useState(0);
+    /** The note card currently loaded into the editor for editing. null = create-new mode. */
+    const [editingItem, setEditingItem] = useState<Record<string, any> | null>(null);
 
+    // ── reset editor to blank new-note state ─────────────────────────────────
     const resetEditor = useCallback(() => {
+        setEditingItem(null);
         setNoteDetails({
             maxAudioRecordingTime: 60000,
             maxVideoRecordingTime: 60000,
@@ -62,31 +115,60 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
             notevideo: undefined,
             noteCreatedAt: new Date(),
         });
-        setRefreshToken((value) => value + 1);
+        setRefreshToken((v) => v + 1);
     }, []);
 
-    useEffect(() => {
-        const parsedData = FnHandleAPIResponse(
-            sampleNotesEntityRecordsResponse,
-            "Dataset"
-        );
-        const sampleNotes =
-            typeof parsedData === "object"
-                && parsedData !== null
-                && Array.isArray((parsedData as Record<string, unknown>)["PG.Notes"])
-                ? (parsedData as Record<string, Record<string, any>[]>)["PG.Notes"]
-                : [];
-
-        setNotesItems(sampleNotes);
-        setOriginalNotesItems(sampleNotes);
-        if (sampleNotes.length > 0 && onSelectNote && !selectedNoteItem) {
-            onSelectNote(sampleNotes[0]);
+    // ── select a card to edit in the below notes control ──────────────────────
+    const handleSelectCardToEdit = useCallback((item: Record<string, any>) => {
+        setEditingItem(item);
+        const textContent = String(item.NotesMAX ?? item.message ?? "");
+        setNoteDetails({
+            maxAudioRecordingTime: 60000,
+            maxVideoRecordingTime: 60000,
+            noteId: String(item.id ?? item.noteid ?? item._noteid ?? Date.now()),
+            noteTitle: "",
+            notecontent: textContent,
+            notefile: undefined,
+            noteaudio: undefined,
+            notevideo: undefined,
+            noteCreatedAt: new Date(),
+        });
+        setRefreshToken((v) => v + 1);
+        if (onSelectNote) {
+            onSelectNote(item);
         }
-        resetEditor();
-    }, [selectedNode, resetEditor, onSelectNote]);
+    }, [onSelectNote]);
 
-    const sendNotes = useCallback((message: INote) => {
+    // ── LOAD: fetch from hook whenever selected node / bid changes ────────────
+    useEffect(() => {
+        if (!bid) return;
+        getNotes()
+            .then((fetched) => {
+                const rows = Array.isArray(fetched) ? fetched : [];
+                setNotesItems(rows);
+                setOriginalNotesItems(rows);
+                if (rows.length > 0 && onSelectNote && !selectedNoteItem) {
+                    onSelectNote(rows[0]);
+                }
+            })
+            .catch((err) => console.error("ContactUsNotes: getNotes failed", err));
+        resetEditor();
+    }, [selectedNode, bid, resetEditor, onSelectNote]);
+
+    // ── keep local list in sync when hook re-fetches ──────────────────────────
+    // NOTE: Guard with Array.isArray — after createNote/deleteNote the hook
+    // may set notes to a non-array value (e.g. write result), which would
+    // replace the state with a non-iterable and crash .map().
+    useEffect(() => {
+        if (!Array.isArray(notes)) return;
+        setNotesItems(notes);
+        setOriginalNotesItems(notes);
+    }, [notes]);
+
+    // ── SAVE / UPDATE ─────────────────────────────────────────────────────────
+    const sendNotes = useCallback(async (message: INote) => {
         const noteText = message.notecontent?.trim() ?? "";
+
         if (!noteText) {
             setNoteDetails(message);
             setConfirmMessage(
@@ -97,46 +179,106 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
             return;
         }
 
+        const now = new Date().toISOString();
+
+        // ── EDIT MODE: If user selected an existing note card, call updateNote ──
+        if (editingItem) {
+            const noteIdToUpdate = String(
+                editingItem.id ?? editingItem.noteid ?? editingItem._noteid ?? ""
+            );
+
+            // Optimistic update in local list
+            const applyUpdate = (prev: Record<string, any>[]) =>
+                prev.map((item) => {
+                    const itemId = String(item.id ?? item.noteid ?? item._noteid ?? "");
+                    if (item === editingItem || (noteIdToUpdate && itemId === noteIdToUpdate)) {
+                        return {
+                            ...item,
+                            NotesMAX: noteText,
+                            message: noteText,
+                            LastUpdated: now,
+                            monitorupdated: now,
+                        };
+                    }
+                    return item;
+                });
+
+            setNotesItems(applyUpdate);
+            setOriginalNotesItems(applyUpdate);
+            resetEditor();
+
+            if (noteIdToUpdate) {
+                const updatePayload = {
+                    message: noteText,
+                    monitorupdated: now,
+                };
+                const result = await updateNote(noteIdToUpdate, updatePayload as unknown as Record<string, unknown>);
+                if (!result?.success) {
+                    console.error("ContactUsNotes: updateNote failed", result?.error);
+                }
+            }
+            return;
+        }
+
+        // ── CREATE MODE: Add a new note ──────────────────────────────────────
         let notesType = "Message";
         if (message.notevideo) notesType = "Video";
         else if (message.noteaudio) notesType = "Audio";
         else if (message.notefile) notesType = "Image";
 
-        const newNote: Record<string, any> = {
+        const noteid = `note_${cid}_${Date.now()}`;
+
+        const notePayload: INoteDoc = {
+            bid,
+            cid,
+            noteid,
+            noteby,
+            message: noteText,
+            filename: notesType !== "Message" ? `file-${Date.now()}` : "",
+            datecreated: now,
+            monitorupdated: now,
+            monitor: false,
+        };
+
+        // Optimistic UI row mapped to display shape
+        const optimisticRow: Record<string, any> = {
             EntityName: selectedNode.NodeEntityname ?? "ContactUs",
-            LastUpdated: new Date().toISOString(),
+            LastUpdated: now,
             NodeType: selectedNode.NodeType ?? "ContactUs",
             NotesMAX: noteText,
             NotesType: notesType,
-            UserName: "demo.user",
+            UserName: noteby,
             Status: "Accepted",
-            ...(notesType !== "Message"
-                ? { FileUID: `sample-file-${Date.now()}` }
-                : {}),
+            _noteid: noteid,
+            ...(notesType !== "Message" ? { FileUID: notePayload.filename } : {}),
         };
-
-        setNotesItems((items) => [newNote, ...items]);
-        setOriginalNotesItems((items) => [newNote, ...items]);
+        setNotesItems((prev) => [optimisticRow, ...prev]);
+        setOriginalNotesItems((prev) => [optimisticRow, ...prev]);
         resetEditor();
-    }, [resetEditor, selectedNode]);
 
+        const result = await createNote(notePayload as unknown as Record<string, unknown>);
+        if (!result?.success) {
+            console.error("ContactUsNotes: createNote failed", result?.error);
+        }
+    }, [editingItem, resetEditor, updateNote, cid, bid, noteby, selectedNode, createNote]);
+
+    // ── SEARCH ────────────────────────────────────────────────────────────────
     const searchValueChange = (value: string) => {
         setSearchText(value);
         setLensDirty(Boolean(value.length));
-        if (!value.length) {
-            setNotesItems(originalNotesItems);
-        }
+        if (!value.length) setNotesItems(originalNotesItems);
     };
 
     const handleKeywordSearchResult = () => {
-        const searchValue = searchText.toLowerCase();
+        const q = searchText.toLowerCase();
         setNotesItems(
             originalNotesItems.filter((item) =>
-                item.NotesMAX?.toLowerCase().includes(searchValue)
+                (item.NotesMAX ?? item.message ?? "").toLowerCase().includes(q)
             )
         );
     };
 
+    // ── DELETE ────────────────────────────────────────────────────────────────
     const handleDelete = (item: Record<string, any>) => {
         setDeleteItem(item);
         setConfirmMessage("Are you sure you want to delete this note?");
@@ -144,12 +286,20 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         setDeleteOpen(true);
     };
 
-    const handleConfirmYesClick = () => {
+    const handleConfirmYesClick = async () => {
         if (deleteItem) {
-            setNotesItems((items) => items.filter((item) => item !== deleteItem));
-            setOriginalNotesItems((items) =>
-                items.filter((item) => item !== deleteItem)
-            );
+            const noteid = String(deleteItem.id ?? deleteItem.noteid ?? deleteItem._noteid ?? "");
+            setNotesItems((prev) => prev.filter((i) => i !== deleteItem));
+            setOriginalNotesItems((prev) => prev.filter((i) => i !== deleteItem));
+            if (editingItem === deleteItem) {
+                resetEditor();
+            }
+            if (noteid) {
+                const result = await deleteNote(noteid);
+                if (!result?.success) {
+                    console.error("ContactUsNotes: deleteNote failed", result?.error);
+                }
+            }
         }
         setDeleteItem(null);
         setDeleteOpen(false);
@@ -159,11 +309,11 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         _objectType: "file" | "audio" | "video",
         _objectData?: Blob | File
     ) => {
-        // The sidebar API is intentionally disabled in this sample project.
         void _objectType;
         void _objectData;
     };
 
+    // ── delete icon ───────────────────────────────────────────────────────────
     const deleteImage: IImage = {
         uniqueName: `${uniqueName}-delete-icon`,
         source: (
@@ -178,10 +328,26 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         tooltip: "Click to Delete",
     };
 
+    // ── guard: no session ─────────────────────────────────────────────────────
+    if (!bid) {
+        return (
+            <div className="nz-node-list-Container" key={uniqueName}>
+                <Label uniqueName={`${uniqueName}-no-session`} label="Session not available." />
+            </div>
+        );
+    }
+
+    // ── render ────────────────────────────────────────────────────────────────
     return (
         <div className="nz-node-list-Container" key={uniqueName}>
+            {!loading && error && (
+                <Label uniqueName={`${uniqueName}-error`} label={`Error: ${error}`} />
+            )}
+
             <div className="nz-notes-list-main-div">
                 <div className="nz-notes-list-with-msg-box">
+
+                    {/* Search */}
                     <div className="nz-notes-search">
                         <FilterKeywordControl
                             uniqueName={`${uniqueName}-filter`}
@@ -192,16 +358,25 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                             filterIconTooltip="Filter"
                         />
                     </div>
+
+                    {/* Notes list */}
                     <div className="nz-notes-list-scroll">
                         {notesItems.map((item, index) => {
-                            const isSelected = isAppQa ? false : selectedNoteItem
-                                ? (selectedNoteItem.LastUpdated === item.LastUpdated && selectedNoteItem.NotesMAX === item.NotesMAX)
-                                : index === 0;
+                            const isSelected = editingItem
+                                ? editingItem === item || (editingItem.id && item.id === editingItem.id) || (editingItem.noteid && item.noteid === editingItem.noteid)
+                                : isAppQa
+                                    ? false
+                                    : selectedNoteItem
+                                        ? (
+                                            selectedNoteItem.LastUpdated === item.LastUpdated &&
+                                            selectedNoteItem.NotesMAX === item.NotesMAX
+                                        )
+                                        : index === 0;
                             return (
                                 <div
                                     className={`nz-node-list-box ${isSelected ? "nz-node-list-box-selected" : ""}`}
-                                    key={`${item.LastUpdated}-${index}`}
-                                    onClick={() => onSelectNote?.(item)}
+                                    key={`${resolveFirestoreDate(item.LastUpdated ?? item.datecreated) || index}-${index}`}
+                                    onClick={() => handleSelectCardToEdit(item)}
                                     style={{ cursor: "pointer" }}
                                 >
                                     <div className="nz-node-list-delete">
@@ -220,17 +395,17 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                                         <div className="nz-note-date">
                                             <Label
                                                 uniqueName={`${uniqueName}-date-${index}`}
-                                                label={`${FnConvertDateToUtcOrUtcToDate(
-                                                    item.LastUpdated,
+                                                label={FnConvertDateToUtcOrUtcToDate(
+                                                    resolveFirestoreDate(item.LastUpdated ?? item.datecreated),
                                                     false,
                                                     true
-                                                )}`}
+                                                )}
                                             />
                                         </div>
                                         <div className="nz-note-user">
                                             <Label
                                                 uniqueName={`${uniqueName}-user-${index}`}
-                                                label={`${item.UserName}`}
+                                                label={`${item.UserName ?? item.noteby}`}
                                             />
                                         </div>
                                     </div>
@@ -246,13 +421,13 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                                                     />
                                                 }
                                                 w="var(--image-size-2)"
-                                                tooltip={item.NotesType}
+                                                tooltip={item.NotesType ?? "Message"}
                                             />
                                         </div>
                                         <div className="nz-nodes-text">
                                             <Label
                                                 uniqueName={`${uniqueName}-note-${index}`}
-                                                label={item.NotesMAX}
+                                                label={item.NotesMAX ?? item.message ?? ""}
                                             />
                                         </div>
                                     </div>
@@ -260,7 +435,29 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                             );
                         })}
                     </div>
+
+                    {/* Note editor */}
                     <div className="nz-notes-container">
+                        {editingItem && (
+                            <button
+                                type="button"
+                                onClick={resetEditor}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--theme-text-color, #666)',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    textDecoration: 'underline',
+                                    padding: 0,
+                                    position: 'absolute',
+                                    marginRight: 12,
+                                    right: 0,
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        )}
                         {noteDetails && (
                             <Notes
                                 {...noteDetails}
@@ -268,13 +465,14 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                                 allowAudio={false}
                                 allowVideo={false}
                                 sendNote={sendNotes}
-                                sendTooltip="Send Note"
+                                sendTooltip={editingItem ? "Update Note" : "Send Note"}
                                 handleDelete={handleDeleteAttachment}
                             />
                         )}
                     </div>
                 </div>
             </div>
+
             <YesNoFormContainer
                 isOpen={deleteOpen}
                 uniqueName={`${uniqueName}-confirm`}

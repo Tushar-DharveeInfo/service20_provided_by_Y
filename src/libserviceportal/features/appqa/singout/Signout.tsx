@@ -1,11 +1,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { getRuntimeConfig, signOut } from "@n20a/libauth";
-import { useActivities } from '@n20a/libfsdb';
 import { YesNoFormContainer } from '../../../shared/basic/yesnoformcontainer/YesNoFormContainer.tsx';
 import sampleOpenSessions from '../../../../serviceSampledata/appqa/SignoutSampleData.json';
 import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
-import { FnLogSignoutActivity } from '../../../appcontainer/allcommon/FnLogLoginActivity';
 interface ISignout {
   uniqueName: string;//unique identifier for the control
   handleCloseFailed?: (error: Error) => void; // Optional callback for handling close failures
@@ -15,9 +13,6 @@ function Signout(signoutprops: ISignout) {
   const [openSessions, setOpenSessions] = useState<Record<string, any>[]>();
   const { AUTH_TYPE } = getRuntimeConfig();
   const mainAppContext = useMainAppContext();
-  const userInfo = mainAppContext.userInfoAndSubscription?.userInfo;
-  const bid = String(userInfo?.bid ?? '').trim();
-  const { createActivity } = useActivities(bid);
 
   useEffect(() => {
     // API DISABLED: SESSION.GetOpenSession.
@@ -36,11 +31,11 @@ function Signout(signoutprops: ISignout) {
 
   const handleYesButtonClick = useCallback(async () => {
     try {
-      await FnLogSignoutActivity({
-        createActivity,
-        userInfo,
-        bid,
-      });
+      if (!mainAppContext.authSession) {
+        return null;
+      }
+      const message = `${mainAppContext.authSession.cid} of ${mainAppContext.authSession.bid} logged out  successfully.`;
+      await mainAppContext.createActivityLog(message);
 
       if (openSessions?.length) {
         const promises: Promise<void>[] = [];
@@ -115,9 +110,7 @@ function Signout(signoutprops: ISignout) {
     openSessions,
     AUTH_TYPE,
     signoutprops,
-    createActivity,
-    userInfo,
-    bid,
+    mainAppContext.createActivityLog,
   ]);
 
   const handleNoButtonClick = useCallback(() => {

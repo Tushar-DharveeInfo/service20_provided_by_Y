@@ -2,7 +2,6 @@
     width: 100%;
     border: 1px solid var(--borderandscrollbar);
     border-left: 3px solid var(--borderandscrollbar);
-    min-height: 72px;
     background-color: var(--bgfeaturepane1);
     border-radius: 6px;
     box-sizing: border-box;
