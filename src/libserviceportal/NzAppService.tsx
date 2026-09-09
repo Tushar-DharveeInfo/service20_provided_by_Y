@@ -10,17 +10,11 @@ import { AppContextWrapper } from './shared/context/AppContextWrapper';
 import { NodeHeight, SubMenuHeight } from './appcontainer/alldefaultprops/DefaultPropsAppContainer';
 import { GlobalStyles } from './features/appqa/theme/GlobalStyles';
 
-import { IDeploymentEnv, IDeploymentEnvResponse } from './shared/allinterface/IApiResponse';
+import { IDeploymentEnv } from './shared/allinterface/IApiResponse';
 import { AppContainer } from './appcontainer/AppContainer';
-import sampleDeploymentEnvResponse from '../serviceSampledata/auth/DeploymentEnvSampleData.json';
-import authSampleData from '../serviceSampledata/auth/AuthorizationSampleData.json';
-import sampleUserLicenses from '../serviceSampledata/auth/MySubscriptionsSampleData.json';
-
-const { sampleSessionId, sampleSessionVariables } = authSampleData;
 
 import type { IFeatureItem, IUserAuthSession, IUserInfoAndSubscription } from './shared/context/allinterface/IMainApp';
 import { FnGetAuthDisplayName } from './appcontainer/allcommon/FnGetLoggedInStatusMessage';
-import { FnGetBidCid } from './appcontainer/allcommon/FnGetBidCid';
 
 import { FirestoreProvider, FirebaseStorageProvider, type IFirebaseStorageDeps } from '@n20a/libfsdb'
 import { ServiceDataProvider } from './shared/context/contextandprovider/ServiceData'
@@ -38,16 +32,6 @@ interface INzApp {
     onError: (error: string) => void;
 }
 
-
-function isDeploymentEnvResponse(response: unknown): response is IDeploymentEnvResponse {
-    return (
-        typeof response === "object"
-        && response !== null
-        && "valid" in response
-        && "env" in response
-        && Array.isArray((response as { env: unknown }).env)
-    );
-}
 
 const fnFormatFeature = (record: Record<string, any>) => {
 
@@ -105,36 +89,40 @@ function NzLoadContextAndVariables({ uniqueName, user, fbToken, onError, onSucce
     useEffect(() => {
         const loadDeploymentVars = async () => {
             try {
-                const appConfig: IDeploymentEnv[] = Object.entries(window.APP_CONFIG ?? {}).map(
+                let configObj: Record<string, unknown> =
+                    (window as Window & { APP_CONFIG?: Record<string, unknown>; appSettings?: Record<string, unknown> }).APP_CONFIG
+                    ?? (window as Window & { appSettings?: Record<string, unknown> }).appSettings
+                    ?? {};
+
+                if (Object.keys(configObj).length === 0) {
+                    try {
+                        const resp = await fetch('/config.js');
+                        if (resp.ok) {
+                            const scriptContent = await resp.text();
+                            const fn = new Function('window', scriptContent);
+                            fn(window);
+                            configObj =
+                                (window as Window & { APP_CONFIG?: Record<string, unknown>; appSettings?: Record<string, unknown> }).APP_CONFIG
+                                ?? (window as Window & { appSettings?: Record<string, unknown> }).appSettings
+                                ?? {};
+                        }
+                    } catch (fetchErr) {
+                        console.warn("Failed to fetch /config.js:", fetchErr);
+                    }
+                }
+
+                const appConfig: IDeploymentEnv[] = Object.entries(configObj).map(
                     ([key, value]) => ({
                         key,
                         value: String(value)
                     })
                 );
 
-                // SAMPLE DATA: expapi /deployment/env not called
-                const apiResponse = sampleDeploymentEnvResponse;
-
-                if (!isDeploymentEnvResponse(apiResponse)) {
-                    throw new Error("Invalid environment response.");
+                if (appConfig.length === 0) {
+                    throw new Error("Environment configuration not found in config.js.");
                 }
 
-                const { valid, env } = apiResponse;
-                if (!valid) {
-                    throw new Error("Invalid environment response.");
-                }
-                if (env.length === 0) {
-                    throw new Error("Environment configuration not found.");
-                }
-
-                const mergedEnv = [
-                    ...env,
-                    ...appConfig.filter(
-                        appItem => !env.some(apiItem => apiItem.key === appItem.key)
-                    )
-                ];
-
-                mainAppContext.setDeploymentVars(mergedEnv);
+                mainAppContext.setDeploymentVars(appConfig);
                 setIsDeploymentVarsLoaded(true);
             } catch (error) {
                 reportFatalError(
@@ -156,7 +144,7 @@ function NzLoadContextAndVariables({ uniqueName, user, fbToken, onError, onSucce
         const isMountedRef = { current: true };
 
         const initializeData = async () => {
-            if (!sampleSessionVariables.length || !sampleSessionId) return;
+
             if (!isMountedRef.current) return;
 
             let featureRecords: IFeatureItem[] = [];
@@ -184,17 +172,19 @@ function NzLoadContextAndVariables({ uniqueName, user, fbToken, onError, onSucce
 
             mainAppContext.setFeatureRecords(featureRecords);
             mainAppContext.setAllFeatureRecords(featureRecords);
-
-            const bidCid = FnGetBidCid(user?.email);
+            debugger
+            const bidCid = {
+                bid: "bid_109",
+                cid: "cid_bid_109_1"
+            };
             const bid = bidCid?.bid;
             const cid = bidCid?.cid;
-
             const authSession: IUserAuthSession = {
                 id: user.id,
                 username: user.username,
                 displayName: user.displayName,
                 email: user.email ?? null,
-                phoneNumber: user.phoneNumber ?? null,
+                phoneNumber: null,
                 authType: String(user.authType ?? ""),
                 tenantNickname: user.tenantNickname ?? null,
                 bid,
@@ -212,11 +202,11 @@ function NzLoadContextAndVariables({ uniqueName, user, fbToken, onError, onSucce
                     bid,
                     cid,
                 },
-                subscription: sampleUserLicenses,
+                subscription: [],
             };
             mainAppContext.setUserInfoAndSubscription(userInfoAndSubscription);
 
-            sessionContext.setSessionList(sampleSessionVariables);
+            sessionContext.setSessionList([]);
             setIsSessionCreated(true);
 
             try {
@@ -296,15 +286,15 @@ function NzAppService(props: INzApp) {
 
     return (
         <FirestoreProvider deps={firestoreDeps}>
-            <AppContextWrapper>
-                <ServiceDataProvider>
-                    <FirebaseStorageProvider deps={firebaseStorageDeps}>
+            <FirebaseStorageProvider deps={firebaseStorageDeps}>
+                <AppContextWrapper>
+                    <ServiceDataProvider>
                         <Router>
                             <NzLoadContextAndVariables {...props} />
                         </Router>
-                    </FirebaseStorageProvider>
-                </ServiceDataProvider>
-            </AppContextWrapper>
+                    </ServiceDataProvider>
+                </AppContextWrapper>
+            </FirebaseStorageProvider>
         </FirestoreProvider>
     );
 }

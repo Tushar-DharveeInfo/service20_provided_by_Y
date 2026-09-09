@@ -15,7 +15,7 @@ import { FnGetExtensionFromFileName } from '../../allcommon/basic/FnGetExtension
 import { FnGetNameFromFileName } from '../../allcommon/basic/FnGetNameFromFileName'
 import { FnBuildFormElementsFromControls } from '../../allcommon/settingsform/FnBuildFormElementsFromControls'
 import { FnCallApiForIntegration } from '../../allcommon/settingsform/FnCallApiForIntegration'
-import { FnParseJsonSafely } from '../../../appcontainer/allcommon/FnParseJsonSafely'
+import { FnParseJsonSafely } from '../../allcommon/sidebar/FnParseJsonSafely'
 import { DisplayControlEnums } from '../../alldefaultprops/basic/DefaultPropsFormContainer'
 import { IImage } from '../../allinterface/basic/IImage'
 

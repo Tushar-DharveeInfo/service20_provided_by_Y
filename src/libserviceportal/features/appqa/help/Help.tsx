@@ -2,20 +2,20 @@
 import { FlipPdf, prepareToc } from '@n20a/libflippdf'
 import './Help.css'
 import '@n20a/libflippdf/style.css'
-import { useMainAppContext } from "../context/hooks/MainAppHooks.ts";
-import { handleContainerKeyDown } from "../allcommon/basic/FnHandleContainerKeyDown.ts";
-import { FnGetEnvVariableByKey } from "../../appcontainer/allcommon/FnGetEnvVariableByKey.ts";
-import { envVarEnums } from "../../appcontainer/alldefaultprops/DefaultPropsAppContainer.ts";
+import { useMainAppContext } from "../../../shared/context/hooks/MainAppHooks";
+import { handleContainerKeyDown } from "../../../shared/allcommon/basic/FnHandleContainerKeyDown";
+import { FnGetEnvVariableByKey } from "../../../appcontainer/allcommon/FnGetEnvVariableByKey";
+import { envVarEnums } from "../../../appcontainer/alldefaultprops/DefaultPropsAppContainer";
 
 import MarkdownIt from 'markdown-it';
 import parse from 'html-react-parser';
 import { useEffect, useMemo, useState } from 'react';
-import { ActionImage } from '../basic/actionimage/ActionImage.tsx';
+import { ActionImage } from '../../../shared/basic/actionimage/ActionImage';
 import { Close24x24 } from '@n20a/libicon';
-import { FnGetCssVariable } from '../../appcontainer/allcommon/FnGetCssVariable.ts';
-import { Label } from '../basic/label/Label.tsx';
-import { OverlayTab } from '../basic/overlaytab/OverlayTab.tsx';
-import { PdfDownloadOverlay } from './pdfviewer/PdfDownloadOverlay.tsx';
+import { FnGetCssVariable } from '../../../shared/allcommon/FnGetCssVariable';
+import { Label } from '../../../shared/basic/label/Label';
+import { OverlayTab } from '../../../shared/basic/overlaytab/OverlayTab';
+import { PdfDownloadOverlay } from '../../../shared/help/pdfviewer/PdfDownloadOverlay';
 
 interface IHelp {
     uniqueName: string;

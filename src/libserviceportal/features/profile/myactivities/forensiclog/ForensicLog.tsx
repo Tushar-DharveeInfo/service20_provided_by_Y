@@ -20,10 +20,9 @@ import { FnHandleAPIResponse } from '../../../../shared/allcommon/basic/FnHandle
 import { useSessionContext } from '../../../../shared/context/hooks/SessionHooks';
 import { useStatusBarContext } from '../../../../shared/context/hooks/StatusBarHooks';
 import { handleNestedZoneContainerKeyDown } from '../../../../shared/allcommon/basic/FnHandleContainerKeyDown';
-import LogData from '../../../../../serviceSampledata/sidebar/GetForensicLog.json';
 
 const sampleForensicLogApiResponse = {
-    logJson: JSON.stringify(LogData),
+    logJson: JSON.stringify([]),
 };
 import { FnGetColumnWidthFromSession } from '../../../../shared/allcommon/tablegrid/FnGetColumnWidthFromSession';
 import { FORENSIC_LOG_EM_TABLE, FnGetDataGridColumnHide, getExcludeDataGridFieldValue } from '../../../../shared/allcommon/tablegrid/FnGetDataGridColumnHide';

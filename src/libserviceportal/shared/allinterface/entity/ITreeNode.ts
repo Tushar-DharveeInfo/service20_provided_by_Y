@@ -7,7 +7,7 @@ interface ITreeNode {
     NodeEntID: string | null;
     stepNo: number;
     parentEntID: string | null;
-    NodeState: string | null;
+    NodeState?: string | null;
     Description: string | null;
     title: JSX.Element | string;
     children: ITreeNode[];

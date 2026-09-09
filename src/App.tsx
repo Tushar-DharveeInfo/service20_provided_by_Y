@@ -59,6 +59,7 @@ function App() {
   }, []);
 
   const handleAuthenticationSuccess = async (user: AuthSession) => {
+    debugger
     await callEnvToGetData();
     setUserData(user);
     setLoginUserName(user.displayName || user.username);

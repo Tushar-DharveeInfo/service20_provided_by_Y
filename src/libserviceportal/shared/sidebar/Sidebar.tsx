@@ -14,6 +14,16 @@ import { SidebarContent } from './SidebarContent';
 import { MainMenu } from '../menu/mainmenu/MainMenu';
 import { IMenuItem, IMainMenu } from '../allinterface/menu/IMainMenu';
 import { ITreeNode } from '../allinterface/tree/ITreeControl';
+import { SidebarEnum } from '../../constants/Feature';
+import { isEqual } from 'lodash';
+import { FnParseJsonSafely } from '../allcommon/sidebar/FnParseJsonSafely';
+
+const {
+    sampleBusinessPropertyKebabMenuResponse,
+    sampleContactPropertyKebabMenuResponse,
+    samplePropertyKebabMenuResponse,
+} = { sampleBusinessPropertyKebabMenuResponse: "", sampleContactPropertyKebabMenuResponse: "", samplePropertyKebabMenuResponse: "" } as any; // Placeholder for sample data
+import { FnIsRootBusinessNode } from '../allcommon/tree/FnIsRootBusinessNode';
 
 interface IDevicePropertyInfo {
     selectedMfg: string;
@@ -58,17 +68,6 @@ interface IEMRecord {
 interface IKebabMenuResponse {
     KebabMenu?: IMenuItem[];
 }
-import { SidebarEnum } from '../../constants/Feature';
-import { isEqual } from 'lodash';
-import { FnParseJsonSafely } from '../../appcontainer/allcommon/FnParseJsonSafely';
-import propertySampleData from '../../../serviceSampledata/sidebar/PropertySampleData.json';
-
-const {
-    sampleBusinessPropertyKebabMenuResponse,
-    sampleContactPropertyKebabMenuResponse,
-    samplePropertyKebabMenuResponse,
-} = propertySampleData;
-import { FnIsRootBusinessNode } from '../allcommon/tree/FnIsRootBusinessNode';
 
 const SUB_MENU_OPEN_DELAY_MS = 200;
 

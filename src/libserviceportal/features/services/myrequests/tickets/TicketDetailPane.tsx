@@ -8,6 +8,7 @@ import { FnFormatTicketDate } from '../../../../shared/allcommon/tree/FnFormatTi
 interface ITicketDetailPane {
     uniqueName: string
     ticket: ITicketDoc | null
+    onSaveTicket?: (ticketId: string, updatedFields: Partial<ITicketDoc>) => Promise<void> | void
 }
 
 /**
@@ -92,7 +93,7 @@ function buildTicketControls(status?: string | null): IControl[] {
 
 const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
     console.log('ticketDetailPaneProps', ticketDetailPaneProps)
-    const { ticket, uniqueName } = ticketDetailPaneProps
+    const { ticket, uniqueName, onSaveTicket } = ticketDetailPaneProps
 
     const isLocked = isStatusLocked(ticket?.status);
     const controls = useMemo(() => buildTicketControls(ticket?.status), [ticket?.status]);
@@ -105,6 +106,34 @@ const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
         })
         return JSON.stringify([profile])
     }, [ticket])
+
+    const handleSaveForm = (profileDataJson: string, formId?: string) => {
+        let parsed: Record<string, unknown> = {}
+        try {
+            const raw = JSON.parse(profileDataJson)
+            parsed = Array.isArray(raw) && raw.length > 0 ? raw[0] : raw
+        } catch (e) {
+            console.error('Failed to parse profile data', e)
+        }
+
+        const ticketId = ticket?.ticketid || (parsed.Ticket as string) || (parsed.ticketid as string) || formId
+        if (!ticketId) return
+
+        const updates: Partial<ITicketDoc> = {}
+        if (parsed.Mfg !== undefined) updates.mfg = String(parsed.Mfg ?? '').trim()
+        else if (parsed.mfg !== undefined) updates.mfg = String(parsed.mfg ?? '').trim()
+
+        if (parsed.EqType !== undefined) updates.eqtype = String(parsed.EqType ?? '').trim()
+        else if (parsed.eqtype !== undefined) updates.eqtype = String(parsed.eqtype ?? '').trim()
+
+        if (parsed.ProdNo !== undefined) updates.prodno = String(parsed.ProdNo ?? '').trim()
+        else if (parsed.prodno !== undefined) updates.prodno = String(parsed.prodno ?? '').trim()
+
+        if (parsed.MoreInfo !== undefined) updates.moreinfo = String(parsed.MoreInfo ?? '').trim()
+        else if (parsed.moreinfo !== undefined) updates.moreinfo = String(parsed.moreinfo ?? '').trim()
+
+        void onSaveTicket?.(ticketId, updates)
+    }
 
     if (!ticket) {
         return (
@@ -122,7 +151,7 @@ const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
     return (
         <div className="nz-wh-100" style={{ overflow: 'auto' }}>
             <SettingsLibForm
-                key={`${uniqueName}-${ticket.ticketid || 'ticket'}-${ticket.prodno || 'noprod'}-${isLocked ? 'locked' : 'unlocked'}`}
+                key={`${uniqueName}-${ticket.ticketid || 'ticket'}-${ticket.lastupdated || ticket.prodno || 'initial'}-${isLocked ? 'locked' : 'unlocked'}`}
                 uniqueName={`${uniqueName}-form`}
                 controls={controls}
                 profileString={profileString}
@@ -132,6 +161,7 @@ const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
                 isDisableForm={isLocked}
                 isAutoSave={false}
                 id={formId}
+                handleSaveForm={handleSaveForm}
             />
         </div>
     )

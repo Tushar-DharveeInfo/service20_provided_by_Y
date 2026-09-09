@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getRuntimeConfig, signOut } from "@n20a/libauth";
 import { YesNoFormContainer } from '../../../shared/basic/yesnoformcontainer/YesNoFormContainer.tsx';
-import sampleOpenSessions from '../../../../serviceSampledata/appqa/SignoutSampleData.json';
 import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
 interface ISignout {
   uniqueName: string;//unique identifier for the control
@@ -15,26 +14,34 @@ function Signout(signoutprops: ISignout) {
   const mainAppContext = useMainAppContext();
 
   useEffect(() => {
-    // API DISABLED: SESSION.GetOpenSession.
-    // axiosInterceptor({ url: SESSION.GetOpenSession, ... }, statusBarContext);
-    setOpenSessions(sampleOpenSessions);
-    setIsOpen(sampleOpenSessions.length > 0);
-  }, []);
+    if (mainAppContext.authSession) {
+      const auth = mainAppContext.authSession;
+      setOpenSessions([
+        {
+          UserSessionID: auth.id,
+          LoginUserName: auth.username || auth.displayName,
+          bid: auth.bid,
+          cid: auth.cid,
+        }
+      ]);
+      setIsOpen(true);
+    }
+  }, [mainAppContext.authSession]);
 
   const closeSession = async (
     _sessionId: string
   ): Promise<void> => {
-    // API DISABLED: SESSION.CloseSession.
-    // return axiosInterceptor({ url: SESSION.CloseSession, ... }, statusBarContext);
+    // Session close callback using AuthSession id
     await Promise.resolve();
   };
 
   const handleYesButtonClick = useCallback(async () => {
     try {
-      if (!mainAppContext.authSession) {
+      const authSession = mainAppContext.authSession;
+      if (!authSession) {
         return null;
       }
-      const message = `${mainAppContext.authSession.cid} of ${mainAppContext.authSession.bid} logged out  successfully.`;
+      const message = `${authSession.cid ?? ''} of ${authSession.bid ?? ''} logged out  successfully.`;
       await mainAppContext.createActivityLog(message);
 
       if (openSessions?.length) {
@@ -52,6 +59,8 @@ function Signout(signoutprops: ISignout) {
         if (failures.length > 0) {
           console.warn(`Failed to close ${failures.length} of ${results.length} sessions:`, failures);
         }
+      } else if (authSession.id) {
+        await closeSession(authSession.id);
       }
 
       // Sign out all browser tabs whose label begins with "NZ-"
@@ -110,6 +119,7 @@ function Signout(signoutprops: ISignout) {
     openSessions,
     AUTH_TYPE,
     signoutprops,
+    mainAppContext.authSession,
     mainAppContext.createActivityLog,
   ]);
 

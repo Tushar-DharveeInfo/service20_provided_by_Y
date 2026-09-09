@@ -1,8 +1,7 @@
 
 import { IStatusBar } from "../../context/allinterface/IStatusBar";
-import propertySampleData from "../../../../serviceSampledata/sidebar/PropertySampleData.json";
 
-const { samplePropertyKebabMenuData } = propertySampleData;
+const { samplePropertyKebabMenuData } = { samplePropertyKebabMenuData: "" } as any; // Placeholder for sample data
 
 type TableRecord = Record<string, unknown>;
 

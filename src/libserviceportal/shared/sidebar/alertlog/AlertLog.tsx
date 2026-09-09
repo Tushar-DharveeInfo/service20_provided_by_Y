@@ -5,7 +5,6 @@ import { Alertlog, IAlertLogRecord } from "@n20a/libalerts";
 import '@n20a/libalerts/style.css'
 import { useSessionContext } from "../../context/hooks/SessionHooks";
 import { ITreeNode } from "../../allinterface/tree/ITreeControl";
-import sampleAlertLogs from "../../../../serviceSampledata/sidebar/AlertlogSampleData.json";
 import { Label } from "../../basic/label/Label";
 
 interface IAlertLog {
@@ -24,8 +23,8 @@ const AlertLog = (alertLogProps: IAlertLog) => {
     useEffect(() => {
         // SAMPLE DATA: ALERT.GetAlertsToProcess API commented out.
         // axiosInterceptor({ ... }, statusBarContext);
-        setOriginalAlertData(sampleAlertLogs as unknown as Record<string, any>[]);
-        setAlertRecords(sampleAlertLogs);
+        setOriginalAlertData([]);
+        setAlertRecords([]);
         setLoading(false);
     }, [alertLogProps.selectedNode?.NodeEntID])
 
@@ -33,7 +32,7 @@ const AlertLog = (alertLogProps: IAlertLog) => {
     ): Promise<void> => {
         // SAMPLE DATA: ALERT.GetAlertsToProcess refresh API commented out.
         // axiosInterceptor({ ... }, statusBarContext);
-        setAlertRecords(sampleAlertLogs);
+        setAlertRecords([]);
         setLoading(false);
     };
 

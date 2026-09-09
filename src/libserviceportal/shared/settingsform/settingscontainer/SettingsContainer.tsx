@@ -14,7 +14,7 @@ import { FnUpdateProfileStringForEnabled } from '../../allcommon/settingsform/Fn
 import { unstable_batchedUpdates } from 'react-dom';
 import { SettingsLibForm } from '../settingslibform/SettingsLibForm.tsx';
 import Help from '../../help/Help.tsx';
-import { FnParseJsonSafely } from '../../../appcontainer/allcommon/FnParseJsonSafely.ts';
+import { FnParseJsonSafely } from '../../allcommon/sidebar/FnParseJsonSafely.ts';
 import { handleFormControlsKeyDown, handleFormControlsBubbleKeyDown } from '../../allcommon/basic/FnHandleContainerKeyDown';
 
 interface ISettingsContainer {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Key } from 'rc-tree/lib/interface'
 import { Splitter, SplitterPanel } from 'primereact/splitter'
 import './MyRequests.css';
@@ -12,7 +12,27 @@ import { TreeControl } from '../../../shared/tree/treecontrol/TreeControl'
 import { TicketDetailPane } from './tickets/TicketDetailPane'
 import { TicketFilterForm, type ITicketFilterValues } from './tickets/TicketFilterForm'
 import { Label } from '../../../shared/basic/label/Label';
-import type { ITicketDoc } from '@n20a/libfsdb';
+import { useBusinessTickets, type ITicketDoc } from '@n20a/libfsdb';
+import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
+import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks';
+import { FnHideShowSaveIconForForm } from '../../../shared/allcommon/basic/FnHideShowSaveIconForForm';
+
+function findTicketLeafById(nodes: ITreeNode[], ticketId: string): ITreeNode | null {
+    if (!ticketId || !nodes?.length) return null
+    const target = ticketId.trim().toLowerCase()
+    for (const node of nodes) {
+        const nodeTicket = (node as any).ticket as ITicketDoc | undefined
+        const leafTicketId = nodeTicket?.ticketid || (node as any).ticketId
+        if (leafTicketId && String(leafTicketId).trim().toLowerCase() === target) {
+            return node
+        }
+        if (node.children?.length) {
+            const found = findTicketLeafById(node.children, ticketId)
+            if (found) return found
+        }
+    }
+    return null
+}
 
 interface IFeatureTree {
     hideKebabMenu?: boolean;// if true kebab menu on node will not show
@@ -72,6 +92,12 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     const [defaultSelectedNodeInfo, setDefaultSelectedNodeInfo] = useState<ISelectedNodeInfo | null>(null)
 
     const [selectedTicket, setSelectedTicket] = useState<ITicketDoc | null>(null)
+    const selectedTicketIdRef = useRef<string | undefined>(undefined)
+
+    useEffect(() => {
+        selectedTicketIdRef.current = selectedTicket?.ticketid
+    }, [selectedTicket])
+
     const [searchText, setSearchText] = useState('')
     const [searchHistory, setSearchHistory] = useState<string[]>([])
     const [isShowFilterForm, setIsShowFilterForm] = useState(false)
@@ -80,11 +106,14 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     const [draftFilter, setDraftFilter] = useState<ITicketFilterValues>(DEFAULT_FILTER)
 
     const serviceDataContext = useServiceDataContext()
-    const { tickets, isTicketsLoaded, isTicketsLoading, ticketsError, selection } = serviceDataContext
+    const mainAppContext = useMainAppContext()
+    const statusBarContext = useStatusBarContext()
+    const { tickets, isTicketsLoaded, isTicketsLoading, ticketsError, selection, updateTickets } = serviceDataContext
     const loading = isTicketsLoading || !isTicketsLoaded || treeData.length === 0
     const error = ticketsError
     const bid = selection.bid
     const cid = selection.cid
+    const { updateTicket } = useBusinessTickets(bid ?? '')
 
     const selectLeaf = (
         node: ITreeNode,
@@ -114,21 +143,31 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         setSelectedTicket(record)
     }
 
-    const setTicketTree = (filter: ITicketFilterValues) => {
+    const setTicketTree = (
+        filter: ITicketFilterValues,
+        targetTicketId?: string,
+        sourceTickets?: ITicketDoc[]
+    ) => {
+        const currentTickets = sourceTickets ?? tickets
         console.time("setTicketTree")
         const nodes = FnBuildTicketTree(
-            tickets,
+            currentTickets,
             filter,
             featureTreeProps,
             myRequestsProps.featureId ?? 'ticket-explorer'
         )
         console.timeEnd("setTicketTree")
         setTreeData(nodes)
-        const firstLeaf = findFirstTicketLeaf(nodes)
-        if (firstLeaf) {
-            const ancestors = getAncestorKeys(nodes, firstLeaf.key)
-            setDefaultExpandedKeys(ancestors)
-            selectLeaf(firstLeaf, ancestors, nodes)
+
+        const preferredId = targetTicketId ?? selectedTicketIdRef.current
+        const targetLeaf =
+            (preferredId ? findTicketLeafById(nodes, preferredId) : null) ??
+            findFirstTicketLeaf(nodes)
+
+        if (targetLeaf) {
+            const ancestors = getAncestorKeys(nodes, targetLeaf.key)
+            setDefaultExpandedKeys((prev) => Array.from(new Set([...prev, ...ancestors])))
+            selectLeaf(targetLeaf, ancestors, nodes)
         } else {
             setDefaultExpandedKeys([])
             setDefaultSelectedKeys([])
@@ -141,9 +180,53 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
         if (!isTicketsLoaded || isTicketsLoading) {
             return
         }
-        setTicketTree(appliedFilter)
+        setTicketTree(appliedFilter, selectedTicketIdRef.current)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tickets, isTicketsLoaded, isTicketsLoading, bid, cid])
+
+    const handleSaveTicket = async (ticketId: string, updates: Partial<ITicketDoc>) => {
+        if (!ticketId || !bid) return
+        statusBarContext?.setIsLoading?.(true)
+        const now = new Date().toISOString()
+        const payload: Record<string, unknown> = {
+            ...updates,
+            lastupdated: now,
+            monitorupdated: now,
+        }
+
+        try {
+            const result = await updateTicket(ticketId, payload)
+            if (result && result.success !== false) {
+                FnHideShowSaveIconForForm('hide')
+
+                const updatedTickets = tickets.map((t) =>
+                    t.ticketid === ticketId
+                        ? { ...t, ...updates, lastupdated: now, monitorupdated: now }
+                        : t
+                )
+                selectedTicketIdRef.current = ticketId
+                updateTickets(updatedTickets)
+                setSelectedTicket((prev) =>
+                    prev && prev.ticketid === ticketId
+                        ? { ...prev, ...updates, lastupdated: now, monitorupdated: now }
+                        : prev
+                )
+                setTicketTree(appliedFilter, ticketId, updatedTickets)
+
+                if (cid) {
+                    await mainAppContext?.createActivityLog?.(
+                        `${cid} of ${bid} updated ticket ${ticketId} successfully.`
+                    )
+                }
+            } else {
+                console.error('Failed to update ticket:', result?.error)
+            }
+        } catch (err) {
+            console.error('Error updating ticket:', err)
+        } finally {
+            statusBarContext?.setIsLoading?.(false)
+        }
+    }
 
     const handleFilterClick = () => {
         if (isShowFilterForm) {
@@ -365,6 +448,7 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
                         <TicketDetailPane
                             uniqueName={`${myRequestsProps.uniqueName}-detail`}
                             ticket={selectedTicket}
+                            onSaveTicket={handleSaveTicket}
                         />
                     </SplitterPanel>
                 </Splitter>

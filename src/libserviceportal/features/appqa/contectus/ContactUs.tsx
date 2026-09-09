@@ -653,7 +653,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                                     style={{ cursor: "pointer" }}
                                 >
                                     <div className="nz-node-list-delete">
-                                        <ActionImage
+                                        {/* <ActionImage
                                             image={deleteImage}
                                             w="var(--node_height)"
                                             h="var(--node_height)"
@@ -664,7 +664,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                                                 e?.stopPropagation?.();
                                                 handleDelete(item);
                                             }}
-                                        />
+                                        /> */}
                                         <div className="nz-note-date">
                                             <Label
                                                 uniqueName={`${uniqueName}-date-${index}`}

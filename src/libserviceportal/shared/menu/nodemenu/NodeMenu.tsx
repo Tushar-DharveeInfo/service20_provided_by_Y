@@ -13,7 +13,7 @@ import { useSessionContext } from '../../context/hooks/SessionHooks';
 import OverlayIconStrip from '../overlayiconstrip/OverlayIconStrip';
 import { FnCopyToClipboard } from '../../allcommon/basic/FnCopyToClipboard';
 import { useMainAppContext } from '../../context/hooks/MainAppHooks';
-import { FnParseJsonSafely } from '../../../appcontainer/allcommon/FnParseJsonSafely';
+import { FnParseJsonSafely } from '../../allcommon/sidebar/FnParseJsonSafely';
 
 interface IFeatureItem {
     Label: string; // label to show in the kebab menu

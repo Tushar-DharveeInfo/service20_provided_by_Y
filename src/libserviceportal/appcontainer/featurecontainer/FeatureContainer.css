@@ -105,3 +105,11 @@
 .nz-dc-explorer-container .nz-dce-search-tree-container .nz-dce-tree-container {
     height: 100%;
 }
+
+.nz-feature-explorer-right-pane {
+    min-height: 0;
+}
+
+.nz-feature-explorer-right-pane .nz-feature-placeholder {
+    background-color: transparent;
+}

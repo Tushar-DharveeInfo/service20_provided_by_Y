@@ -17,7 +17,7 @@ import { FnConvertDateToUtcOrUtcToDate } from '../allcommon/FnConvertDateToUtcOr
 import { FnGetAppDateFormat } from '../../shared/allcommon/basic/FnGetAppDateFormat';
 import { FnSortStatusBarCards } from '../allcommon/FnSortStatusBarCards';
 import { IAlertProfileItem, IApItem } from '../../shared/context/allinterface/IMainApp';
-import { FnParseJsonSafely } from '../allcommon/FnParseJsonSafely';
+import { FnParseJsonSafely } from '../../shared/allcommon/sidebar/FnParseJsonSafely';
 
 // Builds markdown content for error and log sections in status bar cards.
 const generateErrorMarkdown = (errors: IErrorData[]): string => {

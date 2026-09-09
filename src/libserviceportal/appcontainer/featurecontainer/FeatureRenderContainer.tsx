@@ -26,9 +26,15 @@ const DownloadNetZoom = lazy(() => import('../../features/services/downloadnetzo
 const TicketExplorerContainer = lazy(() => import('../../features/services/myrequests/MyRequests.tsx'))
 
 
-interface IFeatureRenderContainer {
-  allowFeatureToRender: boolean;
+import { ITreeNode } from '../../shared/allinterface/tree/ITreeControl.ts'
+
+export interface IFeatureRenderContainer {
+  allowFeatureToRender?: boolean;
+  doNotRenderExplorerTree?: boolean;
+  asRightPane?: boolean;
   featureContainerProps: IFeatureContainer;
+  selectedNode?: ITreeNode;
+  treeData?: ITreeNode[];
   handleShowUserMessage: (messageText: string, container?: HTMLDivElement) => void;
 }
 /* Features that own the whole content area instead of the explorer tree.
@@ -57,13 +63,19 @@ const FeaturesWithOwnLayout: string[] = [
 function FeatureRenderContainer(featureRenderContainerProps: IFeatureRenderContainer) {
   const {
     allowFeatureToRender,
+    doNotRenderExplorerTree,
+    asRightPane: _asRightPane,
     featureContainerProps,
-    handleShowUserMessage
+    handleShowUserMessage,
+    selectedNode: _selectedNode,
+    treeData: _treeData
   } = featureRenderContainerProps;
   const mainAppContext = useMainAppContext();
   const userInfoAndSubscription = mainAppContext?.userInfoAndSubscription;
+  void userInfoAndSubscription;
 
-  if (!allowFeatureToRender) {
+  const shouldRender = allowFeatureToRender ?? doNotRenderExplorerTree ?? true;
+  if (!shouldRender) {
     return null;
   }
 

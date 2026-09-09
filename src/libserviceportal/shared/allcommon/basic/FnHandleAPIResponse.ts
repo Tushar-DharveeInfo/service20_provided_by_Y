@@ -1,5 +1,5 @@
 
-import { FnParseJsonSafely } from "../../../appcontainer/allcommon/FnParseJsonSafely";
+import { FnParseJsonSafely } from "../sidebar/FnParseJsonSafely";
 
 // this function return api response
 const FnHandleAPIResponse = (jsonData: unknown, keyName: string) => {

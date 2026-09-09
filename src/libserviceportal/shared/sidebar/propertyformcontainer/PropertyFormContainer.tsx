@@ -19,15 +19,13 @@ import { ActionImage } from '../../basic/actionimage/ActionImage'
 import { useSelectedNodeContext } from '../../context/hooks/SelectedNodeHooks'
 import { ISelectedNodeProperty } from '../../context/allinterface/ISelectedNode'
 import { useSessionContext } from '../../context/hooks/SessionHooks'
-import { FnParseJsonSafely } from '../../../appcontainer/allcommon/FnParseJsonSafely'
+import { FnParseJsonSafely } from '../../allcommon/sidebar/FnParseJsonSafely'
 import { FnCheckPermissionToEditName, IFeaturePermission } from '../../allcommon/FnCheckPermissionToEditName'
-import getTableVsPropertySample from '../../../../serviceSampledata/sidebar/GetTableVsPropertySample.json'
 import { ITreeNode } from '../../allinterface/entity/ITreeNode'
 import { IMenuItem } from '../../allinterface/menu/IMainMenu'
 import { IPropertyColumn } from '../../allinterface/sidebar/IPropertyFormContainer'
 import { AddressForm, IAddress } from '@n20a/libcountry'
 
-const samplePropertyEntityTables = getTableVsPropertySample.data;
 
 const addressFieldNames = new Set([
     "address1",
@@ -151,7 +149,7 @@ const PropertyFormContainer = (propertyFormContainerProps: IPropertyFormContaine
             const tables =
                 propertyFormContainerProps.entityTables?.length
                     ? propertyFormContainerProps.entityTables
-                    : (samplePropertyEntityTables as IEntityTable[]);
+                    : [];
             setEntityTables(tables);
             setEntityTablesEntityName(NodeEntityname);
             setLoading(false);

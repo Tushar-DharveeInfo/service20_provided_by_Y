@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { FnParseJsonSafely } from "../../../appcontainer/allcommon/FnParseJsonSafely";
+import { FnParseJsonSafely } from "../../allcommon/sidebar/FnParseJsonSafely";
 import { IBasicGridColDef } from "../../allinterface/tablegrid/IBasicGrid";
 import {
     FormElementsRenderer,
