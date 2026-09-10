@@ -15,6 +15,7 @@ import { FilterKeywordControl } from "../../../shared/searchfilter/filterkeyword
 import { YesNoFormContainer } from "../../../shared/basic/yesnoformcontainer/YesNoFormContainer.tsx"
 import { useBusinessNotes, useFileUpload, useFileDownload, useFileDelete } from "@n20a/libfsdb"
 import type { INoteDoc } from "@n20a/libfsdb"
+import { useUploadRemoteFile } from "../../../shared/allcommon/UploadRemoteFileHooks.ts"
 import { CLOUD_BUCKET } from "../../allcommon/FnGetCloudFilePublicUrl.ts"
 import { useMainAppContext } from "../../../shared/context/hooks/MainAppHooks.ts"
 import { useStatusBarContext } from "../../../shared/context/hooks/StatusBarHooks.ts"
@@ -162,9 +163,9 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
     const noteby = authSession?.displayName ?? authSession?.username ?? "unknown";
 
     // ── firebase storage hooks ───────────────────────────────────────────────
-    const { uploadSingleFile, uploadMultipleFiles, uploading, progress, error: uploadError } = useFileUpload();
-    const { downloadSingleFile } = useFileDownload();
-    const { deleteFiles } = useFileDelete();
+    const { upload: uploadRemoteFile, uploading: remoteUploading, progress: uploadProgress, error: remoteUploadError } = useUploadRemoteFile();
+    const { downloadSingleFile, downloading } = useFileDownload();
+    const { deleteFiles, deleting } = useFileDelete();
     const [fileUploading, setFileUploading] = useState(false);
 
     // ── notes hook ───────────────────────────────────────────────────────────
@@ -177,15 +178,18 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         updateNote,
         deleteNote,
     } = useBusinessNotes(bid);
-    console.log('notes', notes)
 
     // ── sync loader with status bar ───────────────────────────────────────────
     useEffect(() => {
-        statusBarContext.setIsLoading(loading || uploading || fileUploading);
-        return () => {
-            statusBarContext.setIsLoading(false);
-        };
-    }, [loading, uploading, fileUploading, statusBarContext]);
+        const isBusy = Boolean(loading || remoteUploading || fileUploading || downloading || deleting);
+        statusBarContext?.setIsLoading?.(isBusy);
+    }, [loading, remoteUploading, fileUploading, downloading, deleting, statusBarContext]);
+
+    useEffect(() => {
+        if (error) {
+            statusBarContext?.setFetchError?.([error]);
+        }
+    }, [error, statusBarContext]);
 
     // ── local UI state ───────────────────────────────────────────────────────
     const [notesItems, setNotesItems] = useState<Record<string, any>[]>([]);
@@ -233,9 +237,14 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         if (!rawFileName) return;
 
         const storagePath = buildStoragePathForTickets(rawFileName);
-        statusBarContext.setIsLoading(true);
+        statusBarContext?.setIsLoading?.(true);
+        statusBarContext?.setLoadingLabel?.('Downloading file...');
         try {
             const res = await downloadSingleFile(storagePath);
+            if (!res?.success) {
+                console.error("ContactUsNotes: downloadSingleFile failed", res?.error, res?.message);
+                return;
+            }
 
             const downloadUrl = res?.blobUrl;
             if (downloadUrl) {
@@ -247,12 +256,13 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                 link.click();
                 document.body.removeChild(link);
             } else {
-                console.error("ContactUsNotes: downloadSingleFile failed", res?.error);
+                console.error("ContactUsNotes: downloadSingleFile returned no blobUrl", res?.error);
             }
         } catch (err) {
             console.error("ContactUsNotes: handleDownloadFile error", err);
         } finally {
-            statusBarContext.setIsLoading(false);
+            statusBarContext?.setIsLoading?.(false);
+            statusBarContext?.setLoadingLabel?.('');
         }
     }, [downloadSingleFile, statusBarContext]);
 
@@ -303,9 +313,15 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
 
         const storagePath = buildStoragePathForTickets(rawFileName);
 
-        statusBarContext.setIsLoading(true);
+        statusBarContext?.setIsLoading?.(true);
+        statusBarContext?.setLoadingLabel?.('Loading attachment...');
         try {
             const res = await downloadSingleFile(storagePath);
+            if (!res?.success) {
+                console.error("ContactUsNotes: downloadSingleFile failed", res?.error, res?.message);
+                return;
+            }
+
             const downloadUrl = res?.blobUrl;
             if (downloadUrl) {
                 const response = await fetch(downloadUrl);
@@ -328,7 +344,8 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         } catch (err) {
             console.error("ContactUsNotes: failed to fetch attached file for note editor", err);
         } finally {
-            statusBarContext.setIsLoading(false);
+            statusBarContext?.setIsLoading?.(false);
+            statusBarContext?.setLoadingLabel?.('');
         }
     }, [downloadSingleFile, onSelectNote, statusBarContext]);
 
@@ -401,17 +418,30 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                 const defaultExt = message.notevideo ? "mp4" : message.noteaudio ? "webm" : "png";
                 uploadedFileName = generateUniqueFileName(bid, cid, rawFileName, defaultExt);
 
-                const filepath = buildStoragePathForTickets(uploadedFileName);
+                const cfg = () => (window as Window & { APP_CONFIG?: Record<string, string> }).APP_CONFIG ?? {};
+                const c = cfg();
+                const baseFolder = c.BASE_FOLDER ?? 'sm';
+                const bucketName = c.BUCKET_NAME ?? c.FIREBASE_BUCKET ?? CLOUD_BUCKET ?? 'n20-bucket-01';
+
                 setFileUploading(true);
+                statusBarContext?.setIsLoading?.(true);
+                statusBarContext?.setLoadingLabel?.('Uploading file...');
                 try {
-                    const uploadResult = await uploadSingleFile(attachedData, filepath);
+                    const uploadResult = await uploadRemoteFile({
+                        source: attachedData,
+                        bucket: bucketName,
+                        baseFolder: baseFolder,
+                        fileName: `smfiles/tickets/${uploadedFileName}`,
+                    });
                     if (!uploadResult?.success) {
-                        console.error("ContactUsNotes: uploadSingleFile failed", uploadResult?.error, uploadResult?.message, uploadResult);
+                        console.error("ContactUsNotes: uploadRemoteFile failed", uploadResult?.error, uploadResult?.message, uploadResult);
                     }
                 } catch (err) {
-                    console.error("ContactUsNotes: uploadSingleFile error", err);
+                    console.error("ContactUsNotes: uploadRemoteFile error", err);
                 } finally {
                     setFileUploading(false);
+                    statusBarContext?.setIsLoading?.(false);
+                    statusBarContext?.setLoadingLabel?.('');
                 }
             }
         }
@@ -422,6 +452,22 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                 editingItem.id ?? editingItem.noteid ?? editingItem._noteid ?? ""
             );
             const finalFileName = uploadedFileName || "";
+            const previousFileName = String(editingItem.filename || editingItem.FileUID || '').trim();
+
+            // If previous file attachment was replaced or removed, delete it from Cloud Storage
+            if (previousFileName && previousFileName !== finalFileName && !previousFileName.startsWith('sample-file-')) {
+                try {
+                    statusBarContext?.setIsLoading?.(true);
+                    statusBarContext?.setLoadingLabel?.('Deleting previous file...');
+                    const oldStoragePath = buildStoragePathForTickets(previousFileName);
+                    await deleteFiles([oldStoragePath]);
+                } catch (err) {
+                    console.warn('ContactUsNotes: error deleting previous attachment', err);
+                } finally {
+                    statusBarContext?.setIsLoading?.(false);
+                    statusBarContext?.setLoadingLabel?.('');
+                }
+            }
 
             // Optimistic update in local list
             const applyUpdate = (prev: Record<string, any>[]) =>
@@ -501,7 +547,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         if (!result?.success) {
             console.error("ContactUsNotes: createNote failed", result?.error);
         }
-    }, [editingItem, resetEditor, updateNote, cid, bid, noteby, selectedNode, createNote, uploadSingleFile]);
+    }, [editingItem, resetEditor, updateNote, cid, bid, noteby, selectedNode, createNote, uploadRemoteFile]);
 
     // ── SEARCH ────────────────────────────────────────────────────────────────
     const searchValueChange = (value: string) => {
@@ -543,10 +589,12 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
             setOriginalNotesItems((prev) => prev.filter((i) => i !== itemToDelete));
 
             statusBarContext.setIsLoading(true);
+            statusBarContext.setLoadingLabel?.('Deleting note...');
             try {
                 // 1. If file exists, delete the file FIRST from Cloud Storage
                 if (rawFileName) {
                     try {
+                        statusBarContext.setLoadingLabel?.('Deleting file...');
                         const storagePath = buildStoragePathForTickets(rawFileName);
                         await deleteFiles([storagePath]);
                     } catch (storageErr) {
@@ -556,6 +604,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
 
                 // 2. Then delete the note document from Firestore
                 if (noteid) {
+                    statusBarContext.setLoadingLabel?.('Deleting note...');
                     const result = await deleteNote(noteid);
                     if (!result?.success) {
                         console.error("ContactUsNotes: deleteNote failed", result?.error);
@@ -565,6 +614,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                 console.error("ContactUsNotes: delete operation failed", err);
             } finally {
                 statusBarContext.setIsLoading(false);
+                statusBarContext.setLoadingLabel?.('');
             }
         }
     };

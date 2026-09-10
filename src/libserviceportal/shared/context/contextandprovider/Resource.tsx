@@ -1,32 +1,50 @@
-import { useState, createContext, useMemo, useCallback, useRef, useContext, useEffect } from "react";
+import { useState, createContext, useMemo, useCallback, useRef, useContext } from "react";
 import { useFileDownload } from "@n20a/libfsdb";
 import { IAppContextWrapper } from "../allinterface/IAppContextWrapper";
 import { IResource } from "../allinterface/IResource";
+import { StatusBarContext } from "./StatusBar";
 
 const ResourceContext = createContext<IResource | undefined>(undefined);
+
+// Resource File Name Constants
+const CHART_API_FILE = 'ChartAPI.json';
+const CHART_PROFILE_FILE = 'ChartProfile.json';
+const REPORT_PROFILE_FILE = 'reportprofile.json';
+const REPORT_LAYOUT_FILE = 'reportlayout.json';
+const ORDER_FORM_FILE = 'OrderForm.json';
+const PROFORMA_INVOICE_FILE = 'ProformaInvoice.json';
+const QUOTE_FORM_FILE = 'QuoteForm.json';
+
+const ORDER_FORM = ORDER_FORM_FILE;
+const PROFORMA_INVOICE = PROFORMA_INVOICE_FILE;
+const QUOTE_FORM = QUOTE_FORM_FILE;
 
 function buildStorageFolder(subfolder: string): string {
     const cfg = () => (window as Window & { APP_CONFIG?: Record<string, string> }).APP_CONFIG ?? {};
     const c = cfg();
     const baseFolder = c.BASE_FOLDER ?? 'sm';
-    const bucketName = c.BUCKET_NAME ?? 'n20-bucket-01';
+    const bucketName = c.BUCKET_NAME ?? c.FIREBASE_BUCKET ?? 'n20-bucket-01';
     return `${bucketName}/${baseFolder}/${subfolder}`;
 }
 
-// Chart API and Chart Profile
-const PRIVATE_CHARTS_BASE = buildStorageFolder('reporttemplates/');
-const CHART_PROFILE_FILE = `${PRIVATE_CHARTS_BASE}ChartProfile.json`;
-const CHART_API_FILE = `${PRIVATE_CHARTS_BASE}ChartAPI.json`;
+function getTemplatePath(fileName: string): string {
+    return `${buildStorageFolder('reporttemplates/')}${fileName}`;
+}
 
-// Report API and Report Profile
-const PRIVATE_REPORT_TEMPLATES_BASE = buildStorageFolder('reporttemplates/');
-const REPORT_PROFILE_FILE = `${PRIVATE_REPORT_TEMPLATES_BASE}reportprofile.json`;
-const REPORT_LAYOUT_FILE = `${PRIVATE_REPORT_TEMPLATES_BASE}reportlayout.json`;
-const ORDER_FORM = `${PRIVATE_REPORT_TEMPLATES_BASE}OrderForm.json`;
-const PROFORMA_INVOICE = `${PRIVATE_REPORT_TEMPLATES_BASE}ProformaInvoice.json`;
-const QUOTE_FORM = `${PRIVATE_REPORT_TEMPLATES_BASE}QuoteForm.json`;
+const getResourceLoadingLabel = (path: string): string => {
+    const lower = path.toLowerCase();
+    if (lower.includes('chart')) return 'Loading charts...';
+    if (lower.includes('report') || lower.includes('layout')) return 'Loading report templates...';
+    if (lower.includes('order')) return 'Loading order form template...';
+    if (lower.includes('invoice')) return 'Loading invoice template...';
+    if (lower.includes('quote')) return 'Loading quote template...';
+    return 'Loading resource...';
+};
 
 function ResourceProvider({ children }: IAppContextWrapper) {
+    // Status Bar loading indicator
+    const statusBarContext = useContext(StatusBarContext);
+
     // Common Loading
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -113,6 +131,9 @@ function ResourceProvider({ children }: IAppContextWrapper) {
         }
 
         setLoading(true);
+        statusBarContext?.setIsLoading?.(true);
+        statusBarContext?.setLoadingLabel?.(getResourceLoadingLabel(filePath));
+
         const fetchPromise = (async () => {
             try {
                 const data = await FnGetJsonFromStorage(filePath);
@@ -126,50 +147,50 @@ function ResourceProvider({ children }: IAppContextWrapper) {
                 delete inFlightRequests.current[filePath];
                 if (Object.keys(inFlightRequests.current).length === 0) {
                     setLoading(false);
+                    statusBarContext?.setIsLoading?.(false);
+                    statusBarContext?.setLoadingLabel?.('');
                 }
             }
         })();
 
         inFlightRequests.current[filePath] = fetchPromise;
         return await fetchPromise;
-    }, [FnGetJsonFromStorage]);
+    }, [FnGetJsonFromStorage, statusBarContext]);
 
     // 1. Chart API function
     const getChartApi = useCallback((refresh?: boolean) => {
-        return loadResource(CHART_API_FILE, setChartApiJson, chartApiJsonRef, refresh);
+        return loadResource(getTemplatePath(CHART_API_FILE), setChartApiJson, chartApiJsonRef, refresh);
     }, [loadResource]);
 
     // 2. Chart Profile function
     const getChartProfile = useCallback((refresh?: boolean) => {
-        return loadResource(CHART_PROFILE_FILE, setChartProfileJson, chartProfileJsonRef, refresh);
+        return loadResource(getTemplatePath(CHART_PROFILE_FILE), setChartProfileJson, chartProfileJsonRef, refresh);
     }, [loadResource]);
 
     // 3. Report Profile function
     const getReportProfile = useCallback((refresh?: boolean) => {
-        return loadResource(REPORT_PROFILE_FILE, setReportProfileJson, reportProfileJsonRef, refresh);
+        return loadResource(getTemplatePath(REPORT_PROFILE_FILE), setReportProfileJson, reportProfileJsonRef, refresh);
     }, [loadResource]);
 
     // 4. Report Layout function
     const getReportLayout = useCallback((refresh?: boolean) => {
-        return loadResource(REPORT_LAYOUT_FILE, setReportLayoutJson, reportLayoutJsonRef, refresh);
+        return loadResource(getTemplatePath(REPORT_LAYOUT_FILE), setReportLayoutJson, reportLayoutJsonRef, refresh);
     }, [loadResource]);
 
     // 5. Order Form function
     const getOrderForm = useCallback((refresh?: boolean) => {
-        return loadResource(ORDER_FORM, setOrderFormJson, orderFormJsonRef, refresh);
+        return loadResource(getTemplatePath(ORDER_FORM_FILE), setOrderFormJson, orderFormJsonRef, refresh);
     }, [loadResource]);
 
     // 6. Proforma Invoice function
     const getProformaInvoice = useCallback((refresh?: boolean) => {
-        return loadResource(PROFORMA_INVOICE, setProformaInvoiceJson, proformaInvoiceJsonRef, refresh);
+        return loadResource(getTemplatePath(PROFORMA_INVOICE_FILE), setProformaInvoiceJson, proformaInvoiceJsonRef, refresh);
     }, [loadResource]);
 
     // 7. Quote Form function
     const getQuoteForm = useCallback((refresh?: boolean) => {
-        return loadResource(QUOTE_FORM, setQuoteFormJson, quoteFormJsonRef, refresh);
+        return loadResource(getTemplatePath(QUOTE_FORM_FILE), setQuoteFormJson, quoteFormJsonRef, refresh);
     }, [loadResource]);
-
-
 
     const providers: IResource = useMemo(() => ({
         // Common Loading
@@ -234,8 +255,27 @@ function ResourceProvider({ children }: IAppContextWrapper) {
     );
 }
 
+// Custom Hook to consume ResourceContext
+function useResourceContext() {
+    const context = useContext(ResourceContext);
+    if (context === undefined) {
+        throw new Error('useResourceContext must be used within a ResourceProvider');
+    }
+    return context;
+}
 
 export {
     ResourceContext,
     ResourceProvider,
+    useResourceContext,
+    CHART_API_FILE,
+    CHART_PROFILE_FILE,
+    REPORT_PROFILE_FILE,
+    REPORT_LAYOUT_FILE,
+    ORDER_FORM_FILE,
+    PROFORMA_INVOICE_FILE,
+    QUOTE_FORM_FILE,
+    ORDER_FORM,
+    PROFORMA_INVOICE,
+    QUOTE_FORM
 };

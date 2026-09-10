@@ -96,6 +96,78 @@
     "Alias": ""
   },
   {
+    "Secured": "",
+    "EntityName": "Feature",
+    "MenuID": "120",
+    "Feature": "120",
+    "NodeType": "",
+    "Label": "Buy",
+    "Tooltip": "Purchase Products and Services",
+    "SortOrder": "120",
+    "DefaultQA": "",
+    "Alias": ""
+  },
+  {
+    "Secured": "",
+    "EntityName": "Feature",
+    "MenuID": "120",
+    "Feature": "124",
+    "NodeType": "",
+    "Label": "Purchase",
+    "Tooltip": "Purchase Products and Services",
+    "SortOrder": "1",
+    "DefaultQA": "",
+    "Alias": ""
+  },
+  {
+    "Secured": "",
+    "EntityName": "Feature",
+    "MenuID": "120",
+    "Feature": "126",
+    "NodeType": "",
+    "Label": "Re-order",
+    "Tooltip": "Reorder Products and Services",
+    "SortOrder": "2",
+    "DefaultQA": "",
+    "Alias": ""
+  },
+  {
+    "Secured": "",
+    "EntityName": "Feature",
+    "MenuID": "120",
+    "Feature": "128",
+    "NodeType": "",
+    "Label": "EULA",
+    "Tooltip": "End User License Agreement",
+    "SortOrder": "3",
+    "DefaultQA": "",
+    "Alias": ""
+  },
+  {
+    "Secured": "",
+    "EntityName": "Feature",
+    "MenuID": "120",
+    "Feature": "130",
+    "NodeType": "",
+    "Label": "NetZoom-Brochure",
+    "Tooltip": "NetZoom Subscriptions",
+    "SortOrder": "4",
+    "DefaultQA": "",
+    "Alias": "N"
+  },
+  {
+    "Secured": "",
+    "EntityName": "Feature",
+    "MenuID": "120",
+    "Feature": "132",
+    "NodeType": "",
+    "Label": "Visio Stencils-Brochure",
+    "Tooltip": "Visio Stencils Subscriptions",
+    "SortOrder": "5",
+    "DefaultQA": "",
+    "Alias": "Visio"
+  },
+  {
     "Secured": "1",
     "EntityName": "Feature",
     "MenuID": "150",
@@ -166,5 +238,53 @@
     "SortOrder": "5",
     "DefaultQA": "",
     "Alias": ""
+  },
+  {
+    "Secured": "1",
+    "EntityName": "Feature",
+    "MenuID": "300",
+    "Feature": "300",
+    "NodeType": "",
+    "Label": "Knowledge-base",
+    "Tooltip": "Frequently Asked Questions",
+    "SortOrder": "300",
+    "DefaultQA": "",
+    "Alias": "FAQ"
+  },
+  {
+    "Secured": "1",
+    "EntityName": "Feature",
+    "MenuID": "300",
+    "Feature": "302",
+    "NodeType": "",
+    "Label": "FAQ",
+    "Tooltip": "Frequently Asked Questions",
+    "SortOrder": "1",
+    "DefaultQA": "1",
+    "Alias": ""
+  },
+  {
+    "Secured": "1",
+    "EntityName": "Feature",
+    "MenuID": "990",
+    "Feature": "990",
+    "NodeType": "",
+    "Label": "About",
+    "Tooltip": "About NetZoom",
+    "SortOrder": "990",
+    "DefaultQA": "",
+    "Alias": ""
+  },
+  {
+    "Secured": "1",
+    "EntityName": "Feature",
+    "MenuID": "990",
+    "Feature": "992",
+    "NodeType": "",
+    "Label": "About NetZoom",
+    "Tooltip": "About NetZoom",
+    "SortOrder": "1",
+    "DefaultQA": "1",
+    "Alias": "N"
   }
 ]

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Delete24x24, Info24x24 } from '@n20a/libicon';
-import { useBusinessTickets } from '@n20a/libfsdb';
+import { Attach24x24, Delete24x24, Info24x24 } from '@n20a/libicon';
+import { useBusinessTickets, useFileDownload, useFileDelete } from '@n20a/libfsdb';
 import type { ITicketDoc } from '@n20a/libfsdb';
 import { Notes, type INote } from '@n20a/libavnotes';
 import '@n20a/libavnotes/style.css';
@@ -14,6 +14,8 @@ import { FnGetCssVariable } from '../../../shared/allcommon/FnGetCssVariable';
 import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
 import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks';
 import type { IImage } from '../../../shared/allinterface/basic/IImage';
+import { useUploadRemoteFile } from '../../../shared/allcommon/UploadRemoteFileHooks';
+import { CLOUD_BUCKET } from '../../allcommon/FnGetCloudFilePublicUrl';
 import './RequestSupport.css';
 
 export interface IRequestSupportTicketsProps {
@@ -44,6 +46,46 @@ function resolveFirestoreDate(value: unknown): string {
 }
 
 /**
+ * Prepares a unique file name prefixed with "{bid}-{cid}-{yymmddhhmmss}".
+ */
+function generateUniqueFileName(bid: string, cid: string, originalName: string, defaultExt = "png"): string {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const yymmddhhmmss = `${String(now.getFullYear()).slice(-2)}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    let cleanName = getCleanFileName(originalName.trim());
+    if (!cleanName) {
+        cleanName = `attachment.${defaultExt}`;
+    } else if (!cleanName.includes(".")) {
+        cleanName = `${cleanName}.${defaultExt}`;
+    }
+    return `${bid}-${cid}-${yymmddhhmmss}-${cleanName}`;
+}
+
+/**
+ * Strips the "{bid}-{cid}-{yymmddhhmmss}-" prefix to return the original clean file name.
+ */
+function getCleanFileName(rawName: string): string {
+    if (!rawName) return "";
+    const base = rawName.split("/").pop() || rawName;
+    const match = base.match(/^[^-]+-[^-]+-\d{12}[-_]?(.*)$/);
+    return match && match[1] ? match[1] : base;
+}
+
+/**
+ * Builds the Firebase Cloud Storage path for tickets attachments.
+ * Format: ${bucketName}/${baseFolder}/smfiles/tickets/${filename}
+ */
+function buildStoragePathForTickets(filename: string): string {
+    if (!filename) return "";
+    if (filename.includes("/")) return filename;
+    const cfg = () => (window as Window & { APP_CONFIG?: Record<string, string> }).APP_CONFIG ?? {};
+    const c = cfg();
+    const baseFolder = c.BASE_FOLDER ?? 'sm';
+    const bucketName = c.BUCKET_NAME ?? c.FIREBASE_BUCKET ?? CLOUD_BUCKET ?? 'n20-bucket-01';
+    return `${bucketName}/${baseFolder}/smfiles/tickets/${filename}`;
+}
+
+/**
  * Normalizes raw Firestore ticket document record into ITicketDoc format.
  */
 function normalizeTicketDoc(raw: Record<string, unknown>): ITicketDoc {
@@ -55,7 +97,7 @@ function normalizeTicketDoc(raw: Record<string, unknown>): ITicketDoc {
         subscription: String(raw.subscription ?? ''),
         mfg: String(raw.mfg ?? ''),
         eqtype: String(raw.eqtype ?? ''),
-        prodno: String(raw.prodno ?? ''),
+        prodno: String(raw.prodno ?? raw.filename ?? ''),
         moreinfo: String(raw.moreinfo ?? raw.message ?? ''),
         status: String(raw.status ?? 'Pending'),
         daterequested: resolveFirestoreDate(raw.daterequested ?? raw.datecreated),
@@ -72,7 +114,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
     selectedTicket,
 }) => {
     const mainAppContext = useMainAppContext();
-    const { setIsLoading } = useStatusBarContext();
+    const statusBarContext = useStatusBarContext();
     const authSession = mainAppContext.authSession;
     const bid = String(authSession?.bid ?? '').trim();
     const cid = String(authSession?.cid ?? '').trim();
@@ -88,13 +130,21 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
         deleteTicket,
     } = useBusinessTickets(bid);
 
+    // Firebase storage hooks
+    const { upload: uploadRemoteFile, uploading: remoteUploading, progress: uploadProgress, error: remoteUploadError } = useUploadRemoteFile();
+    const { downloadSingleFile, downloading } = useFileDownload();
+    const { deleteFiles, deleting } = useFileDelete();
+    const [fileUploading, setFileUploading] = useState(false);
+
     // Sync hook loading state with global status bar
     useEffect(() => {
-        setIsLoading(loading);
+        const isBusy = loading || remoteUploading || fileUploading || downloading || deleting;
+        statusBarContext?.setIsLoading?.(isBusy);
         return () => {
-            setIsLoading(false);
+            statusBarContext?.setIsLoading?.(false);
+            statusBarContext?.setLoadingLabel?.('');
         };
-    }, [loading, setIsLoading]);
+    }, [loading, remoteUploading, fileUploading, downloading, deleting, statusBarContext]);
 
     // Keep callbacks in refs to avoid triggering re-fetch effects on prop updates
     const onSelectTicketRef = useRef(onSelectTicket);
@@ -138,6 +188,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             noteTitle: '',
             notecontent: '',
             notefile: undefined,
+            notefileName: undefined,
             noteaudio: undefined,
             notevideo: undefined,
             noteCreatedAt: new Date(),
@@ -145,9 +196,48 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
         setRefreshToken((v) => v + 1);
     }, []);
 
+    // Download attached file from cloud storage
+    const handleDownloadFile = useCallback(async (ticket: ITicketDoc, e?: React.MouseEvent) => {
+        e?.stopPropagation?.();
+        const rawFileName = String(ticket.prodno || (ticket as Record<string, any>).filename || '').trim();
+        if (!rawFileName) return;
+
+        const storagePath = buildStoragePathForTickets(rawFileName);
+        statusBarContext?.setIsLoading?.(true);
+        statusBarContext?.setLoadingLabel?.('Downloading attachment...');
+        try {
+            const res = await downloadSingleFile(storagePath);
+            if (!res?.success) {
+                console.error("RequestSupportTickets: downloadSingleFile failed", res?.error, res?.message);
+                return;
+            }
+
+            const downloadUrl = res?.blobUrl;
+            if (downloadUrl) {
+                const cleanName = getCleanFileName(rawFileName);
+                const link = document.createElement("a");
+                link.href = downloadUrl;
+                link.download = cleanName || "download";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                console.error("RequestSupportTickets: downloadSingleFile returned no blobUrl", res?.error);
+            }
+        } catch (err) {
+            console.error("RequestSupportTickets: handleDownloadFile error", err);
+        } finally {
+            statusBarContext?.setIsLoading?.(false);
+            statusBarContext?.setLoadingLabel?.('');
+        }
+    }, [downloadSingleFile, statusBarContext]);
+
     // Select a ticket card to view & edit
-    const handleSelectTicketToEdit = useCallback((ticket: ITicketDoc) => {
+    const handleSelectTicketToEdit = useCallback(async (ticket: ITicketDoc) => {
         setEditingTicket(ticket);
+        const rawFileName = String(ticket.prodno || (ticket as Record<string, any>).filename || '').trim();
+        const cleanName = getCleanFileName(rawFileName);
+
         setNoteDetails({
             maxAudioRecordingTime: 60000,
             maxVideoRecordingTime: 60000,
@@ -155,6 +245,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             noteTitle: ticket.tickettype || 'Support',
             notecontent: ticket.moreinfo || '',
             notefile: undefined,
+            notefileName: cleanName || undefined,
             noteaudio: undefined,
             notevideo: undefined,
             noteCreatedAt: new Date(),
@@ -163,7 +254,45 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
         if (onSelectTicketRef.current) {
             onSelectTicketRef.current(ticket);
         }
-    }, []);
+
+        if (rawFileName) {
+            const storagePath = buildStoragePathForTickets(rawFileName);
+            statusBarContext?.setIsLoading?.(true);
+            statusBarContext?.setLoadingLabel?.('Loading attachment...');
+            try {
+                const res = await downloadSingleFile(storagePath);
+                if (!res?.success) {
+                    console.error("RequestSupportTickets: downloadSingleFile failed", res?.error, res?.message);
+                    return;
+                }
+
+                const downloadUrl = res?.blobUrl;
+                if (downloadUrl) {
+                    const response = await fetch(downloadUrl);
+                    const fileBlob = await response.blob();
+
+                    setNoteDetails({
+                        maxAudioRecordingTime: 60000,
+                        maxVideoRecordingTime: 60000,
+                        noteId: ticket.ticketid || `${Date.now()}`,
+                        noteTitle: ticket.tickettype || 'Support',
+                        notecontent: ticket.moreinfo || '',
+                        notefile: fileBlob,
+                        notefileName: cleanName,
+                        noteaudio: undefined,
+                        notevideo: undefined,
+                        noteCreatedAt: new Date(),
+                    });
+                    setRefreshToken((v) => v + 1);
+                }
+            } catch (err) {
+                console.error("RequestSupportTickets: failed to fetch attached file for note editor", err);
+            } finally {
+                statusBarContext?.setIsLoading?.(false);
+                statusBarContext?.setLoadingLabel?.('');
+            }
+        }
+    }, [downloadSingleFile, statusBarContext]);
 
     // Initial fetch on mount or bid change
     useEffect(() => {
@@ -220,6 +349,28 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
         });
     }, [selectedTicket]);
 
+    // Delete attachment from editor
+    const handleDeleteAttachment = useCallback(
+        (objectType: 'file' | 'audio' | 'video', _objectData?: Blob | File) => {
+            if (objectType === 'file') {
+                setNoteDetails((prev) =>
+                    prev
+                        ? {
+                            ...prev,
+                            notefile: undefined,
+                            notefileName: undefined,
+                        }
+                        : prev
+                );
+            } else if (objectType === 'audio') {
+                setNoteDetails((prev) => (prev ? { ...prev, noteaudio: undefined } : prev));
+            } else if (objectType === 'video') {
+                setNoteDetails((prev) => (prev ? { ...prev, notevideo: undefined } : prev));
+            }
+        },
+        []
+    );
+
     // Create or Update ticket
     const handleSendTicketNote = useCallback(async (note: INote) => {
         const text = note.notecontent?.trim() ?? '';
@@ -233,12 +384,81 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
 
         const now = new Date().toISOString();
 
+        // ── Upload attached file if present ──
+        let uploadedFileName = '';
+        const attachedData = note.notefile || note.noteaudio || note.notevideo;
+
+        if (attachedData) {
+            const rawFileName = note.notefileName
+                || (attachedData instanceof File ? attachedData.name : '')
+                || (note.notevideo ? 'video.mp4' : note.noteaudio ? 'audio.webm' : 'image.png');
+
+            const existingFileName = editingTicket
+                ? String(editingTicket.prodno || (editingTicket as Record<string, any>).filename || '').trim()
+                : '';
+            const isSameAsExisting = Boolean(
+                existingFileName && getCleanFileName(existingFileName) === rawFileName
+            );
+
+            if (isSameAsExisting) {
+                uploadedFileName = existingFileName;
+            } else {
+                const defaultExt = note.notevideo ? 'mp4' : note.noteaudio ? 'webm' : 'png';
+                uploadedFileName = generateUniqueFileName(bid, cid, rawFileName, defaultExt);
+
+                const cfg = () => (window as Window & { APP_CONFIG?: Record<string, string> }).APP_CONFIG ?? {};
+                const c = cfg();
+                const baseFolder = c.BASE_FOLDER ?? 'sm';
+                const bucketName = c.BUCKET_NAME ?? c.FIREBASE_BUCKET ?? CLOUD_BUCKET ?? 'n20-bucket-01';
+
+                setFileUploading(true);
+                statusBarContext?.setIsLoading?.(true);
+                statusBarContext?.setLoadingLabel?.('Uploading attachment...');
+                try {
+                    const uploadResult = await uploadRemoteFile({
+                        source: attachedData,
+                        bucket: bucketName,
+                        baseFolder: baseFolder,
+                        fileName: `smfiles/tickets/${uploadedFileName}`,
+                    });
+                    if (!uploadResult?.success) {
+                        console.error('RequestSupportTickets: uploadRemoteFile failed', uploadResult?.error, uploadResult?.message);
+                    }
+                } catch (err) {
+                    console.error('RequestSupportTickets: uploadRemoteFile error', err);
+                } finally {
+                    setFileUploading(false);
+                    statusBarContext?.setIsLoading?.(false);
+                    statusBarContext?.setLoadingLabel?.('');
+                }
+            }
+        }
+
         // ── EDIT MODE: update existing ticket ──
         if (editingTicket) {
             const ticketIdToUpdate = editingTicket.ticketid;
+            const finalFileName = uploadedFileName || '';
+            const previousFileName = String(editingTicket.prodno || (editingTicket as Record<string, any>).filename || '').trim();
+
+            // If previous file attachment was replaced or removed, delete it from Cloud Storage
+            if (previousFileName && previousFileName !== finalFileName && !previousFileName.startsWith('sample-file-')) {
+                try {
+                    statusBarContext?.setIsLoading?.(true);
+                    statusBarContext?.setLoadingLabel?.('Deleting previous attachment...');
+                    const oldStoragePath = buildStoragePathForTickets(previousFileName);
+                    await deleteFiles([oldStoragePath]);
+                } catch (err) {
+                    console.warn('RequestSupportTickets: error deleting previous attachment', err);
+                } finally {
+                    statusBarContext?.setIsLoading?.(false);
+                    statusBarContext?.setLoadingLabel?.('');
+                }
+            }
+
             const updatedTicket: ITicketDoc = {
                 ...editingTicket,
                 moreinfo: text,
+                prodno: finalFileName || editingTicket.prodno,
                 lastupdated: now,
                 monitorupdated: now,
             };
@@ -254,12 +474,16 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             resetEditor();
 
             if (ticketIdToUpdate) {
-                const updatePayload = {
+                const updatePayload: Record<string, unknown> = {
                     moreinfo: text,
                     lastupdated: now,
                     monitorupdated: now,
                 };
-                const result = await updateTicket(ticketIdToUpdate, updatePayload as unknown as Record<string, unknown>);
+                if (finalFileName) {
+                    updatePayload.prodno = finalFileName;
+                    updatePayload.filename = finalFileName;
+                }
+                const result = await updateTicket(ticketIdToUpdate, updatePayload);
                 if (result && result.success !== false) {
                     await createActivityLogRef.current?.(`${cid} of ${bid} updated ticket ${ticketIdToUpdate} successfully.`);
                 } else {
@@ -271,6 +495,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
 
         // ── CREATE MODE: create a new ticket ──
         const ticketid = `ticket_${Date.now()}`;
+        const finalFileName = uploadedFileName || '';
         const newTicket: ITicketDoc = {
             bid,
             cid,
@@ -279,7 +504,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             subscription: '',
             mfg: '',
             eqtype: '',
-            prodno: '',
+            prodno: finalFileName,
             moreinfo: text,
             status: 'Pending',
             daterequested: now,
@@ -289,20 +514,30 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             monitor: false,
         };
 
-        setTicketList((prev) => [newTicket, ...prev]);
-        setOriginalTicketList((prev) => [newTicket, ...prev]);
+        const optimisticTicket = {
+            ...newTicket,
+            filename: finalFileName,
+        };
+
+        setTicketList((prev) => [optimisticTicket as ITicketDoc, ...prev]);
+        setOriginalTicketList((prev) => [optimisticTicket as ITicketDoc, ...prev]);
         if (onSelectTicketRef.current) {
-            onSelectTicketRef.current(newTicket);
+            onSelectTicketRef.current(optimisticTicket as ITicketDoc);
         }
         resetEditor();
 
-        const result = await createTicket(newTicket as unknown as Record<string, unknown>);
+        const ticketPayload: Record<string, unknown> = {
+            ...newTicket,
+            ...(finalFileName ? { filename: finalFileName } : {}),
+        };
+
+        const result = await createTicket(ticketPayload);
         if (result && result.success !== false) {
             await createActivityLogRef.current?.(`${cid} of ${bid} created ticket ${ticketid} successfully.`);
         } else {
             console.error('RequestSupportTickets: createTicket failed', result?.error);
         }
-    }, [editingTicket, resetEditor, updateTicket, bid, cid, createTicket]);
+    }, [editingTicket, resetEditor, updateTicket, bid, cid, createTicket, uploadRemoteFile]);
 
     // Search filter
     const searchValueChange = (value: string) => {
@@ -334,6 +569,8 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
     const handleConfirmDeleteYes = async () => {
         if (deleteItem) {
             const ticketIdToDelete = deleteItem.ticketid;
+            const rawFileName = String(deleteItem.prodno || (deleteItem as Record<string, any>).filename || '').trim();
+
             setTicketList((prev) => prev.filter((item) => item.ticketid !== ticketIdToDelete));
             setOriginalTicketList((prev) => prev.filter((item) => item.ticketid !== ticketIdToDelete));
             if (editingTicket?.ticketid === ticketIdToDelete) {
@@ -342,13 +579,36 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             if (selectedTicketRef.current?.ticketid === ticketIdToDelete && onSelectTicketRef.current) {
                 onSelectTicketRef.current(null);
             }
-            if (ticketIdToDelete) {
-                const result = await deleteTicket(ticketIdToDelete);
-                if (result && result.success !== false) {
-                    await createActivityLogRef.current?.(`${cid} of ${bid} deleted ticket ${ticketIdToDelete} successfully.`);
-                } else {
-                    console.error('RequestSupportTickets: deleteTicket failed', result?.error);
+
+            statusBarContext?.setIsLoading?.(true);
+            statusBarContext?.setLoadingLabel?.('Deleting ticket...');
+            try {
+                // 1. Delete attached file from cloud storage if present
+                if (rawFileName) {
+                    try {
+                        statusBarContext?.setLoadingLabel?.('Deleting attachment...');
+                        const storagePath = buildStoragePathForTickets(rawFileName);
+                        await deleteFiles([storagePath]);
+                    } catch (storageErr) {
+                        console.warn('RequestSupportTickets: Cloud storage file deletion failed', storageErr);
+                    }
                 }
+
+                // 2. Delete ticket document from Firestore
+                if (ticketIdToDelete) {
+                    statusBarContext?.setLoadingLabel?.('Deleting ticket...');
+                    const result = await deleteTicket(ticketIdToDelete);
+                    if (result && result.success !== false) {
+                        await createActivityLogRef.current?.(`${cid} of ${bid} deleted ticket ${ticketIdToDelete} successfully.`);
+                    } else {
+                        console.error('RequestSupportTickets: deleteTicket failed', result?.error);
+                    }
+                }
+            } catch (err) {
+                console.error('RequestSupportTickets: delete operation failed', err);
+            } finally {
+                statusBarContext?.setIsLoading?.(false);
+                statusBarContext?.setLoadingLabel?.('');
             }
         }
         setDeleteItem(null);
@@ -412,6 +672,11 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                                 ? FnConvertDateToUtcOrUtcToDate(displayDate, false, true)
                                 : '';
 
+                            const hasAttachment = Boolean(
+                                (item.prodno && String(item.prodno).trim() !== '') ||
+                                ((item as Record<string, any>).filename && String((item as Record<string, any>).filename).trim() !== '')
+                            );
+
                             return (
                                 <div
                                     className={`nz-node-list-box ${isSelected ? 'nz-node-list-box-selected' : ''}`}
@@ -446,20 +711,44 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                                         </div>
                                     </div>
                                     <div className="nz-info-div">
-                                        <div className="nz-info-image">
-                                            <Image
-                                                uniqueName={`${uniqueName}-info-${index}`}
-                                                source={
-                                                    <Info24x24
-                                                        size={FnGetCssVariable('--image-size-1')}
-                                                        fill="none"
-                                                        strokeWidth={1}
-                                                    />
-                                                }
-                                                w="var(--image-size-2)"
-                                                tooltip={item.tickettype || 'Support'}
-                                            />
-                                        </div>
+                                        {hasAttachment ? (
+                                            <div
+                                                className="nz-info-image"
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    void handleDownloadFile(item, e);
+                                                }}
+                                            >
+                                                <Image
+                                                    uniqueName={`${uniqueName}-attach-${index}`}
+                                                    source={
+                                                        <Attach24x24
+                                                            size={FnGetCssVariable('--image-size-1')}
+                                                            fill="none"
+                                                            strokeWidth={1}
+                                                        />
+                                                    }
+                                                    w="var(--image-size-2)"
+                                                    tooltip={`Click to download ${getCleanFileName(String(item.prodno || (item as Record<string, any>).filename || '')) || 'file'}`}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="nz-info-image">
+                                                <Image
+                                                    uniqueName={`${uniqueName}-info-${index}`}
+                                                    source={
+                                                        <Info24x24
+                                                            size={FnGetCssVariable('--image-size-1')}
+                                                            fill="none"
+                                                            strokeWidth={1}
+                                                        />
+                                                    }
+                                                    w="var(--image-size-2)"
+                                                    tooltip={item.tickettype || 'Support'}
+                                                />
+                                            </div>
+                                        )}
                                         <div className="nz-nodes-text">
                                             <Label
                                                 uniqueName={`${uniqueName}-note-${index}`}
@@ -502,7 +791,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                                 allowVideo={false}
                                 sendNote={handleSendTicketNote}
                                 sendTooltip={editingTicket ? 'Update Ticket' : 'Create Ticket'}
-                                handleDelete={() => {}}
+                                handleDelete={handleDeleteAttachment}
                             />
                         )}
                     </div>
