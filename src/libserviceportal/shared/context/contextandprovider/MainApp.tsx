@@ -27,6 +27,7 @@ function MainAppProvider({ children }: IAppContextWrapper) {
     const [selectedFeatureForHelp, setSelectedFeatureForHelp] = useState<IFeatureForHelp>()
     const [authSession, setAuthSession] = useState<IUserAuthSession>()
     const [userInfoAndSubscription, setUserInfoAndSubscription] = useState<IUserInfoAndSubscription>()
+    const [distinctProductKeys, setDistinctProductKeys] = useState<string[]>([])
 
     useEffect(() => {
         try {
@@ -66,14 +67,14 @@ function MainAppProvider({ children }: IAppContextWrapper) {
         // SAMPLE DATA: Alert profile API not called.
     }, []);
 
-    // Derive bid from authSession for useActivities (bid maps to authSession.bid).
-    const bid = String(authSession?.bid ?? "").trim();
+    // Derive bid from authSession or userInfo for useActivities.
+    const bid = String(authSession?.bid ?? userInfoAndSubscription?.userInfo?.bid ?? "").trim();
     const { createActivity } = useActivities(bid);
 
     /**
      * Writes an activity-log document for the currently signed-in user.
      * All identity fields (bid, cid, displayName, username, email) are read
-     * automatically from `authSession` stored in this context — the caller
+     * automatically from `authSession` or `userInfo` stored in this context — the caller
      * only needs to supply the human-readable `message` string.
      *
      * Usage:
@@ -83,8 +84,8 @@ function MainAppProvider({ children }: IAppContextWrapper) {
      *   await createActivityLog("User logged out");
      */
     const createActivityLog = useCallback(async (message: string): Promise<void> => {
-        const cid = String(authSession?.cid ?? "").trim();
-        if (!bid || !cid || !authSession) {
+        const cid = String(authSession?.cid ?? userInfoAndSubscription?.userInfo?.cid ?? "").trim();
+        if (!bid || !cid) {
             // Not enough identity info to write a log — silently skip.
             return;
         }
@@ -142,6 +143,8 @@ function MainAppProvider({ children }: IAppContextWrapper) {
             setSelectedFeatureForHelp,
             fetchAlertProfileRecords,
             createActivityLog,
+            distinctProductKeys,
+            setDistinctProductKeys,
         }),
         [
             apRecords,
@@ -158,6 +161,8 @@ function MainAppProvider({ children }: IAppContextWrapper) {
             userInfoAndSubscription,
             fetchAlertProfileRecords,
             createActivityLog,
+            distinctProductKeys,
+            setDistinctProductKeys,
         ]
     );
 

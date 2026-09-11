@@ -15,6 +15,8 @@ import { useMainAppContext } from '../shared/context/hooks/MainAppHooks'
 import { IFeatureItem } from '../shared/context/allinterface/IMainApp'
 import { FnUpdateFeatureLabelFromSession } from '../shared/allcommon/basic/FnUpdateFeatureLabelFromSession'
 import { MainMenu } from '../shared/menu/mainmenu/MainMenu'
+import { useFirestore } from '@n20a/libfsdb'
+import { FnDistinctProductKeys } from '../shared/allcommon/FnDistinctValues'
 
 interface IAppContainer {
     uniqueName: string;//unique identifier for the control
@@ -45,6 +47,9 @@ const AppContainer = (appContainerProps: IAppContainer) => {
     const location = useLocation();
     const sessionContext = useSessionContext();
     const mainAppContext = useMainAppContext();
+    const mainContext = mainAppContext;
+    const { setDistinctProductKeys } = mainContext;
+    const { queryDocuments } = useFirestore();
     const selectedFeatureIdRef = useRef<string | undefined>(undefined);
 
     // One-time guard: fire the login activity log only once per mount,
@@ -212,6 +217,31 @@ const AppContainer = (appContainerProps: IAppContainer) => {
         const message = `${authSession.cid} of ${authSession.bid} logged in successfully.`;
         void mainAppContext.createActivityLog(message);
     }, [mainAppContext.authSession, mainAppContext.createActivityLog])
+
+    useEffect(() => {
+        let isMounted = true
+
+        const loadDistinctProductKeys = async () => {
+            const bid = mainContext.authSession?.bid
+            if (!bid) {
+                if (isMounted) {
+                    setDistinctProductKeys([])
+                }
+                return
+            }
+
+            const keys = await FnDistinctProductKeys(bid, queryDocuments)
+            if (isMounted) {
+                setDistinctProductKeys(keys)
+            }
+        }
+
+        void loadDistinctProductKeys()
+
+        return () => {
+            isMounted = false
+        }
+    }, [mainContext.authSession?.bid, queryDocuments])
 
 
     /*

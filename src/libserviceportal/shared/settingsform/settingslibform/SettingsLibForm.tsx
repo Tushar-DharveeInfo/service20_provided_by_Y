@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChangedValueMap, FormElementsRenderer, IFormData, IFormElements } from '@n20a/libform'
+import { ChangedValueMap, FormElementsRenderer, IFormData, IFormElements, TrueFalseControl } from '@n20a/libform'
 import { Help24x24, Save24x24, TestAPI24x24 } from '@n20a/libicon'
 
 import '@n20a/libform/style.css'
@@ -205,11 +205,17 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
         Zip: ""
     });
     const [controlsToRenderExternal, setControlsToRenderExternal] = useState<IControl[]>();
+    const [addressExtraControls, setAddressExtraControls] = useState<IControl[]>([]);
+    const [addressExtraValues, setAddressExtraValues] = useState<Record<string, any>>({});
+    const addressExtraValuesRef = useRef<Record<string, any>>({});
     const [jsonForView, setJsonForView] = useState<Record<string, unknown>>();
     const [loading, setLoading] = useState(true);
     const [showOverlay, setShowOverlay] = useState(false);
+    const [isSaveIconVisible, setIsSaveIconVisible] = useState(false);
     const updatedValuesRef = useRef<Record<string, unknown>>(undefined);
     const overlayTimerRef = useRef<number | null>(null);
+    const justSavedRef = useRef(false);
+    const justSavedTimerRef = useRef<number | null>(null);
     const prevDeps = useRef<Record<string, unknown>>(undefined);
     const statusBarContext = useStatusBarContext();
     const mainAppContext = useMainAppContext();
@@ -283,6 +289,9 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
             if (overlayTimerRef.current) {
                 clearTimeout(overlayTimerRef.current);
             }
+            if (justSavedTimerRef.current) {
+                clearTimeout(justSavedTimerRef.current);
+            }
         };
     }, []);
 
@@ -329,14 +338,23 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
                 "timezoneoffset"
             ]);
 
-            const addressControls = controls.filter(control =>
-                addressFieldNames.has(control.Name?.toLowerCase() ?? "")
-            );
+            const isAddressControl = (control: IControl) => {
+                const name = control.Name?.toLowerCase() ?? "";
+                const group = control.DisplayGroupControl?.toLowerCase() ?? "";
+                return addressFieldNames.has(name) || (Boolean(isAddressFormRequired) && group === "address");
+            };
+
+            const addressControls = controls.filter(isAddressControl);
 
             // Remove address controls from normal controls
             const controlsForForm = controls.filter(control =>
-                !addressFieldNames.has(control.Name?.toLowerCase() ?? "")
+                !isAddressControl(control)
             );
+
+            const extraAddressControls = isAddressFormRequired
+                ? addressControls.filter(c => !addressFieldNames.has(c.Name?.toLowerCase() ?? ""))
+                : [];
+            setAddressExtraControls(extraAddressControls);
 
             const parsedProfile =
                 id || isAutoSave
@@ -436,9 +454,34 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
             // Keep selectedProfile unchanged
             setSelectedProfile(parsedProfile);
 
+            const toBoolVal = (val: unknown): boolean => {
+                if (typeof val === 'boolean') return val;
+                if (typeof val === 'string') return val.toLowerCase() === 'true' || val === '1';
+                if (typeof val === 'number') return val === 1;
+                return false;
+            };
+
+            const extraVals: Record<string, any> = {};
+            for (const ctrl of extraAddressControls) {
+                if (parsedProfile) {
+                    if (parsedProfile[ctrl.Name] !== undefined) {
+                        extraVals[ctrl.Name] = toBoolVal(parsedProfile[ctrl.Name]);
+                    } else {
+                        const matchedKey = Object.keys(parsedProfile).find(
+                            k => k.toLowerCase().endsWith(`_${ctrl.Name.toLowerCase()}`)
+                        );
+                        extraVals[ctrl.Name] = matchedKey ? toBoolVal(parsedProfile[matchedKey]) : toBoolVal(ctrl.Value ?? ctrl.DefaultAPValue);
+                    }
+                } else {
+                    extraVals[ctrl.Name] = toBoolVal(ctrl.Value ?? ctrl.DefaultAPValue);
+                }
+            }
+            setAddressExtraValues(extraVals);
+            addressExtraValuesRef.current = extraVals;
+
             const derivedGroupNames = [
                 ...new Set(
-                    controls.map(
+                    controlsForForm.map(
                         x => x.DisplayGroupControl ?? "Default"
                     )
                 )
@@ -572,6 +615,7 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
     useEffect(() => {
         if (prevId.current !== id) {
             setJsonForView(undefined);
+            setIsSaveIconVisible(false);
             FnHideShowSaveIconForForm('hide');
             prevId.current = id;
             return;
@@ -630,6 +674,17 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
                 ...(selectedProfile ?? {}),
                 ...processedSection
             };
+
+            setIsSaveIconVisible(false);
+            FnHideShowSaveIconForForm('hide');
+            justSavedRef.current = true;
+            if (justSavedTimerRef.current) {
+                clearTimeout(justSavedTimerRef.current);
+            }
+            justSavedTimerRef.current = window.setTimeout(() => {
+                justSavedRef.current = false;
+                justSavedTimerRef.current = null;
+            }, 800);
 
             handleSaveForm?.(JSON.stringify([merged]), id);
         } catch (error) {
@@ -699,6 +754,14 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
                     ) {
                         value = updatedValues[selectedProfileKey];
                         found = true;
+                    } else if (
+                        Object.prototype.hasOwnProperty.call(
+                            updatedValues,
+                            col.Name
+                        )
+                    ) {
+                        value = updatedValues[col.Name];
+                        found = true;
                     }
                 }
 
@@ -726,9 +789,18 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
                 k.startsWith(classKeyPrefix)
             );
 
-            if (!key) continue;
+            let value = key ? updatedValues[key] : undefined;
 
-            const value = updatedValues[key];
+            if (value === undefined && typeof document !== 'undefined') {
+                const domElement = document.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+                    `[name^="${classKeyPrefix}"], [id^="${classKeyPrefix}"]`
+                );
+                if (domElement && domElement.value !== undefined) {
+                    value = domElement.value;
+                }
+            }
+
+            if (value === undefined) continue;
 
             profileData[col.Name] =
                 value !== "" ? value : undefined;
@@ -751,9 +823,24 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
 
     // Merges built, selected, and external grid values then saves the form.
     const handleSaveClick = (
-        event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
-        actionCode?: string
+        _event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
+        _actionCode?: string
     ): void => {
+        if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+
+        setIsSaveIconVisible(false);
+        FnHideShowSaveIconForForm('hide');
+        justSavedRef.current = true;
+        if (justSavedTimerRef.current) {
+            clearTimeout(justSavedTimerRef.current);
+        }
+        justSavedTimerRef.current = window.setTimeout(() => {
+            justSavedRef.current = false;
+            justSavedTimerRef.current = null;
+        }, 800);
+
         const builtProfileData = buildProfileData();
 
         const profileWithSelected = !isAddressFormRequired && id && selectedProfile
@@ -771,7 +858,7 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
             );
 
             const addressSectionName =
-                addressFormControl?.DisplayGroupControl;
+                addressFormControl?.DisplayGroupControl ?? "Address";
 
             if (addressSectionName) {
                 const formData = profileData as unknown as IFormData;
@@ -786,10 +873,13 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
                         State: updatedAddress.State ?? "",
                         Country: updatedAddress.Country ?? "",
                         Zip: updatedAddress.Zip ?? "",
+                        CountryCode: updatedAddress.CountryCode ?? "",
+                        TimezoneOffset: updatedAddress.TimezoneOffset ?? "",
                         GPS:
                             updatedAddress.Latitude && updatedAddress.Longitude
                                 ? `${updatedAddress.Latitude},${updatedAddress.Longitude}`
-                                : ""
+                                : "",
+                        ...(addressExtraValuesRef.current ?? {})
                     }
                 };
 
@@ -818,13 +908,38 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
 
     // Tracks libform value changes and toggles manual save icon visibility.
     const handleOnValueChange = (values: Record<string, unknown>) => {
-        updatedValuesRef.current = values;
+        if (justSavedRef.current) return;
+        updatedValuesRef.current = {
+            ...(updatedValuesRef.current ?? {}),
+            ...values
+        };
         if (allowShowHeader && !isAutoSave && !isFormValueChangedExternal) {
+            const isValid = isValidForm(updatedValuesRef.current);
+            setIsSaveIconVisible(isValid);
             FnHideShowSaveIconForForm(
-                isValidForm(values) ? 'show' : 'hide'
+                isValid ? 'show' : 'hide'
             );
         }
         handleValueChangeExternal?.(values);
+    };
+
+    // Handles live keystrokes from input/textarea elements before blur or Enter.
+    const handleFormInput = (event: React.FormEvent<HTMLDivElement>) => {
+        if (justSavedRef.current) return;
+        const target = event.target as HTMLInputElement | HTMLTextAreaElement;
+        if (!target || (!target.name && !target.id)) return;
+
+        const fieldKey = target.name || target.id;
+        if (!updatedValuesRef.current) {
+            updatedValuesRef.current = { ...(selectedProfile ?? {}) };
+        }
+        updatedValuesRef.current[fieldKey] = target.value;
+
+        if (allowShowHeader && !isAutoSave && !isFormValueChangedExternal) {
+            const isValid = isValidForm(updatedValuesRef.current);
+            setIsSaveIconVisible(isValid);
+            FnHideShowSaveIconForForm(isValid ? 'show' : 'hide');
+        }
     };
 
     // Merges external JSON grid edits into save payload state.
@@ -859,13 +974,25 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
             const valuesToValidate =
                 updatedValuesRef.current ?? selectedProfile;
 
-            if (valuesToValidate) {
-                FnHideShowSaveIconForForm(
-                    isValidForm(valuesToValidate)
-                        ? "show"
-                        : "hide"
-                );
-            }
+            const isValid = valuesToValidate ? isValidForm(valuesToValidate) : true;
+            setIsSaveIconVisible(isValid);
+            FnHideShowSaveIconForForm(
+                isValid ? "show" : "hide"
+            );
+        }
+    };
+
+    const handleExtraControlChange = (name: string, value: boolean) => {
+        const updated = {
+            ...addressExtraValuesRef.current,
+            [name]: value
+        };
+        addressExtraValuesRef.current = updated;
+        setAddressExtraValues(updated);
+
+        if (allowShowHeader && !isAutoSave) {
+            setIsSaveIconVisible(true);
+            FnHideShowSaveIconForForm("show");
         }
     };
 
@@ -930,7 +1057,7 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
                             h={'var(--node_height)'}
                             handleMouse={handleActionClick} actionCode={'help'} />}
                     {(!isAutoSave || isAddressFormRequired) &&
-                        <div className='nz-form-header-action-save nz-save-yellow-background' style={{ display: isFormValueChangedExternal ? 'block' : 'none' }}>
+                        <div className='nz-form-header-action-save nz-save-yellow-background' style={{ display: (isFormValueChangedExternal || isSaveIconVisible) ? 'flex' : 'none' }}>
                             <ActionImage uniqueName={`${uniqueName}-ai`} image={saveImageData} w={'var(--node_height)'} h={'var(--node_height)'} handleMouse={handleSaveClick} actionCode={''} />
                         </div>}
                     {allowTestIcon
@@ -942,7 +1069,7 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
             </div>}
             <div className={'nz-settings-lib-form-content' + (controlsToRenderExternal?.length ? " nz-setting-lib-form-external-scroll" : "")}>
 
-                <div className='nz-settings-lib-form-controls'>
+                <div className='nz-settings-lib-form-controls' onInput={handleFormInput}>
                     {showOverlay && <div className={"nz-overlay" + (showOverlay ? " active" : "")} id="nzOverlay">
                         <div className="nz-overlay-message">
                             Saved
@@ -992,12 +1119,57 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
                                         handleValueChange={handleOnGridValueChange} />
                                 case DisplayControlEnums.AddressForm: {
                                     return (
-                                        <AddressForm
+                                        <div
                                             key={control.Name}
-                                            initialAddress={updatedAddress}
-                                            onChange={handleValueChangeAddress}
-                                            showDerivedFields={false}
-                                        />
+                                            className="nz-address-form-wrapper"
+                                            style={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "12px",
+                                                border: "1px solid #e0e0e0",
+                                                borderRadius: "6px",
+                                                padding: "7.5px",
+                                                backgroundColor: "#ffffff",
+                                                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)"
+                                            }}
+                                        >
+                                            <AddressForm
+                                                initialAddress={updatedAddress}
+                                                onChange={handleValueChangeAddress}
+                                                showDerivedFields={false}
+                                                style={{
+                                                    border: "none",
+                                                    boxShadow: "none",
+                                                    padding: 0,
+                                                    borderRadius: 0
+                                                }}
+                                            />
+                                            {addressExtraControls.length > 0 && (
+                                                <div
+                                                    className="nz-address-extra-controls"
+                                                    style={{
+                                                        display: "flex",
+                                                        flexDirection: "column",
+                                                        gap: "8px",
+                                                        paddingTop: "4px"
+                                                    }}
+                                                >
+                                                    {addressExtraControls.map((extraCtrl) => (
+                                                        <TrueFalseControl
+                                                            key={extraCtrl.Name}
+                                                            id={`address-${extraCtrl.Name.toLowerCase()}`}
+                                                            name={extraCtrl.Name}
+                                                            label={extraCtrl.PropertyLabel}
+                                                            value={Boolean(addressExtraValues[extraCtrl.Name])}
+                                                            disabled={isDisableForm || Boolean(extraCtrl.disabled)}
+                                                            onChange={(val: boolean) =>
+                                                                handleExtraControlChange(extraCtrl.Name, val)
+                                                            }
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     );
                                 }
                                 default:

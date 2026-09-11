@@ -24,4 +24,51 @@
     background-color: lightgray;
     color: black;
 }
+
+.nz-add-subscription-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #ffff99;
+    color: #333333;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    height: 26px;
+    transition: background-color 0.2s;
+}
+
+.nz-add-subscription-btn:hover {
+    background-color: #ffff66;
+}
+
+.nz-add-subscription-icon-btn {
+    background: transparent;
+    background-color: transparent;
+    border: none;
+    padding: 2px;
+    width: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: none;
+    outline: none;
+    transition: opacity 0.2s;
+}
+
+.nz-add-subscription-icon-btn:hover {
+    background: transparent;
+    background-color: transparent;
+    opacity: 0.8;
+}
+
+.nz-add-sub-fields {
+    width: 100%;
+}
+
 

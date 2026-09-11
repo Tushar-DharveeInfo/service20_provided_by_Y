@@ -6,6 +6,7 @@ import { Label } from '../../../shared/basic/label/Label';
 import { useBusinessTickets } from '@n20a/libfsdb';
 import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
 import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks';
+import { FnHideShowSaveIconForForm } from '../../../shared/allcommon/basic/FnHideShowSaveIconForForm';
 import type { INoteItems } from '../../../shared/allinterface/sidebar/IFqaNotes';
 import type { ITicketDoc } from '@n20a/libfsdb';
 import './RequestSupport.css';
@@ -185,6 +186,7 @@ const RequestSupportForm = ({
             try {
                 const result = await updateTicket(ticketIdToUpdate, updatePayload as unknown as Record<string, unknown>);
                 if (result && result.success !== false) {
+                    FnHideShowSaveIconForForm('hide');
                     await mainAppContext.createActivityLog(
                         `${cid} of ${bid} updated ticket ${ticketIdToUpdate} successfully.`
                     );
@@ -230,7 +232,7 @@ const RequestSupportForm = ({
     return (
         <div className="nz-request-support-form-container nz-wh-100" key={uniqueName}>
             <SettingsLibForm
-                key={`${uniqueName}-${noteId}-${isClosed ? 'closed' : 'open'}`}
+                key={`${uniqueName}-${noteId}-${activeItem.LastUpdated}-${isClosed ? 'closed' : 'open'}`}
                 id={noteId}
                 uniqueName={`${uniqueName}-fc`}
                 controls={controls}

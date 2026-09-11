@@ -1,17 +1,9 @@
 
 const FnHideShowSaveIconForForm = (type: 'hide' | 'show') => {
-    if (type === "hide") {
-        const saveButton: HTMLDivElement | null = document.querySelector('.nz-form-action-header .nz-form-header-action-save');
-        if (saveButton) {
-            saveButton.style.display = "none";
-        }
-    }
-    else {
-        const saveButton: HTMLDivElement | null = document.querySelector('.nz-form-action-header .nz-form-header-action-save');
-        if (saveButton) {
-            saveButton.style.display = "flex";
-        }
-    }
+    const saveButtons: NodeListOf<HTMLDivElement> = document.querySelectorAll('.nz-form-action-header .nz-form-header-action-save');
+    saveButtons.forEach((saveButton) => {
+        saveButton.style.display = type === 'hide' ? 'none' : 'flex';
+    });
 }
 
 export { FnHideShowSaveIconForForm }

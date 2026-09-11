@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Splitter } from 'primereact/splitter';
 import { ServicesEnums } from '../../../constants/Feature';
 import { DeviceModel } from '../devicemodel/DeviceModel';
@@ -8,6 +8,11 @@ import { Helptip } from '../../../shared/help/Help';
 import { useHelpTipContext } from '../../../shared/context/hooks/HelptipHooks';
 import { RequestShapeFormContainer } from '../requestshapeformcontainer/RequestShapeFormContainer';
 import { Label } from '../../../shared/basic/label/Label';
+import { useBusinessTickets } from '@n20a/libfsdb';
+import type { ITicketDoc } from '@n20a/libfsdb';
+import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
+import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks';
+import { YesNoFormContainer } from '../../../shared/basic/yesnoformcontainer/YesNoFormContainer';
 export interface IRequestShapeFormData {
     searchText: string;
     AndOr: "AND" | "OR";
@@ -27,6 +32,7 @@ export interface IRequestShape {
     onBack?: () => void;
     onRequestClick?: () => void;
     onSearchClick: (searchText?: string, AndOr?: "AND" | "OR", mfg?: string, eqtype?: string, pno?: string) => void;
+    onSubmitRequest?: (formData: IRequestShapeFormData) => void | Promise<void>;
 }
 
 const DEFAULT_HELP_TIP =
@@ -125,13 +131,40 @@ const RequestDeviceModels = (props: IRequestShape) => {
 
 // ---------- RequestDeviceModelsContainer ----------
 type RenderPage = 'searchPage' | 'requestPage';
-//    saveSearchCriteria?: (searchText: string, AndOr: "AND" | "OR", mfg?: string, eqtype?: string, pno?: string) => void
 
 const RequestDeviceModelsContainer = (props: IRequestShape) => {
     const [renderPage, setRenderPage] = useState<RenderPage>('searchPage');
     const [requestformData, setRequestFormData] = useState<IRequestShape>(props);
+    const [popupOpen, setPopupOpen] = useState(false);
+    const [popupMessage, setPopupMessage] = useState('');
+
+    const mainAppContext = useMainAppContext();
+    const statusBarContext = useStatusBarContext();
+    const { authSession, createActivityLog } = mainAppContext;
+    const bid = String(authSession?.bid || '0').trim();
+    const cid = String(authSession?.cid ?? '').trim();
+    const noteby = authSession?.displayName || authSession?.username || 'User';
+
+    const { createTicket } = useBusinessTickets(bid);
+
+    const createActivityLogRef = useRef(createActivityLog);
+    useEffect(() => {
+        createActivityLogRef.current = createActivityLog;
+    }, [createActivityLog]);
 
     const handleSearchClick = (searchText?: string, AndOr?: "AND" | "OR", mfg?: string, eqtype?: string, pno?: string) => {
+        if (searchText && typeof searchText === 'string' && searchText.trim().startsWith('{')) {
+            try {
+                const parsed = JSON.parse(searchText);
+                const data: IRequestShapeFormData = parsed.formData ?? parsed;
+                if (data && (data.Mfg !== undefined || data.ProdNo !== undefined || data.MoreInfo !== undefined)) {
+                    void handleSubmitRequest(data);
+                    return;
+                }
+            } catch {
+                // Not JSON, continue with normal search criteria
+            }
+        }
         setRequestFormData(prev => ({
             ...prev,
             formData: {
@@ -143,30 +176,114 @@ const RequestDeviceModelsContainer = (props: IRequestShape) => {
                 MoreInfo: ''
             }
         }));
-    }
+    };
 
     const handleRequestClick = () => {
-        //also fetch the form data from the RequestDeviceModels component 
-
         setRenderPage('requestPage');
     };
 
-    if (renderPage === 'searchPage') {
-        return (
-            <RequestDeviceModels
-                {...props}
-                onSearchClick={handleSearchClick}
-                onRequestClick={handleRequestClick}
-            />
-        );
-    }
+    const handleSubmitRequest = async (data: IRequestShapeFormData) => {
+        const mfg = (data.Mfg ?? '').trim();
+        const prodno = (data.ProdNo ?? '').trim();
+        const moreinfo = (data.MoreInfo ?? '').trim();
+        const eqtype = (data.EqType ?? '').trim();
+
+        if (!mfg && !prodno && !moreinfo) {
+            setPopupMessage('Please enter Manufacturer, Product Number, or More Information before submitting your request.');
+            setPopupOpen(true);
+            return;
+        }
+
+        const now = new Date().toISOString();
+        const ticketid = `ticket_${Date.now()}`;
+
+        const newTicket: ITicketDoc = {
+            bid,
+            cid: cid || noteby,
+            ticketid,
+            tickettype: 'Device Model Request',
+            subscription: '',
+            mfg,
+            eqtype,
+            prodno,
+            moreinfo,
+            status: 'Pending',
+            daterequested: now,
+            datereleased: '',
+            lastupdated: now,
+            monitorupdated: now,
+            monitor: false,
+        };
+
+        try {
+            statusBarContext?.setIsLoading?.(true);
+            statusBarContext?.setLoadingLabel?.('Submitting ticket request...');
+
+            const result = await createTicket(newTicket as unknown as Record<string, unknown>);
+            if (result && result.success !== false) {
+                try {
+                    await createActivityLogRef.current?.(`${cid || noteby} of ${bid} created ticket ${ticketid} successfully.`);
+                } catch (logErr) {
+                    console.error('RequestDeviceModels: createActivityLog failed', logErr);
+                }
+
+                setRequestFormData(prev => ({
+                    ...prev,
+                    formData: {
+                        searchText: '',
+                        AndOr: 'AND',
+                        Mfg: '',
+                        EqType: '',
+                        ProdNo: '',
+                        MoreInfo: ''
+                    }
+                }));
+                setPopupMessage(`Ticket ${ticketid} submitted successfully!`);
+                setPopupOpen(true);
+            } else {
+                console.error('RequestDeviceModels: createTicket failed', result?.error);
+                setPopupMessage(`Failed to submit ticket: ${result?.error || result?.message || 'Unknown error'}`);
+                setPopupOpen(true);
+            }
+        } catch (err: any) {
+            console.error('RequestDeviceModels: createTicket error', err);
+            setPopupMessage(`Failed to submit ticket: ${err?.message || 'Unknown error'}`);
+            setPopupOpen(true);
+        } finally {
+            statusBarContext?.setIsLoading?.(false);
+            statusBarContext?.setLoadingLabel?.('');
+        }
+    };
 
     return (
-        <RequestShapeFormContainer
-            {...requestformData}
-            onSearchClick={handleSearchClick}
-            onBack={() => setRenderPage('searchPage')}
-        />
+        <div className="nz-wh-100 nz-d-flex-column">
+            <div className="nz-wh-100 nz-d-flex-column" style={{ display: renderPage === 'searchPage' ? 'flex' : 'none' }}>
+                <RequestDeviceModels
+                    {...props}
+                    onSearchClick={handleSearchClick}
+                    onRequestClick={handleRequestClick}
+                />
+            </div>
+            {renderPage === 'requestPage' && (
+                <div className="nz-wh-100 nz-d-flex-column">
+                    <RequestShapeFormContainer
+                        {...requestformData}
+                        onSearchClick={handleSearchClick}
+                        onSubmitRequest={handleSubmitRequest}
+                        onBack={() => setRenderPage('searchPage')}
+                    />
+                </div>
+            )}
+            <YesNoFormContainer
+                isOpen={popupOpen}
+                uniqueName="request-device-models-dialog"
+                message={popupMessage}
+                showOkButton={true}
+                handleYesButtonClick={() => setPopupOpen(false)}
+                handleNoButtonClick={() => setPopupOpen(false)}
+                handleOkButtonClick={() => setPopupOpen(false)}
+            />
+        </div>
     );
 };
 

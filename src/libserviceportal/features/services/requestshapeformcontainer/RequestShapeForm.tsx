@@ -4,12 +4,33 @@ import { TextareaControl, EditTextControl } from '@n20a/libform';
 import type { IRequestShape } from '../requestdevicemodels/RequestDeviceModels';
 
 export function RequestShapeForm(props: IRequestShape) {
- console.log('RequestShapeForm data:', props.formData); 
-  const [requestFormData, setRequestFormData] = useState<IRequestShape>(props);
+  const [requestFormData, setRequestFormData] = useState<IRequestShape>(() => ({
+    ...props,
+    formData: {
+      searchText: props.formData?.searchText ?? '',
+      AndOr: props.formData?.AndOr ?? 'AND',
+      Mfg: props.formData?.Mfg ?? (props.formData as any)?.mfg ?? '',
+      EqType: props.formData?.EqType ?? '',
+      ProdNo: props.formData?.ProdNo ?? '',
+      MoreInfo: props.formData?.MoreInfo ?? ''
+    }
+  }));
+
+  const mfgValue = props.formData?.Mfg ?? (props.formData as any)?.mfg;
 
   useEffect(() => {
-    setRequestFormData(props);
-  }, [props.formData?.searchText, props.formData?.mfg, props.formData?.EqType, props.formData?.ProdNo, props.formData?.MoreInfo]);
+    setRequestFormData({
+      ...props,
+      formData: {
+        searchText: props.formData?.searchText ?? '',
+        AndOr: props.formData?.AndOr ?? 'AND',
+        Mfg: mfgValue ?? '',
+        EqType: props.formData?.EqType ?? '',
+        ProdNo: props.formData?.ProdNo ?? '',
+        MoreInfo: props.formData?.MoreInfo ?? ''
+      }
+    });
+  }, [props.formData?.searchText, props.formData?.AndOr, mfgValue, props.formData?.EqType, props.formData?.ProdNo, props.formData?.MoreInfo]);
 
   const updateField = (key: keyof IRequestShape['formData'], value: string) => {
     setRequestFormData((prev) => ({ ...prev, formData: { ...prev.formData, [key]: value } }));
@@ -31,7 +52,7 @@ export function RequestShapeForm(props: IRequestShape) {
           id="request-shape-mfg"
           name="Mfg"
           label="Mfg"
-          value={requestFormData.formData.mfg}
+          value={requestFormData.formData.Mfg}
           placeholder="Enter manufacturer"
           onChange={(value) => updateField('Mfg', value)}
         />
@@ -62,7 +83,18 @@ export function RequestShapeForm(props: IRequestShape) {
         />
       </div>
       <div className="request-shape-form__actions" style={{ marginTop: '4px', display: 'flex', justifyContent: 'center' }}>
-        <button type="button" className="request-shape-form__save-btn" onClick={() => props.onSearchClick(JSON.stringify(requestFormData))} style={{ backgroundColor: '#ffff99', color: '#333333' }}>
+        <button
+          type="button"
+          className="request-shape-form__save-btn"
+          onClick={() => {
+            if (props.onSubmitRequest) {
+              props.onSubmitRequest(requestFormData.formData);
+            } else {
+              props.onSearchClick(JSON.stringify(requestFormData));
+            }
+          }}
+          style={{ backgroundColor: '#ffff99', color: '#333333' }}
+        >
           Submit Request
         </button>
       </div>

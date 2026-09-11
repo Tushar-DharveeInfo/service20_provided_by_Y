@@ -185,8 +185,8 @@
     "MenuID": "150",
     "Feature": "152",
     "NodeType": "",
-    "Label": "My Requests",
-    "Tooltip": "My Requests",
+    "Label": "My Tickets",
+    "Tooltip": "My Tickets",
     "SortOrder": "1",
     "DefaultQA": "",
     "Alias": ""

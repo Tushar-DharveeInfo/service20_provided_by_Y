@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { ServicesEnums } from '../../../constants/Feature';
 import { DeviceModel } from '../devicemodel/DeviceModel';
@@ -10,6 +10,11 @@ import { type IRequestShapeFormData } from '../requestdevicemodels/RequestDevice
 import { RequestShapeFormContainer } from '../requestshapeformcontainer/RequestShapeFormContainer';
 import './RequestVisioStencils.css';
 import { Label } from '../../../shared/basic/label/Label';
+import { useBusinessTickets } from '@n20a/libfsdb';
+import type { ITicketDoc } from '@n20a/libfsdb';
+import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
+import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks';
+import { YesNoFormContainer } from '../../../shared/basic/yesnoformcontainer/YesNoFormContainer';
 
 
 interface IRequest {
@@ -19,7 +24,8 @@ interface IRequest {
     headerText?: string;
     isShowHelptip?: boolean;
     onRequestClick?: () => void;
-    saveSearchCriteria?: (searchText: string, AndOr?: "AND" | "OR", mfg?: string, eqtype?: string, pno?: string) => void
+    saveSearchCriteria?: (searchText: string, AndOr?: "AND" | "OR", mfg?: string, eqtype?: string, pno?: string) => void;
+    onSubmitRequest?: (formData: IRequestShapeFormData) => void | Promise<void>;
 }
 
 const DEFAULT_HELP_TIP =
@@ -113,9 +119,8 @@ const RequestVisioStencils = (props: IRequest = {}) => {
                             addToDownloadCart={(mfg, prodno, EQID) => {
                                 alert(`mfg: ${mfg}\nprodno: ${prodno}\nEQID: ${EQID}`);
                             }}
-                            saveSearchCriteria={function (searchText?: string, AndOr?: 'AND' | 'OR', mfg?: string, eqtype?: string, pno?: string): void {
-                                alert(`RequestVisioStencils Search criteria saved: ${searchText}, ${AndOr}, ${mfg}, ${eqtype}, ${pno}`);
-                                props.saveSearchCriteria && props.saveSearchCriteria(searchText as string, AndOr, mfg, eqtype, pno);
+                            saveSearchCriteria={(searchText, AndOr, mfg, eqtype, pno) => {
+                                props.saveSearchCriteria?.(searchText as string, AndOr, mfg, eqtype, pno);
                             }} />
                     </SplitterPanel>
                 </Splitter>
@@ -147,41 +152,150 @@ const RequestVisioStencilsContainer = (props: IRequest) => {
         ProdNo: '',
         MoreInfo: ''
     });
+    const [popupOpen, setPopupOpen] = useState(false);
+    const [popupMessage, setPopupMessage] = useState('');
+
+    const mainAppContext = useMainAppContext();
+    const statusBarContext = useStatusBarContext();
+    const { authSession, createActivityLog } = mainAppContext;
+    const bid = String(authSession?.bid || '0').trim();
+    const cid = String(authSession?.cid ?? '').trim();
+    const noteby = authSession?.displayName || authSession?.username || 'User';
+
+    const { createTicket } = useBusinessTickets(bid);
+
+    const createActivityLogRef = useRef(createActivityLog);
+    useEffect(() => {
+        createActivityLogRef.current = createActivityLog;
+    }, [createActivityLog]);
 
     const handleRequestClick = () => {
         setRenderPage('requestPage');
     };
 
-    if (renderPage === 'searchPage') {
-        function handleSaveSearchCriteria(searchText: string, AndOr?: 'AND' | 'OR' | undefined, mfg?: string | undefined, eqtype?: string | undefined, pno?: string | undefined): void {
-            setFormData({
-                searchText: searchText,
-                AndOr: AndOr ?? "AND",
-                Mfg: mfg ?? '',
-                EqType: eqtype ?? '',
-                ProdNo: pno ?? '',
-                MoreInfo: ''
-            });
+    const handleSubmitRequest = async (data: IRequestShapeFormData) => {
+        const mfg = (data.Mfg ?? '').trim();
+        const prodno = (data.ProdNo ?? '').trim();
+        const moreinfo = (data.MoreInfo ?? '').trim();
+        const eqtype = (data.EqType ?? '').trim();
+
+        if (!mfg && !prodno && !moreinfo) {
+            setPopupMessage('Please enter Manufacturer, Product Number, or More Information before submitting your request.');
+            setPopupOpen(true);
+            return;
         }
 
-        return (
-            <RequestVisioStencils
-                {...props}
-                saveSearchCriteria={handleSaveSearchCriteria}
-                onRequestClick={handleRequestClick}
-            />
-        );
-    }
+        const now = new Date().toISOString();
+        const ticketid = `ticket_${Date.now()}`;
+
+        const newTicket: ITicketDoc = {
+            bid,
+            cid: cid || noteby,
+            ticketid,
+            tickettype: 'Visio Stencils Request',
+            subscription: '',
+            mfg,
+            eqtype,
+            prodno,
+            moreinfo,
+            status: 'Pending',
+            daterequested: now,
+            datereleased: '',
+            lastupdated: now,
+            monitorupdated: now,
+            monitor: false,
+        };
+
+        try {
+            statusBarContext?.setIsLoading?.(true);
+            statusBarContext?.setLoadingLabel?.('Submitting ticket request...');
+
+            const result = await createTicket(newTicket as unknown as Record<string, unknown>);
+            if (result && result.success !== false) {
+                try {
+                    await createActivityLogRef.current?.(`${cid || noteby} of ${bid} created ticket ${ticketid} successfully.`);
+                } catch (logErr) {
+                    console.error('RequestVisioStencils: createActivityLog failed', logErr);
+                }
+
+                setFormData({
+                    searchText: '',
+                    AndOr: 'AND',
+                    Mfg: '',
+                    EqType: '',
+                    ProdNo: '',
+                    MoreInfo: ''
+                });
+                setPopupMessage(`Ticket ${ticketid} submitted successfully!`);
+                setPopupOpen(true);
+            } else {
+                console.error('RequestVisioStencils: createTicket failed', result?.error);
+                setPopupMessage(`Failed to submit ticket: ${result?.error || result?.message || 'Unknown error'}`);
+                setPopupOpen(true);
+            }
+        } catch (err: any) {
+            console.error('RequestVisioStencils: createTicket error', err);
+            setPopupMessage(`Failed to submit ticket: ${err?.message || 'Unknown error'}`);
+            setPopupOpen(true);
+        } finally {
+            statusBarContext?.setIsLoading?.(false);
+            statusBarContext?.setLoadingLabel?.('');
+        }
+    };
+
+    const handleSaveSearchCriteria = (searchText?: string, AndOr?: 'AND' | 'OR', mfg?: string, eqtype?: string, pno?: string): void => {
+        if (searchText && typeof searchText === 'string' && searchText.trim().startsWith('{')) {
+            try {
+                const parsed = JSON.parse(searchText);
+                const data: IRequestShapeFormData = parsed.formData ?? parsed;
+                if (data && (data.Mfg !== undefined || data.ProdNo !== undefined || data.MoreInfo !== undefined)) {
+                    void handleSubmitRequest(data);
+                    return;
+                }
+            } catch {
+                // Not JSON, continue with normal search criteria
+            }
+        }
+        setFormData({
+            searchText: searchText ?? '',
+            AndOr: AndOr ?? "AND",
+            Mfg: mfg ?? '',
+            EqType: eqtype ?? '',
+            ProdNo: pno ?? '',
+            MoreInfo: ''
+        });
+    };
 
     return (
-        <RequestShapeFormContainer
-            {...formData}
-            onSearchClick={function (searchText?: string, AndOr?: 'AND' | 'OR', mfg?: string, eqtype?: string, pno?: string): void {
-                throw new Error('Function not implemented.');
-            }}
-            onBack={() => setRenderPage('searchPage')}
-            formData={formData}
-        />
+        <div className="nz-wh-100 nz-d-flex-column">
+            <div className="nz-wh-100 nz-d-flex-column" style={{ display: renderPage === 'searchPage' ? 'flex' : 'none' }}>
+                <RequestVisioStencils
+                    {...props}
+                    saveSearchCriteria={handleSaveSearchCriteria}
+                    onRequestClick={handleRequestClick}
+                />
+            </div>
+            {renderPage === 'requestPage' && (
+                <div className="nz-wh-100 nz-d-flex-column">
+                    <RequestShapeFormContainer
+                        {...props}
+                        formData={formData}
+                        onSearchClick={handleSaveSearchCriteria}
+                        onSubmitRequest={handleSubmitRequest}
+                        onBack={() => setRenderPage('searchPage')}
+                    />
+                </div>
+            )}
+            <YesNoFormContainer
+                isOpen={popupOpen}
+                uniqueName="request-visio-stencils-dialog"
+                message={popupMessage}
+                showOkButton={true}
+                handleYesButtonClick={() => setPopupOpen(false)}
+                handleNoButtonClick={() => setPopupOpen(false)}
+                handleOkButtonClick={() => setPopupOpen(false)}
+            />
+        </div>
     );
 };
 
@@ -231,7 +345,7 @@ const RequestDeviceModels = (props: IRequest = {}) => {
                                 alert(`mfg: ${mfg}\nprodno: ${prodno}\nEQID: ${EQID}`);
                             }}
                             saveSearchCriteria={(searchText, AndOr, mfg, eqtype, pno) => {
-                                alert(`RequestDeviceModels Search criteria saved: ${searchText}, ${AndOr}, ${mfg}, ${eqtype}, ${pno}`);
+                                props.saveSearchCriteria?.(searchText as string, AndOr, mfg, eqtype, pno);
                             }}
                         />
                     </div>

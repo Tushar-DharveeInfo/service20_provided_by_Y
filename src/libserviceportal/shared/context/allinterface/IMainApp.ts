@@ -163,6 +163,8 @@ interface IUserAuthSession {
     phoneNumber: string | null;
     authType: string;
     tenantNickname: string | null;
+    bucketName: string;
+    baseFolder: string;
     bid?: string,
     cid?: string,
 }
@@ -228,6 +230,9 @@ interface IMainApp {
      * the caller only needs to supply the human-readable message string.
      */
     createActivityLog: (message: string) => Promise<void>;
+
+    distinctProductKeys: string[];
+    setDistinctProductKeys: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 

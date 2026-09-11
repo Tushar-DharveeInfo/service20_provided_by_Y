@@ -15,7 +15,6 @@ import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
 import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks';
 import type { IImage } from '../../../shared/allinterface/basic/IImage';
 import { useUploadRemoteFile } from '../../../shared/allcommon/UploadRemoteFileHooks';
-import { CLOUD_BUCKET } from '../../allcommon/FnGetCloudFilePublicUrl';
 import './RequestSupport.css';
 
 export interface IRequestSupportTicketsProps {
@@ -46,6 +45,41 @@ function resolveFirestoreDate(value: unknown): string {
 }
 
 /**
+ * Converts a ticket document into a numeric timestamp for chronological sorting.
+ */
+function parseTicketDate(item: ITicketDoc): number {
+    const rawDate = item.daterequested || item.lastupdated || item.monitorupdated || (item as Record<string, any>).datecreated;
+    if (rawDate != null && rawDate !== '') {
+        if (typeof rawDate === 'number') {
+            return rawDate;
+        }
+        if (rawDate instanceof Date) {
+            return rawDate.getTime();
+        }
+        if (typeof rawDate === 'object') {
+            if ('toDate' in rawDate && typeof (rawDate as { toDate: () => Date }).toDate === 'function') {
+                return (rawDate as { toDate: () => Date }).toDate().getTime();
+            }
+            if ('seconds' in rawDate && typeof (rawDate as { seconds: number }).seconds === 'number') {
+                return (rawDate as { seconds: number }).seconds * 1000;
+            }
+        }
+        if (typeof rawDate === 'string') {
+            const parsed = Date.parse(rawDate);
+            if (!isNaN(parsed)) return parsed;
+        }
+    }
+    // Fallback: extract timestamp from ticketid if available (e.g. ticket_1788857795000)
+    const ticketId = item.ticketid || '';
+    const match = ticketId.match(/_(\d{10,14})$/);
+    if (match) {
+        const ts = Number(match[1]);
+        if (!isNaN(ts)) return ts;
+    }
+    return 0;
+}
+
+/**
  * Prepares a unique file name prefixed with "{bid}-{cid}-{yymmddhhmmss}".
  */
 function generateUniqueFileName(bid: string, cid: string, originalName: string, defaultExt = "png"): string {
@@ -71,19 +105,6 @@ function getCleanFileName(rawName: string): string {
     return match && match[1] ? match[1] : base;
 }
 
-/**
- * Builds the Firebase Cloud Storage path for tickets attachments.
- * Format: ${bucketName}/${baseFolder}/smfiles/tickets/${filename}
- */
-function buildStoragePathForTickets(filename: string): string {
-    if (!filename) return "";
-    if (filename.includes("/")) return filename;
-    const cfg = () => (window as Window & { APP_CONFIG?: Record<string, string> }).APP_CONFIG ?? {};
-    const c = cfg();
-    const baseFolder = c.BASE_FOLDER ?? 'sm';
-    const bucketName = c.BUCKET_NAME ?? c.FIREBASE_BUCKET ?? CLOUD_BUCKET ?? 'n20-bucket-01';
-    return `${bucketName}/${baseFolder}/smfiles/tickets/${filename}`;
-}
 
 /**
  * Normalizes raw Firestore ticket document record into ITicketDoc format.
@@ -118,6 +139,14 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
     const authSession = mainAppContext.authSession;
     const bid = String(authSession?.bid ?? '').trim();
     const cid = String(authSession?.cid ?? '').trim();
+    const bucketName = authSession?.bucketName ?? 'n20-bucket-01';
+    const baseFolder = authSession?.baseFolder ?? 'sm';
+
+    const getStoragePath = useCallback((filename: string): string => {
+        if (!filename) return "";
+        if (filename.includes("/")) return filename;
+        return `${bucketName}/${baseFolder}/smfiles/tickets/${filename}`;
+    }, [bucketName, baseFolder]);
 
     // SMDB ticket hook for businesses/{bid}/tickets/{ticketid}
     const {
@@ -177,6 +206,14 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
     const [confirmMessage, setConfirmMessage] = useState('');
     const [showOkButton, setShowOkButton] = useState(false);
     const [refreshToken, setRefreshToken] = useState(0);
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll to bottom when tickets list changes so newly added ticket is visible
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [ticketList.length]);
 
     // Reset editor to blank create mode
     const resetEditor = useCallback(() => {
@@ -202,7 +239,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
         const rawFileName = String(ticket.prodno || (ticket as Record<string, any>).filename || '').trim();
         if (!rawFileName) return;
 
-        const storagePath = buildStoragePathForTickets(rawFileName);
+        const storagePath = getStoragePath(rawFileName);
         statusBarContext?.setIsLoading?.(true);
         statusBarContext?.setLoadingLabel?.('Downloading attachment...');
         try {
@@ -230,7 +267,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             statusBarContext?.setIsLoading?.(false);
             statusBarContext?.setLoadingLabel?.('');
         }
-    }, [downloadSingleFile, statusBarContext]);
+    }, [downloadSingleFile, getStoragePath, statusBarContext]);
 
     // Select a ticket card to view & edit
     const handleSelectTicketToEdit = useCallback(async (ticket: ITicketDoc) => {
@@ -256,7 +293,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
         }
 
         if (rawFileName) {
-            const storagePath = buildStoragePathForTickets(rawFileName);
+            const storagePath = getStoragePath(rawFileName);
             statusBarContext?.setIsLoading?.(true);
             statusBarContext?.setLoadingLabel?.('Loading attachment...');
             try {
@@ -292,7 +329,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                 statusBarContext?.setLoadingLabel?.('');
             }
         }
-    }, [downloadSingleFile, statusBarContext]);
+    }, [downloadSingleFile, getStoragePath, statusBarContext]);
 
     // Initial fetch on mount or bid change
     useEffect(() => {
@@ -307,10 +344,12 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                 const rows = Array.isArray(fetched)
                     ? fetched.map((item) => normalizeTicketDoc(item))
                     : [];
-                setTicketList(rows);
-                setOriginalTicketList(rows);
-                if (rows.length > 0 && onSelectTicketRef.current && !selectedTicketRef.current) {
-                    onSelectTicketRef.current(rows[0]);
+                // Sort ascending by date so new cards appear at the end of the list
+                const sortedRows = [...rows].sort((a, b) => parseTicketDate(a) - parseTicketDate(b));
+                setTicketList(sortedRows);
+                setOriginalTicketList(sortedRows);
+                if (sortedRows.length > 0 && onSelectTicketRef.current && !selectedTicketRef.current) {
+                    onSelectTicketRef.current(sortedRows[sortedRows.length - 1]);
                 }
             })
             .catch((err) => console.error('RequestSupportTickets: getTickets failed', err));
@@ -325,8 +364,10 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
     useEffect(() => {
         if (!Array.isArray(tickets)) return;
         const rows = tickets.map((item) => normalizeTicketDoc(item as Record<string, unknown>));
-        setTicketList(rows);
-        setOriginalTicketList(rows);
+        // Sort ascending by date so new cards appear at the end of the list
+        const sortedRows = [...rows].sort((a, b) => parseTicketDate(a) - parseTicketDate(b));
+        setTicketList(sortedRows);
+        setOriginalTicketList(sortedRows);
     }, [tickets]);
 
     // Keep ticket list in sync when a ticket is updated from the right pane form
@@ -406,11 +447,6 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                 const defaultExt = note.notevideo ? 'mp4' : note.noteaudio ? 'webm' : 'png';
                 uploadedFileName = generateUniqueFileName(bid, cid, rawFileName, defaultExt);
 
-                const cfg = () => (window as Window & { APP_CONFIG?: Record<string, string> }).APP_CONFIG ?? {};
-                const c = cfg();
-                const baseFolder = c.BASE_FOLDER ?? 'sm';
-                const bucketName = c.BUCKET_NAME ?? c.FIREBASE_BUCKET ?? CLOUD_BUCKET ?? 'n20-bucket-01';
-
                 setFileUploading(true);
                 statusBarContext?.setIsLoading?.(true);
                 statusBarContext?.setLoadingLabel?.('Uploading attachment...');
@@ -445,7 +481,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                 try {
                     statusBarContext?.setIsLoading?.(true);
                     statusBarContext?.setLoadingLabel?.('Deleting previous attachment...');
-                    const oldStoragePath = buildStoragePathForTickets(previousFileName);
+                    const oldStoragePath = getStoragePath(previousFileName);
                     await deleteFiles([oldStoragePath]);
                 } catch (err) {
                     console.warn('RequestSupportTickets: error deleting previous attachment', err);
@@ -481,7 +517,6 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                 };
                 if (finalFileName) {
                     updatePayload.prodno = finalFileName;
-                    updatePayload.filename = finalFileName;
                 }
                 const result = await updateTicket(ticketIdToUpdate, updatePayload);
                 if (result && result.success !== false) {
@@ -514,30 +549,20 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             monitor: false,
         };
 
-        const optimisticTicket = {
-            ...newTicket,
-            filename: finalFileName,
-        };
-
-        setTicketList((prev) => [optimisticTicket as ITicketDoc, ...prev]);
-        setOriginalTicketList((prev) => [optimisticTicket as ITicketDoc, ...prev]);
+        setTicketList((prev) => [...prev, newTicket]);
+        setOriginalTicketList((prev) => [...prev, newTicket]);
         if (onSelectTicketRef.current) {
-            onSelectTicketRef.current(optimisticTicket as ITicketDoc);
+            onSelectTicketRef.current(newTicket);
         }
         resetEditor();
 
-        const ticketPayload: Record<string, unknown> = {
-            ...newTicket,
-            ...(finalFileName ? { filename: finalFileName } : {}),
-        };
-
-        const result = await createTicket(ticketPayload);
+        const result = await createTicket(newTicket as unknown as Record<string, unknown>);
         if (result && result.success !== false) {
             await createActivityLogRef.current?.(`${cid} of ${bid} created ticket ${ticketid} successfully.`);
         } else {
             console.error('RequestSupportTickets: createTicket failed', result?.error);
         }
-    }, [editingTicket, resetEditor, updateTicket, bid, cid, createTicket, uploadRemoteFile]);
+    }, [editingTicket, resetEditor, updateTicket, bid, cid, createTicket, uploadRemoteFile, bucketName, baseFolder, getStoragePath, deleteFiles, statusBarContext]);
 
     // Search filter
     const searchValueChange = (value: string) => {
@@ -587,7 +612,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                 if (rawFileName) {
                     try {
                         statusBarContext?.setLoadingLabel?.('Deleting attachment...');
-                        const storagePath = buildStoragePathForTickets(rawFileName);
+                        const storagePath = getStoragePath(rawFileName);
                         await deleteFiles([storagePath]);
                     } catch (storageErr) {
                         console.warn('RequestSupportTickets: Cloud storage file deletion failed', storageErr);
@@ -659,13 +684,13 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                     </div>
 
                     {/* Ticket Cards List */}
-                    <div className="nz-notes-list-scroll">
+                    <div className="nz-notes-list-scroll" ref={scrollRef}>
                         {ticketList.map((item, index) => {
                             const isSelected = editingTicket
                                 ? editingTicket.ticketid === item.ticketid
                                 : selectedTicket
                                     ? selectedTicket.ticketid === item.ticketid
-                                    : index === 0;
+                                    : index === ticketList.length - 1;
 
                             const displayDate = item.lastupdated || item.daterequested;
                             const formattedDate = displayDate

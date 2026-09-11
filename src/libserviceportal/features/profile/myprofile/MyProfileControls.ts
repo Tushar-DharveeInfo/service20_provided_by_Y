@@ -48,15 +48,17 @@ const myProfileUserControls: IControl[] = [
 ];
 
 const myProfileAddressControls: IControl[] = [
-    createProfileControl("Address1", "Address 1", 1, "Address", DisplayControlEnums.TextControl),
-    createProfileControl("Address2", "Address 2", 2, "Address", DisplayControlEnums.TextControl),
-    createProfileControl("City", "City", 3, "Address", DisplayControlEnums.TextControl),
-    createProfileControl("State", "State", 4, "Address", DisplayControlEnums.TextControl),
-    createProfileControl("Country", "Country", 5, "Address", DisplayControlEnums.TextControl),
-    createProfileControl("Zip", "Zip", 6, "Address", DisplayControlEnums.TextControl),
-    createProfileControl("CountryCode", "Country Code", 7, "Address", DisplayControlEnums.TextControl),
-    createProfileControl("GPS", "GPS", 8, "Address", DisplayControlEnums.TextControl),
-    createProfileControl("TimezoneOffset", "Timezone Offset", 9, "Address", DisplayControlEnums.TextControl),
+    createProfileControl("Address1", "Address 1", 6, "Address", DisplayControlEnums.TextControl),
+    createProfileControl("Address2", "Address 2", 7, "Address", DisplayControlEnums.TextControl),
+    createProfileControl("City", "City", 8, "Address", DisplayControlEnums.TextControl),
+    createProfileControl("State", "State", 9, "Address", DisplayControlEnums.TextControl),
+    createProfileControl("Country", "Country", 10, "Address", DisplayControlEnums.TextControl),
+    createProfileControl("Zip", "Zip", 11, "Address", DisplayControlEnums.TextControl),
+    createProfileControl("CountryCode", "Country Code", 12, "Address", DisplayControlEnums.TextControl),
+    createProfileControl("TimezoneOffset", "Timezone Offset", 13, "Address", DisplayControlEnums.TextControl),
+    createProfileControl("Donotcallme", "Do Not Call Me", 14, "Address", DisplayControlEnums.TrueFalseControl),
+    createProfileControl("Removemefrommailinglist", "Remove Me From Mailing List", 15, "Address", DisplayControlEnums.TrueFalseControl),
+    createProfileControl("Smsoptin", "SMS Opt-in", 16, "Address", DisplayControlEnums.TrueFalseControl),
 ];
 
 const myProfileControls: IControl[] = [

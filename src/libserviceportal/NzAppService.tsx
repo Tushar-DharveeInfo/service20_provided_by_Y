@@ -144,7 +144,10 @@ function NzLoadContextAndVariables({ uniqueName, user, fbToken, onError, onSucce
         const isMountedRef = { current: true };
 
         const initializeData = async () => {
-
+            if (!mainAppContext.deploymentVars.length) {
+                reportFatalError("Deployment variables are not loaded.");
+                return;
+            }
             if (!isMountedRef.current) return;
 
             let featureRecords: IFeatureItem[] = [];
@@ -173,22 +176,28 @@ function NzLoadContextAndVariables({ uniqueName, user, fbToken, onError, onSucce
             mainAppContext.setFeatureRecords(featureRecords);
             mainAppContext.setAllFeatureRecords(featureRecords);
             debugger
+
+            let bid = user.email?.split('@')[1]?.trim().toLowerCase().split('.')[0] ?? "";
+            let cid = user.email ?? user.id;
             const bidCid = {
                 bid: "bid_109",
                 cid: "cid_bid_109_1"
             };
-            const bid = bidCid?.bid;
-            const cid = bidCid?.cid;
+            bid = bidCid?.bid;
+            cid = bidCid?.cid;
+
             const authSession: IUserAuthSession = {
                 id: user.id,
                 username: user.username,
                 displayName: user.displayName,
-                email: user.email ?? null,
-                phoneNumber: null,
+                email: user.email ?? "",
+                phoneNumber: "",
                 authType: String(user.authType ?? ""),
-                tenantNickname: user.tenantNickname ?? null,
+                tenantNickname: user.tenantNickname ?? "",
+                bucketName: mainAppContext.deploymentVars[0]?.BUCKET_NAME ?? mainAppContext.deploymentVars[0]?.FIREBASE_BUCKET ?? 'n20-bucket-01',
+                baseFolder: mainAppContext.deploymentVars[0]?.BASE_FOLDER ?? 'sm',
                 bid,
-                cid,
+                cid
             };
             mainAppContext.setAuthSession(authSession);
 
@@ -200,7 +209,7 @@ function NzLoadContextAndVariables({ uniqueName, user, fbToken, onError, onSucce
                     email: user?.email as string,
                     tenantNickname: user?.tenantNickname as string,
                     bid,
-                    cid,
+                    cid
                 },
                 subscription: [],
             };
@@ -225,7 +234,7 @@ function NzLoadContextAndVariables({ uniqueName, user, fbToken, onError, onSucce
         return () => {
             isMountedRef.current = false;
         };
-    }, [isDeploymentVarsLoaded]);
+    }, [isDeploymentVarsLoaded, mainAppContext.deploymentVars]);
 
     const handleThemeChange = useCallback((theme: unknown) => {
         if (typeof theme !== 'object' || theme === null || !('name' in theme)) {

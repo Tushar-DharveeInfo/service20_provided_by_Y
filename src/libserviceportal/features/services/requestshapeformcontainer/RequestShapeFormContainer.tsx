@@ -36,6 +36,9 @@ const RequestShapeFormContainer = (props: IRequestShape) => {
         return tip?.tip ?? DEFAULT_HELP_TIP;
     }, [props.helpTipText, helpTipsContext.helpTipRecords, featureId]);
 
+    const mfgValue = requestformData?.formData?.Mfg ?? (requestformData?.formData as any)?.mfg ?? '';
+    const prodNoValue = requestformData?.formData?.ProdNo ?? '';
+
     return (
         <div className="nz-request-visio-stencils nz-wh-100 nz-d-flex-column" id={uniqueName}>
             {showHelptip && (
@@ -71,8 +74,8 @@ const RequestShapeFormContainer = (props: IRequestShape) => {
                             <div style={{ flex: 1, minHeight: 0 }}>
                                 <AiMcpAiMcpRequestShapeClient
                                     searchText={requestformData?.formData.searchText ?? ''}
-                                    Mfg={requestformData?.formData.mfg ?? 'DELL'}
-                                    ProdNo={requestformData?.formData.ProdNo ?? '380'}
+                                    Mfg={mfgValue}
+                                    ProdNo={prodNoValue}
                                     EqType={requestformData?.formData.EqType ?? ''}
                                     MoreInfo={requestformData?.formData.MoreInfo ?? ''}
                                 />
@@ -119,7 +122,7 @@ function RequestShapePage() {
                 formData={{
                     searchText: lastSaved?.formData.searchText ?? '',
                     AndOr: lastSaved?.formData.AndOr ?? "AND",
-                    Mfg: lastSaved?.formData?.mfg ?? '',
+                    Mfg: lastSaved?.formData?.Mfg ?? (lastSaved?.formData as any)?.mfg ?? '',
                     EqType: lastSaved?.formData.EqType ?? '',
                     ProdNo: lastSaved?.formData.ProdNo ?? '',
                     MoreInfo: lastSaved?.formData.MoreInfo ?? ''

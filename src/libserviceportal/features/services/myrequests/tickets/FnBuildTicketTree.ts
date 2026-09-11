@@ -152,7 +152,7 @@ function buildMfgTreeOptimized(
     for (const ticket of sortedTickets) {
 
         const mfg =
-            (ticket.mfg && ticket.mfg.trim()) ? ticket.mfg.trim() : "Unknown Manufacturer";
+            (ticket.mfg && ticket.mfg.trim()) ? ticket.mfg.trim() : "Support tickets";
 
         let group =
             mfgMap.get(mfg);
@@ -260,7 +260,7 @@ function buildDateTreeOptimized(
         }
 
         const mfg =
-            (ticket.mfg && ticket.mfg.trim()) ? ticket.mfg.trim() : "Unknown Manufacturer";
+            (ticket.mfg && ticket.mfg.trim()) ? ticket.mfg.trim() : "Support tickets";
 
         let mfgTickets =
             dateGroup.manufacturers.get(mfg);
