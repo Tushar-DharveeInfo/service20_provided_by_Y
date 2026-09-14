@@ -189,9 +189,11 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
     const [isSearching, setIsSearching] = useState<boolean>(false);
     const [promptMessage, setPromptMessage] = useState<string>('');
     const [isPromptOpen, setIsPromptOpen] = useState<boolean>(false);
+    const [deleteSubTarget, setDeleteSubTarget] = useState<ISampleUserLicense | null>(null);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState<boolean>(false);
 
     // SMDB hook from @n20a/libfsdb to manage subscriptions for current user
-    const { subs, loading, error, getSubs, createSub, updateSub } = useSubs(bid);
+    const { subs, loading, error, getSubs, createSub, updateSub, deleteSub } = useSubs(bid);
 
     // SMDB hook instance to query all subscriptions for the business
     const { subs: allBusinessSubs, getSubs: getAllBusinessSubs } = useSubs(bid);
@@ -361,6 +363,80 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
         }
     };
 
+    const handleDeleteClick = (license: ISampleUserLicense) => {
+        setDeleteSubTarget(license);
+        setIsDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deleteSubTarget) return;
+        const target = deleteSubTarget;
+        const subsidToDelete = String(
+            (target as any).subsid ?? target._NZLicenseKey ?? target.EntID ?? ''
+        ).trim();
+
+        if (!subsidToDelete) {
+            setIsDeleteConfirmOpen(false);
+            setDeleteSubTarget(null);
+            return;
+        }
+
+        try {
+            setIsDeleteConfirmOpen(false);
+            statusBarContext?.setIsLoading?.(true);
+            statusBarContext?.setLoadingLabel?.('Deleting subscription...');
+
+            const result = await deleteSub(subsidToDelete);
+            if (!result || result.success === false) {
+                console.error("MySubscriptions: deleteSub returned failure", result?.error);
+            }
+
+            const now = new Date().toISOString();
+            const logMessage = `${cid || 'User'} of ${bid} deleted subscription ${subsidToDelete} successfully.`;
+            try {
+                if (mainAppContext.createActivityLog) {
+                    await mainAppContext.createActivityLog(logMessage);
+                }
+            } catch (logErr) {
+                console.error("MySubscriptions: mainAppContext.createActivityLog failed", logErr);
+            }
+
+            try {
+                if (bid) {
+                    await createActivity({
+                        bid,
+                        cid: cid || 'User',
+                        activityid: `activity_${cid || 'User'}_${Date.now()}`,
+                        message: logMessage,
+                        monitorupdated: now,
+                        monitor: false,
+                        datecreated: now,
+                    });
+                }
+            } catch (directLogErr) {
+                console.error("MySubscriptions: direct createActivity failed", directLogErr);
+            }
+
+            if (selectedLicenseId === target.EntID) {
+                setSelectedLicenseId(undefined);
+            }
+
+            setPromptMessage("Subscription deleted successfully.");
+            setIsPromptOpen(true);
+
+            // Re-fetch user's subscriptions
+            await getSubs(cid ? [{ field: 'cid', op: '==' as const, value: cid }] : undefined);
+        } catch (err: any) {
+            console.error("MySubscriptions: failed to delete subscription", err);
+            setPromptMessage(`Failed to delete subscription: ${err?.message || 'Unknown error'}`);
+            setIsPromptOpen(true);
+        } finally {
+            setDeleteSubTarget(null);
+            statusBarContext?.setIsLoading?.(false);
+            statusBarContext?.setLoadingLabel?.('');
+        }
+    };
+
 
     return (
         <div key={mySubscriptionsProps.uniqueName} className='nz-my-subscriptions-container nz-wh-100'>
@@ -418,6 +494,8 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                             keyboardNavigationOrientation={'vertical'}
                             tabIndex={0}
                             onClick={() => setSelectedLicenseId(license.EntID)}
+                            allowDeleteButton={true}
+                            handleMouseForDelete={(data) => handleDeleteClick(data as ISampleUserLicense)}
                         />
                     );
                 })}
@@ -629,6 +707,20 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                 handleOkButtonClick={() => setIsPromptOpen(false)}
                 handleYesButtonClick={() => setIsPromptOpen(false)}
                 handleNoButtonClick={() => setIsPromptOpen(false)}
+            />
+
+            {/* Delete Confirmation Dialog */}
+            <YesNoFormContainer
+                isOpen={isDeleteConfirmOpen}
+                uniqueName="my-subscriptions-delete-confirm-dialog"
+                message={`Are you sure you want to delete subscription ${deleteSubTarget?._NZLicenseKey || (deleteSubTarget as any)?.subsid || ''}?`}
+                dialogTitle="Delete Confirmation"
+                showOkButton={false}
+                handleYesButtonClick={() => void handleConfirmDelete()}
+                handleNoButtonClick={() => {
+                    setIsDeleteConfirmOpen(false);
+                    setDeleteSubTarget(null);
+                }}
             />
         </div>
     )

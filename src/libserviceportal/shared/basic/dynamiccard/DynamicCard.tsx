@@ -1,6 +1,6 @@
 
 import { IDynamicCard } from '../../allinterface/basic/IDynamicCard';
-import { Cross, Edit24x24 } from "@n20a/libicon";
+import { Cross, Delete24x24, Edit24x24 } from "@n20a/libicon";
 import '../../allcss/basic/DynamicCard.css'
 import { FnGetCssVariable } from "../../allcommon/FnGetCssVariable";
 import { IActionImageForSubMenu } from "../../allinterface/basic/IActionImageList";
@@ -16,7 +16,7 @@ const DynamicCard = (dynamiccardprops: IDynamicCard) => {
             className={`nz-dynamic-card ${dynamiccardprops.className} ${dynamiccardprops.isSelected ? "nz-dynamic-selected-card" : ""}`}
             onMouseDown={(event: React.MouseEvent<HTMLDivElement>) => {
                 const target = event.target as HTMLElement;
-                if (!target.closest(".nz-dynamic-card")) {
+                if (!target.closest(".nz-dynamic-card") || target.closest(".nz-dynamic-card-action")) {
                     return;
                 }
 
@@ -57,7 +57,7 @@ const DynamicCard = (dynamiccardprops: IDynamicCard) => {
                 <div className="nz-dynamic-card-main-content">{dynamiccardprops.Content}</div>
             </div>
             {hasAction && <div className="nz-dynamic-card-action">
-                <div style={{ display: 'flex', width: '40px' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                     {dynamiccardprops.allowEditButton &&
                         <ActionImage
                             image={{
@@ -77,7 +77,8 @@ const DynamicCard = (dynamiccardprops: IDynamicCard) => {
                             disabled={dynamiccardprops.isEditDisabled}
                             h='var(--node_height)'
                             handleMouse={(event) => {
-                                event.preventDefault();
+                                event?.preventDefault?.();
+                                event?.stopPropagation?.();
                                 if (dynamiccardprops.handleMouseForEdit) { dynamiccardprops.handleMouseForEdit(dynamiccardprops.data) }
                             }}
                         />}
@@ -85,21 +86,25 @@ const DynamicCard = (dynamiccardprops: IDynamicCard) => {
                         dynamiccardprops.allowDeleteButton &&
                         <ActionImage
                             image={{
-                                uniqueName: "cancel",
-                                source: <Cross
+                                uniqueName: "delete",
+                                source: <Delete24x24
                                     size={FnGetCssVariable('--image-size-2')}
-                                    fill='red' />,
+                                    fill='none'
+                                    strokeWidth={1} />,
                                 type: "svg",
                                 w: "var(--image-size-2)",
                                 h: "var(--image-size-2)",
-                                tooltip: "Click to Delete"
+                                tooltip: "Delete"
                             }}
                             w='var(--node_height)'
                             actionCode='delete click'
                             uniqueName='deleteicon'
+                            allowEventPropagation={true}
                             disabled={dynamiccardprops.isDeleteDisabled}
                             h='var(--node_height)'
-                            handleMouse={() => {
+                            handleMouse={(event) => {
+                                event?.preventDefault?.();
+                                event?.stopPropagation?.();
                                 if (dynamiccardprops.handleMouseForDelete) { dynamiccardprops.handleMouseForDelete(dynamiccardprops.data) }
                             }}
                         />

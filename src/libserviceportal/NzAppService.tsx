@@ -180,8 +180,8 @@ function NzLoadContextAndVariables({ uniqueName, user, fbToken, onError, onSucce
             let bid = user.email?.split('@')[1]?.trim().toLowerCase().split('.')[0] ?? "";
             let cid = user.email ?? user.id;
             const bidCid = {
-                bid: "bid_109",
-                cid: "cid_bid_109_1"
+                bid: "bid_108",
+                cid: "cid_bid_108_1"
             };
             bid = bidCid?.bid;
             cid = bidCid?.cid;

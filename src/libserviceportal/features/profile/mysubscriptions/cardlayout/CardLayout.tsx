@@ -10,6 +10,9 @@ import { Label } from "../../../../shared/basic/label/Label";
 import { createCardKeyboardHandler, isCardKeyboardInteractiveTarget } from './CardLayoutKeyboard';
 import './CardLayout.css';
 import { IMenuItem } from "../../../../shared/allinterface/menu/IMainMenu";
+import { ActionImage } from "../../../../shared/basic/actionimage/ActionImage";
+import { Delete24x24 } from "@n20a/libicon";
+import { FnGetCssVariable } from "../../../../shared/allcommon/FnGetCssVariable";
 
 
 interface ICardLayoutField {
@@ -271,11 +274,56 @@ const CardLayout = (props: ICardLayout) => {
         </div>
     );
 
+    const deleteButton = props.allowDeleteButton ? (
+        <div
+            className="nz-cardlayout-delete-btn-container"
+            onMouseDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+            }}
+            onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+            }}
+        >
+            <ActionImage
+                image={{
+                    uniqueName: `${props.uniqueName}-delete-icon`,
+                    source: (
+                        <Delete24x24
+                            size={FnGetCssVariable('--image-size-2')}
+                            fill="none"
+                            strokeWidth={1}
+                        />
+                    ),
+                    type: "svg",
+                    w: "var(--image-size-2)",
+                    h: "var(--image-size-2)",
+                    tooltip: "Click to Delete"
+                }}
+                w="var(--node_height)"
+                h="var(--node_height)"
+                uniqueName={`${props.uniqueName}-delete`}
+                actionCode="delete"
+                allowEventPropagation={true}
+                disabled={props.isDeleteDisabled}
+                handleMouse={(event) => {
+                    event?.preventDefault?.();
+                    event?.stopPropagation?.();
+                    if (props.handleMouseForDelete) {
+                        props.handleMouseForDelete(props.data);
+                    }
+                }}
+            />
+        </div>
+    ) : null;
+
     const renderDetailRow = (row: ICardLayoutField[], rowIndex: number) => (
         <div
             key={`${props.uniqueName}-detail-row-${rowIndex}`}
             className={getDetailRowClassName(row)}
         >
+            {rowIndex === 0 && !headerFields.length && deleteButton}
             {row.map((field, fieldIndex) =>
                 renderDetailField(field, rowIndex, fieldIndex)
             )}
@@ -306,6 +354,7 @@ const CardLayout = (props: ICardLayout) => {
             return (
                 <div className={getHeaderRowClassName(headerFields.length)}>
                     <div className="nz-cardlayout-header-start">
+                        {deleteButton}
                         {checkbox}
                         {renderHeaderField(primaryHeader, 0)}
                     </div>
@@ -317,6 +366,7 @@ const CardLayout = (props: ICardLayout) => {
         if (headerFields.length > 2) {
             return (
                 <div className={getHeaderRowClassName(headerFields.length)}>
+                    {deleteButton}
                     {checkbox}
                     {headerFields.map((field, index) => renderHeaderField(field, index))}
                 </div>
@@ -325,6 +375,7 @@ const CardLayout = (props: ICardLayout) => {
 
         return (
             <div className={getHeaderRowClassName(headerFields.length)}>
+                {deleteButton}
                 {checkbox}
                 {renderHeaderField(headerFields[0], 0)}
             </div>
@@ -386,7 +437,7 @@ const CardLayout = (props: ICardLayout) => {
             containerName={props.containerName}
             featureData={props.featureData}
             allowEditButton={props.allowEditButton}
-            allowDeleteButton={props.allowDeleteButton}
+            allowDeleteButton={false}
             isEditDisabled={props.isEditDisabled}
             isDeleteDisabled={props.isDeleteDisabled}
             handleMouseForEdit={props.handleMouseForEdit}

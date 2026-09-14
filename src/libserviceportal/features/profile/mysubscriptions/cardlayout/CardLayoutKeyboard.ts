@@ -41,7 +41,7 @@ const focusCardAtIndex = (cards: HTMLElement[], index: number) => {
 
 const isCardKeyboardInteractiveTarget = (target: HTMLElement): boolean =>
     !!target.closest(
-        '.nz-cardlayout-header-checkbox, .nz-cardlayout-form, .nz-dynamic-card-action, .nz-dynamic-card-node-menu'
+        '.nz-cardlayout-header-checkbox, .nz-cardlayout-delete-btn-container, .nz-cardlayout-form, .nz-dynamic-card-action, .nz-dynamic-card-node-menu'
     );
 
 type CardKeyboardHandlerOptions = {
