@@ -1,35 +1,22 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './MySubscriptions.css'
 import { Label } from '../../../shared/basic/label/Label.tsx'
 import { CardLayout, ICardLayoutField } from './cardlayout/CardLayout.tsx'
 import { FnConvertDateToUtcOrUtcToDate } from '../../../appcontainer/allcommon/FnConvertDateToUtcOrUtcToDate.ts'
 import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks.ts'
 import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks.ts'
-import { ISubDoc, useSubs, useActivities } from '@n20a/libfsdb'
+import { ISubDoc, IVssDownloadDoc, useSubs, useSubDownloads, useActivities } from '@n20a/libfsdb'
 import { Dialog, DialogContent } from '@mui/material'
 import { Close24x24, Plus } from '@n20a/libicon'
 import { YesNoFormContainer } from '../../../shared/basic/yesnoformcontainer/YesNoFormContainer.tsx'
 import { EditTextControl } from '@n20a/libform'
-
-interface ISampleUserLicense {
-    ProductName: string;
-    _NZLicenseKey: string;
-    licenseKey?: string;
-    StartDate: any;
-    EndDate: any;
-    UserCount: number;
-    RackCount: number;
-    Secured: boolean;
-    IsNZ: boolean;
-    EntID: string;
-    RecID: string;
-    LastUpdated: string;
-    EntityName: string;
-    status?: string;
-    purchaser?: string;
-    orderid?: string;
-    [key: string]: unknown;
-}
+import { Splitter, SplitterPanel } from 'primereact/splitter'
+import { BasicGrid } from '../../../shared/tablegrid/BasicGrid'
+import type { IBasicGridColDef } from '../../../shared/allinterface/tablegrid/IBasicGrid'
+import type { AgGridReact } from 'ag-grid-react'
+import type { ICellRendererParams } from 'ag-grid-community'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 
 interface IMySubscriptions {
     uniqueName: string; // uniqueName for the control and required
@@ -66,6 +53,13 @@ const parseToDate = (value: unknown): Date | null => {
     return null;
 };
 
+const toDateString = (value: unknown): string => {
+    if (!value) return '';
+    if (typeof value === 'string') return value;
+    const d = parseToDate(value);
+    return d ? d.toISOString() : '';
+};
+
 const formatSubDate = (value: unknown): string => {
     const d = parseToDate(value);
     if (!d) return '';
@@ -81,45 +75,46 @@ const isSubscriptionExpired = (endDateValue: unknown): boolean => {
     return d.getTime() < Date.now();
 };
 
-const normalizeSub = (sub: Record<string, any>): ISampleUserLicense => {
-    const licenseKey = String(
-        sub._NZLicenseKey ?? sub._nzlicensekey ?? sub.subsid ?? sub.licensekey ?? sub.subsid ?? sub.id
+const normalizeSub = (sub: Record<string, any>): ISubDoc => {
+    const subsid = String(
+        sub.subsid ?? sub._NZLicenseKey ?? sub._nzlicensekey ?? sub.licensekey ?? sub.id ?? ''
     ).trim();
-    const productName = String(
-        sub.ProductName ?? sub.productname ?? sub.product ?? 'NetZoom'
+    const product = String(
+        sub.product ?? sub.ProductName ?? sub.productname ?? 'NetZoom'
     ).trim();
-    const startDateRaw = sub.startdate ?? sub.StartDate ?? sub.datecreated;
-    const endDateRaw = sub.enddate ?? sub.EndDate;
-    const userCount = Number(
-        sub.UserCount ?? sub.usercount ?? (sub.estimatedusers ?? 0)
-    );
-    const rackCount = Number(
-        sub.RackCount ?? sub.rackcount ?? (sub.estimatedracks ?? 0)
-    );
+    const startDateRaw = toDateString(sub.startdate ?? sub.StartDate ?? sub.datecreated);
+    const endDateRaw = toDateString(sub.enddate ?? sub.EndDate);
     const status = String(sub.status ?? sub.Status ?? '').trim();
     const purchaser = String(sub.purchaser ?? sub.Purchaser ?? '').trim();
     const orderid = String(sub.orderid ?? sub.OrderID ?? '').trim();
+    const bid = String(sub.bid ?? '').trim();
+    const cid = String(sub.cid ?? '').trim();
+    const productkey = String(sub.productkey ?? sub.productKey ?? sub._NZLicenseKey ?? sub.licensekey ?? '').trim();
+    const statusupdatedby = String(sub.statusupdatedby ?? '').trim();
+    const statusreason = String(sub.statusreason ?? '').trim();
+    const datecreated = toDateString(sub.datecreated);
+    const monitor = Boolean(sub.monitor ?? false);
+    const monitorupdated = toDateString(sub.monitorupdated);
 
     return {
-        ProductName: productName,
-        _NZLicenseKey: licenseKey,
-        StartDate: startDateRaw,
-        EndDate: endDateRaw,
-        UserCount: userCount,
-        RackCount: rackCount,
-        Secured: Boolean(sub.Secured ?? sub.secured ?? false),
-        IsNZ: Boolean(sub.IsNZ ?? sub.isnz ?? true),
-        EntID: (sub.subsid ?? sub.id) || `sub-${Math.random().toString(36).slice(2, 9)}`,
-        RecID: String(sub.RecID ?? sub.recid ?? sub.subsid ?? sub.id).trim(),
-        LastUpdated: String(sub.LastUpdated ?? sub.lastupdated ?? sub.dateupdated ?? '').trim(),
-        EntityName: String(sub.EntityName ?? sub.entityname ?? 'NZLicenseKey').trim(),
-        status: status || undefined,
-        purchaser: purchaser || undefined,
-        orderid: orderid || undefined,
         ...sub,
+        bid,
+        cid,
+        orderid,
+        monitorupdated,
+        monitor,
+        purchaser,
+        subsid,
+        product,
+        productkey,
+        status,
+        statusupdatedby,
+        statusreason,
+        startdate: startDateRaw,
+        enddate: endDateRaw,
+        datecreated,
     };
 };
-
 
 /* Card fields configured to render:
  * Top Header row (space-between):
@@ -129,20 +124,20 @@ const normalizeSub = (sub: Record<string, any>): ISampleUserLicense => {
  *   Left:  Order ID: <OrderID>
  *   Right: Purchaser: <Purchaser>
  */
-const getLicenseFields = (license: ISampleUserLicense): ICardLayoutField[] => {
-    const isExpired = isSubscriptionExpired(license.EndDate);
-    const statusText = license.status
-        ? (license.status.charAt(0).toUpperCase() + license.status.slice(1).toLowerCase())
+const getLicenseFields = (sub: ISubDoc): ICardLayoutField[] => {
+    const isExpired = isSubscriptionExpired(sub.enddate);
+    const statusText = sub.status
+        ? (sub.status.charAt(0).toUpperCase() + sub.status.slice(1).toLowerCase())
         : (isExpired ? 'Expired' : 'Active');
 
-    const productTitle = `${statusText} Product: ${license.ProductName || 'NetZoom'}`;
-    const datesStr = `Start Date: ${formatSubDate(license.StartDate) || 'N/A'}   End Date: ${formatSubDate(license.EndDate) || 'N/A'}`;
+    const productTitle = `${statusText} Product: ${sub.product || 'NetZoom'}`;
+    const datesStr = `Start Date: ${formatSubDate(sub.startdate) || 'N/A'}   End Date: ${formatSubDate(sub.enddate) || 'N/A'}`;
 
     return [
         // Header slots (Header: 1 and Header: 2 trigger CardLayout's built-in header-row--space-between)
         {
             Name: "",
-            Value: `Subscription: ${license._NZLicenseKey}`,
+            Value: `Subscription: ${sub.subsid}`,
         },
         {
             Name: "",
@@ -155,18 +150,17 @@ const getLicenseFields = (license: ISampleUserLicense): ICardLayoutField[] => {
             Value: datesStr,
             Group: "header-info-row",
             Row: "space-between",
-
         },
         // Detail row with Row: 'space-between'
         {
             Name: "Order ID",
-            Value: license.orderid || license.EntID || 'N/A',
+            Value: sub.orderid || sub.subsid || 'N/A',
             Group: "sub-info-row",
             Row: "space-between",
         },
         {
             Name: "Purchaser",
-            Value: license.purchaser || 'N/A',
+            Value: sub.purchaser || 'N/A',
             Group: "sub-info-row",
             Row: "space-between",
         },
@@ -177,6 +171,9 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
     const [selectedLicenseId, setSelectedLicenseId] = useState<string>();
     const mainAppContext = useMainAppContext();
     const statusBarContext = useStatusBarContext();
+    const statusBarContextRef = useRef(statusBarContext);
+    statusBarContextRef.current = statusBarContext;
+
     const userInfo = mainAppContext.userInfoAndSubscription?.userInfo;
     const authSession = mainAppContext.authSession;
     const bid = String(userInfo?.bid ?? authSession?.bid ?? '').trim();
@@ -189,8 +186,147 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
     const [isSearching, setIsSearching] = useState<boolean>(false);
     const [promptMessage, setPromptMessage] = useState<string>('');
     const [isPromptOpen, setIsPromptOpen] = useState<boolean>(false);
-    const [deleteSubTarget, setDeleteSubTarget] = useState<ISampleUserLicense | null>(null);
+    const [deleteSubTarget, setDeleteSubTarget] = useState<ISubDoc | null>(null);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState<boolean>(false);
+
+    const [downloadList, setDownloadList] = useState<IVssDownloadDoc[]>([]);
+    const downloadsGridRef = useRef<AgGridReact>(null);
+
+    // Subcollection hook to manage downloads for the selected subscription
+    const {
+        items: subDownloads,
+        getItems: getDownloadItems,
+        reset: resetDownloads,
+    } = useSubDownloads(bid, selectedLicenseId || '');
+
+    const getDownloadItemsRef = useRef(getDownloadItems);
+    getDownloadItemsRef.current = getDownloadItems;
+    const resetDownloadsRef = useRef(resetDownloads);
+    resetDownloadsRef.current = resetDownloads;
+    const lastFetchedDownloadsKeyRef = useRef<string>('');
+
+    useEffect(() => {
+        if (!bid || !selectedLicenseId) {
+            lastFetchedDownloadsKeyRef.current = '';
+            resetDownloadsRef.current();
+            setDownloadList([]);
+            return;
+        }
+
+        const fetchKey = `${bid}_${selectedLicenseId}`;
+        if (lastFetchedDownloadsKeyRef.current === fetchKey) {
+            return;
+        }
+        lastFetchedDownloadsKeyRef.current = fetchKey;
+
+        let isCancelled = false;
+        void (async () => {
+            statusBarContextRef.current?.setIsLoading?.(true);
+            statusBarContextRef.current?.setLoadingLabel?.('Loading downloads...');
+            try {
+                const res = await getDownloadItemsRef.current();
+                if (!isCancelled) {
+                    if (Array.isArray(res) && res.length > 0) {
+                        setDownloadList(res as unknown as IVssDownloadDoc[]);
+                    } else {
+                        setDownloadList([]);
+                    }
+                }
+            } catch (err) {
+                console.error("MySubscriptions: failed to get download items", err);
+                if (!isCancelled) {
+                    setDownloadList([]);
+                }
+            } finally {
+                statusBarContextRef.current?.setIsLoading?.(false);
+                statusBarContextRef.current?.setLoadingLabel?.('');
+            }
+        })();
+
+        return () => {
+            isCancelled = true;
+            statusBarContextRef.current?.setIsLoading?.(false);
+            statusBarContextRef.current?.setLoadingLabel?.('');
+        };
+    }, [bid, selectedLicenseId]);
+
+    const effectiveDownloads = useMemo<IVssDownloadDoc[]>(() => {
+        if (downloadList.length > 0) {
+            return downloadList;
+        }
+        if (Array.isArray(subDownloads) && subDownloads.length > 0) {
+            return subDownloads as unknown as IVssDownloadDoc[];
+        }
+        return [];
+    }, [downloadList, subDownloads]);
+
+    const showRightPane = Boolean(
+        selectedLicenseId && effectiveDownloads.length > 0
+    );
+
+    const downloadColumnDefs = useMemo<IBasicGridColDef[]>(() => [
+        {
+            headerName: 'EQID',
+            field: 'eqid',
+            width: 140,
+            resizable: true,
+            sortable: true,
+            filter: true,
+        },
+        {
+            headerName: 'File Name',
+            field: 'filename',
+            flex: 1,
+            minWidth: 200,
+            resizable: true,
+            sortable: true,
+            filter: true,
+        },
+        {
+            headerName: 'Date Used',
+            field: 'dateused',
+            width: 180,
+            resizable: true,
+            sortable: true,
+            filter: true,
+            comparator: (valueA: unknown, valueB: unknown) => {
+                const timeA = parseToDate(valueA)?.getTime() ?? 0;
+                const timeB = parseToDate(valueB)?.getTime() ?? 0;
+                return timeA - timeB;
+            },
+            cellRenderer: (params: ICellRendererParams) => (
+                <span>{params.value ? formatSubDate(params.value) || String(params.value) : ''}</span>
+            ),
+        },
+    ], []);
+
+    const handleDownloadDownloadsExcel = useCallback(() => {
+        const rows: (string | number)[][] = [
+            ['EQID', 'File Name', 'Date Used']
+        ];
+        effectiveDownloads.forEach((row) => {
+            rows.push([
+                String(row.eqid || ''),
+                String(row.filename || ''),
+                formatSubDate(row.dateused) || String(row.dateused || ''),
+            ]);
+        });
+
+        if (rows.length <= 1) return;
+
+        try {
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.aoa_to_sheet(rows);
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Downloads');
+            const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            saveAs(blob, `downloads_${selectedLicenseId || 'sub'}.xlsx`);
+        } catch (error) {
+            console.error('MySubscriptions: failed to export downloads Excel', error);
+        }
+    }, [effectiveDownloads, selectedLicenseId]);
 
     // SMDB hook from @n20a/libfsdb to manage subscriptions for current user
     const { subs, loading, error, getSubs, createSub, updateSub, deleteSub } = useSubs(bid);
@@ -201,18 +337,40 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
     // SMDB hook to manage user activities and logging
     const { createActivity } = useActivities(bid);
 
+    const getSubsRef = useRef(getSubs);
+    getSubsRef.current = getSubs;
+    const lastFetchedSubsKeyRef = useRef<string>('');
+
     useEffect(() => {
         if (!bid) {
+            lastFetchedSubsKeyRef.current = '';
             return;
         }
+        const fetchKey = `${bid}_${cid}`;
+        if (lastFetchedSubsKeyRef.current === fetchKey) {
+            return;
+        }
+        lastFetchedSubsKeyRef.current = fetchKey;
+
+        let isCancelled = false;
+        statusBarContextRef.current?.setIsLoading?.(true);
+        statusBarContextRef.current?.setLoadingLabel?.('Loading subscriptions...');
         const filters = cid
             ? [{ field: 'cid', op: '==' as const, value: cid }]
             : undefined;
-        void getSubs(filters);
-    }, [bid, cid, getSubs]);
+        void getSubsRef.current(filters).finally(() => {
+            statusBarContextRef.current?.setIsLoading?.(false);
+            statusBarContextRef.current?.setLoadingLabel?.('');
+        });
+        return () => {
+            isCancelled = true;
+            statusBarContextRef.current?.setIsLoading?.(false);
+            statusBarContextRef.current?.setLoadingLabel?.('');
+        };
+    }, [bid, cid]);
 
     // Live data from useSubs hook
-    const licenses = useMemo<ISampleUserLicense[]>(() => {
+    const licenses = useMemo<ISubDoc[]>(() => {
         if (Array.isArray(subs)) {
             return subs.map(normalizeSub);
         }
@@ -229,6 +387,8 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
 
         try {
             setIsSearching(true);
+            statusBarContext?.setIsLoading?.(true);
+            statusBarContext?.setLoadingLabel?.('Searching subscription...');
             let pool = allBusinessSubs;
             if (!pool || pool.length === 0) {
                 const fetched = await getAllBusinessSubs();
@@ -263,6 +423,7 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                 startdate: String(matching.startdate || matching.datecreated || ''),
                 enddate: String(matching.enddate || ''),
                 datecreated: String(matching.datecreated || ''),
+                productkey: ''
             };
 
             setFoundSub(matchedSubDoc);
@@ -276,11 +437,9 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
             return null;
         } finally {
             setIsSearching(false);
+            statusBarContext?.setIsLoading?.(false);
+            statusBarContext?.setLoadingLabel?.('');
         }
-    };
-
-    const handleVerify = async () => {
-        await handleFindSub(enteredSubsid);
     };
 
     const handleSaveSubscription = async () => {
@@ -351,6 +510,7 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
             setFoundSub(null);
 
             // Re-fetch user's subscriptions
+            lastFetchedSubsKeyRef.current = '';
             await getSubs(cid ? [{ field: 'cid', op: '==' as const, value: cid }] : undefined);
         } catch (err: any) {
             console.error("MySubscriptions: failed to save subscription", err);
@@ -363,8 +523,8 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
         }
     };
 
-    const handleDeleteClick = (license: ISampleUserLicense) => {
-        setDeleteSubTarget(license);
+    const handleDeleteClick = (sub: ISubDoc) => {
+        setDeleteSubTarget(sub);
         setIsDeleteConfirmOpen(true);
     };
 
@@ -372,7 +532,7 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
         if (!deleteSubTarget) return;
         const target = deleteSubTarget;
         const subsidToDelete = String(
-            (target as any).subsid ?? target._NZLicenseKey ?? target.EntID ?? ''
+            target.subsid || (target as any)._NZLicenseKey || (target as any).EntID || ''
         ).trim();
 
         if (!subsidToDelete) {
@@ -417,14 +577,17 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                 console.error("MySubscriptions: direct createActivity failed", directLogErr);
             }
 
-            if (selectedLicenseId === target.EntID) {
+            if (selectedLicenseId === target.subsid) {
                 setSelectedLicenseId(undefined);
+                setDownloadList([]);
+                resetDownloads();
             }
 
             setPromptMessage("Subscription deleted successfully.");
             setIsPromptOpen(true);
 
             // Re-fetch user's subscriptions
+            lastFetchedSubsKeyRef.current = '';
             await getSubs(cid ? [{ field: 'cid', op: '==' as const, value: cid }] : undefined);
         } catch (err: any) {
             console.error("MySubscriptions: failed to delete subscription", err);
@@ -437,6 +600,48 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
         }
     };
 
+    const subscriptionsListContent = (
+        <div className='nz-my-subscriptions-list'>
+            {loading && (!subs || subs.length === 0) ? (
+                <div style={{ padding: '1rem', color: 'var(--textsecondary, #6b7280)' }}>
+                    Loading subscriptions...
+                </div>
+            ) : null}
+            {error ? (
+                <div style={{ padding: '1rem', color: 'red' }}>
+                    Error: {error}
+                </div>
+            ) : null}
+            {!loading && licenses.length === 0 ? (
+                <div style={{
+                    padding: '1rem', color: 'var(--textsecondary, #6b7280)',
+                    height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'left'
+                }}>
+                    No subscriptions found.
+                </div>
+            ) : null}
+            {licenses.map((sub) => {
+                const isExpired = isSubscriptionExpired(sub.enddate);
+                return (
+                    <CardLayout
+                        key={sub.subsid}
+                        uniqueName={`${mySubscriptionsProps.uniqueName}-${sub.subsid}`}
+                        featureId={mySubscriptionsProps.featureId}
+                        data={sub}
+                        fields={getLicenseFields(sub)}
+                        className={`nz-my-subscriptions-card ${isExpired ? 'nz-my-subscriptions-card-expired' : ''}`.trim()}
+                        isSelected={selectedLicenseId === sub.subsid}
+                        hideRightMouseMenu={true}
+                        keyboardNavigationOrientation={'vertical'}
+                        tabIndex={0}
+                        onClick={() => setSelectedLicenseId(sub.subsid)}
+                        allowDeleteButton={true}
+                        handleMouseForDelete={(data) => handleDeleteClick(data as ISubDoc)}
+                    />
+                );
+            })}
+        </div>
+    );
 
     return (
         <div key={mySubscriptionsProps.uniqueName} className='nz-my-subscriptions-container nz-wh-100'>
@@ -454,51 +659,62 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                         setEnteredSubsid('');
                         setFoundSub(null);
                         setIsAddModalOpen(true);
-                        void getAllBusinessSubs();
+                        statusBarContext?.setIsLoading?.(true);
+                        statusBarContext?.setLoadingLabel?.('Loading business subscriptions...');
+                        void getAllBusinessSubs().finally(() => {
+                            statusBarContext?.setIsLoading?.(false);
+                            statusBarContext?.setLoadingLabel?.('');
+                        });
                     }}
                 >
                     <Plus size={18} />
                 </button>
             </div>
-            <div className='nz-my-subscriptions-list'>
-                {loading && (!subs || subs.length === 0) ? (
-                    <div style={{ padding: '1rem', color: 'var(--textsecondary, #6b7280)' }}>
-                        Loading subscriptions...
-                    </div>
-                ) : null}
-                {error ? (
-                    <div style={{ padding: '1rem', color: 'red' }}>
-                        Error: {error}
-                    </div>
-                ) : null}
-                {!loading && licenses.length === 0 ? (
-                    <div style={{
-                        padding: '1rem', color: 'var(--textsecondary, #6b7280)',
-                        height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'left'
-                    }}>
-                        No subscriptions found.
-                    </div>
-                ) : null}
-                {licenses.map((license) => {
-                    const isExpired = isSubscriptionExpired(license.EndDate);
-                    return (
-                        <CardLayout
-                            key={license.EntID}
-                            uniqueName={`${mySubscriptionsProps.uniqueName}-${license.EntID}`}
-                            featureId={mySubscriptionsProps.featureId}
-                            data={license}
-                            fields={getLicenseFields(license)}
-                            className={`nz-my-subscriptions-card ${isExpired ? 'nz-my-subscriptions-card-expired' : ''}`.trim()}
-                            isSelected={selectedLicenseId === license.EntID}
-                            hideRightMouseMenu={true}
-                            keyboardNavigationOrientation={'vertical'}
-                            tabIndex={0}
-                            onClick={() => setSelectedLicenseId(license.EntID)}
-                            allowDeleteButton={true}
-                            handleMouseForDelete={(data) => handleDeleteClick(data as ISampleUserLicense)}
-                        />
-                    );
-                })}
+            <div className='nz-my-subscriptions-body'>
+                {showRightPane ? (
+                    <Splitter className="nz-wh-100 nz-my-subscriptions-splitter" layout="horizontal">
+                        <SplitterPanel size={40} minSize={25} className="nz-my-subscriptions-left-pane">
+                            {subscriptionsListContent}
+                        </SplitterPanel>
+                        <SplitterPanel size={60} minSize={30} className="nz-my-subscriptions-right-pane">
+                            <div className="nz-wh-100" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+                                <div className="nz-sub-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Label
+                                        uniqueName={`${mySubscriptionsProps.uniqueName}-downloads-header`}
+                                        label={`Downloads (${selectedLicenseId})`}
+                                        fontWeight="600"
+                                    />
+                                </div>
+                                <div style={{ flex: '1 1 auto', minHeight: 0, overflow: 'hidden' }}>
+                                    <BasicGrid
+                                        gridRef={downloadsGridRef}
+                                        showGrid={true}
+                                        uniqueName={`${mySubscriptionsProps.uniqueName}-downloads-grid`}
+                                        allowAutoSizeColumn={false}
+                                        containerName="nz_sub_downloads"
+                                        instanceName="nz_sub_downloads"
+                                        featureId={mySubscriptionsProps.featureId}
+                                        allowColumnResize={true}
+                                        isExportOnCopy={true}
+                                        handleDownloadData={handleDownloadDownloadsExcel}
+                                        exportFileName={`downloads_${selectedLicenseId}`}
+                                        rowData={effectiveDownloads}
+                                        isReadOnly={true}
+                                        allowColumnFilter={true}
+                                        columnDefs={downloadColumnDefs}
+                                        allowPagination={true}
+                                        paginationAutoPageSize={true}
+                                        allowSort={true}
+                                        totalRecords={effectiveDownloads.length}
+                                        featureData={undefined}
+                                    />
+                                </div>
+                            </div>
+                        </SplitterPanel>
+                    </Splitter>
+                ) : (
+                    subscriptionsListContent
+                )}
             </div>
 
             {/* Add Subscription Modal */}
@@ -713,7 +929,7 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
             <YesNoFormContainer
                 isOpen={isDeleteConfirmOpen}
                 uniqueName="my-subscriptions-delete-confirm-dialog"
-                message={`Are you sure you want to delete subscription ${deleteSubTarget?._NZLicenseKey || (deleteSubTarget as any)?.subsid || ''}?`}
+                message={`Are you sure you want to delete subscription ${deleteSubTarget?.subsid || ''}?`}
                 dialogTitle="Delete Confirmation"
                 showOkButton={false}
                 handleYesButtonClick={() => void handleConfirmDelete()}

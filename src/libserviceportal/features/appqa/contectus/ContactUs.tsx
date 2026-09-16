@@ -281,6 +281,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
             } else {
                 console.error("ContactUsNotes: downloadSingleFile returned no blobUrl", res?.error);
             }
@@ -341,6 +342,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
 
         statusBarContext?.setIsLoading?.(true);
         statusBarContext?.setLoadingLabel?.('Loading attachment...');
+        let downloadUrl: string | undefined;
         try {
             const res = await downloadSingleFile(storagePath);
             if (!res?.success) {
@@ -348,7 +350,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                 return;
             }
 
-            const downloadUrl = res?.blobUrl;
+            downloadUrl = res?.blobUrl;
             if (downloadUrl) {
                 const response = await fetch(downloadUrl);
                 const fileBlob = await response.blob();
@@ -370,6 +372,9 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
         } catch (err) {
             console.error("ContactUsNotes: failed to fetch attached file for note editor", err);
         } finally {
+            if (downloadUrl) {
+                URL.revokeObjectURL(downloadUrl);
+            }
             statusBarContext?.setIsLoading?.(false);
             statusBarContext?.setLoadingLabel?.('');
         }

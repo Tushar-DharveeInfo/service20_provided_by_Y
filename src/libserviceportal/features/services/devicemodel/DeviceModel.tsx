@@ -170,6 +170,13 @@ const DeviceModel = (props: IDeviceModel) => {
 	)
 	const [searchText, setSearchText] = useState<string>('')
 	const optionDataRef = useRef<IDeviceSearchOption[]>([])
+	const isMountedRef = useRef(true);
+	useEffect(() => {
+		isMountedRef.current = true;
+		return () => {
+			isMountedRef.current = false;
+		};
+	}, []);
 	const [profileString, setProfileString] = useState<IDeviceModelProfileString>({})
 	const [views, setView] = useState<IView[]>([])
 	const [selectedTabViewName, setSelectedTabViewName] = useState<string>("")
@@ -487,9 +494,11 @@ const DeviceModel = (props: IDeviceModel) => {
 	useEffect(() => {
 		const source = props.externalSearch?.Source;
 		// if (typeof source === "string") {
-		setTimeout(() => {
+		const timer = setTimeout(() => {
+			if (!isMountedRef.current) return;
 			handleValueChange(source as string, "Source", false);
 		}, 1000);
+		return () => clearTimeout(timer);
 		// }
 
 	}, [props.externalSearch]);
@@ -504,13 +513,15 @@ const DeviceModel = (props: IDeviceModel) => {
 					: props.externalSearch?.AndOrFlag
 						? "OR"
 						: "AND";
-			setTimeout(() => {
+			const timer = setTimeout(() => {
+				if (!isMountedRef.current) return;
 				setTreeDataResult([])
 				setPropertyTabData([])
 				setRightSideSelectedTab("Search")
 				setSearchText(keywords)
 				handleLensMouse(andOrValue, keywords)
 			}, 1000);
+			return () => clearTimeout(timer);
 		}
 	}, [props.externalSearch?.Keywords, props.externalSearch?.AndOrFlag, selectedRadio])
 
@@ -1076,6 +1087,7 @@ const DeviceModel = (props: IDeviceModel) => {
 			console.error('DeviceModel: failed to fetch manufacturers', error);
 			searchText.MfgAcronym = []
 		}
+		if (!isMountedRef.current) return;
 		// setSerchJson(searchText.Search)
 		if (searchText && searchText.MfgAcronym) {
 			let Manufacturer = searchText.MfgAcronym.filter(

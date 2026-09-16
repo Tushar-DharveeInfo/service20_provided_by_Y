@@ -258,6 +258,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
             } else {
                 console.error("RequestSupportTickets: downloadSingleFile returned no blobUrl", res?.error);
             }
@@ -296,6 +297,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             const storagePath = getStoragePath(rawFileName);
             statusBarContext?.setIsLoading?.(true);
             statusBarContext?.setLoadingLabel?.('Loading attachment...');
+            let downloadUrl: string | undefined;
             try {
                 const res = await downloadSingleFile(storagePath);
                 if (!res?.success) {
@@ -303,7 +305,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                     return;
                 }
 
-                const downloadUrl = res?.blobUrl;
+                downloadUrl = res?.blobUrl;
                 if (downloadUrl) {
                     const response = await fetch(downloadUrl);
                     const fileBlob = await response.blob();
@@ -325,6 +327,9 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             } catch (err) {
                 console.error("RequestSupportTickets: failed to fetch attached file for note editor", err);
             } finally {
+                if (downloadUrl) {
+                    URL.revokeObjectURL(downloadUrl);
+                }
                 statusBarContext?.setIsLoading?.(false);
                 statusBarContext?.setLoadingLabel?.('');
             }
