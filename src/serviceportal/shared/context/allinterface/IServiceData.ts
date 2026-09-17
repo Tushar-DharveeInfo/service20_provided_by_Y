@@ -28,6 +28,8 @@ interface IServiceData {
     setFilterJson: (filterJson: ITicketFilterValues) => void;
     /** Always read/write through the session ticket cache. */
     updateTickets: (tickets: ITicketDoc[]) => void;
+    /** Reloads tickets from Firestore using getTickets and updates state. */
+    reloadTickets: () => Promise<ITicketDoc[]>;
     /** Returns stencil name for a given EQID, or null when not found/unavailable. */
     getStencilName: (EQID: string) => string | null;
 }

@@ -14,6 +14,7 @@ import { TicketDetailPane } from './tickets/TicketDetailPane'
 import { TicketFilterForm, type ITicketFilterValues } from './tickets/TicketFilterForm'
 import { Label } from '../../../shared/basic/label/Label';
 import { useBusinessTickets, type ITicketDoc } from '@n20a/libfsdb';
+import { FnNormalizeTicket } from './tickets/FnNormalizeTicket';
 
 import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks';
 import { FnHideShowSaveIconForForm } from '../../../shared/allcommon/basic/FnHideShowSaveIconForForm';
@@ -109,12 +110,12 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
     const serviceDataContext = useServiceDataContext()
     const mainAppContext = useMainAppContext()
     const statusBarContext = useStatusBarContext()
-    const { tickets, isTicketsLoaded, isTicketsLoading, ticketsError, selection, updateTickets } = serviceDataContext
+    const { tickets, isTicketsLoaded, isTicketsLoading, ticketsError, selection, updateTickets, reloadTickets } = serviceDataContext
     const loading = isTicketsLoading || !isTicketsLoaded || treeData.length === 0
     const error = ticketsError
     const bid = selection.bid
     const cid = selection.cid
-    const { updateTicket } = useBusinessTickets(bid ?? '')
+    const { updateTicket, getTickets } = useBusinessTickets(bid ?? '')
 
     const selectLeaf = (
         node: ITreeNode,
@@ -200,24 +201,35 @@ const MyRequests = (myRequestsProps: IMyRequestsContainer) => {
             if (result && result.success !== false) {
                 FnHideShowSaveIconForForm('hide')
 
-                const updatedTickets = tickets.map((t) =>
-                    t.ticketid === ticketId
-                        ? { ...t, ...updates, lastupdated: now, monitorupdated: now }
-                        : t
-                )
-                selectedTicketIdRef.current = ticketId
-                updateTickets(updatedTickets)
-                setSelectedTicket((prev) =>
-                    prev && prev.ticketid === ticketId
-                        ? { ...prev, ...updates, lastupdated: now, monitorupdated: now }
-                        : prev
-                )
-                setTicketTree(appliedFilter, ticketId, updatedTickets)
-
-                if (cid) {
+                // 1. Put activity log
+                try {
+                    const logCid = cid || mainAppContext.authSession?.cid || 'User'
                     await mainAppContext?.createActivityLog?.(
-                        `${cid} of ${bid} updated ticket ${ticketId} successfully.`
+                        `${logCid} of ${bid} updated ticket ${ticketId} successfully.`
                     )
+                } catch (logErr) {
+                    console.error('MyRequests: createActivityLog failed', logErr)
+                }
+
+                // 2. Reload ticket and tree data using hook
+                selectedTicketIdRef.current = ticketId
+                let freshTickets: ITicketDoc[] = []
+                if (reloadTickets) {
+                    freshTickets = await reloadTickets()
+                } else {
+                    const filters = cid ? [{ field: 'cid', op: '==' as const, value: cid }] : undefined
+                    const rows = await getTickets(filters)
+                    freshTickets = Array.isArray(rows) ? rows.map((r) => FnNormalizeTicket(r)) : []
+                    updateTickets(freshTickets)
+                }
+
+                // 3. Rebuild tree data with fresh tickets
+                setTicketTree(appliedFilter, ticketId, freshTickets)
+                const currentSelected = freshTickets.find(
+                    (t) => String(t.ticketid).trim().toLowerCase() === String(ticketId).trim().toLowerCase()
+                )
+                if (currentSelected) {
+                    setSelectedTicket(currentSelected)
                 }
             } else {
                 console.error('Failed to update ticket:', result?.error)

@@ -1,5 +1,5 @@
 import type { IFirestoreWriteResult } from "@n20a/libfsdb";
-import type { IUserInfo } from "../../shared/context/allinterface/IMainApp";
+import type { IUserAuthSession } from "../../shared/context/allinterface/IMainApp";
 
 const loggedLoginActivityKeys = new Set<string>();
 
@@ -8,13 +8,13 @@ type TUserActivityKind = "login" | "signout";
 
 interface ILogUserActivityParams {
     createActivity: TCreateActivity;
-    userInfo?: IUserInfo;
+    userInfo?: IUserAuthSession;
     bid: string;
 }
 
 function buildUserActivityMessage(
     kind: TUserActivityKind,
-    userInfo: IUserInfo,
+    userInfo: IUserAuthSession,
     bid: string,
     cid: string
 ): string {

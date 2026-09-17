@@ -107,7 +107,7 @@ const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
         return JSON.stringify([profile])
     }, [ticket])
 
-    const handleSaveForm = (profileDataJson: string, formId?: string) => {
+    const handleSaveForm = async (profileDataJson: string, formId?: string) => {
         let parsed: Record<string, unknown> = {}
         try {
             const raw = JSON.parse(profileDataJson)
@@ -116,23 +116,33 @@ const TicketDetailPane = (ticketDetailPaneProps: ITicketDetailPane) => {
             console.error('Failed to parse profile data', e)
         }
 
-        const ticketId = ticket?.ticketid || (parsed.Ticket as string) || (parsed.ticketid as string) || formId
+        const source = (parsed.TableSections && typeof parsed.TableSections === 'object')
+            ? ((Object.values(parsed.TableSections)[0] as Record<string, unknown>) ?? parsed)
+            : parsed
+
+        const ticketId = ticket?.ticketid || (source.Ticket as string) || (source.ticketid as string) || (parsed.Ticket as string) || (parsed.ticketid as string) || formId
         if (!ticketId) return
 
         const updates: Partial<ITicketDoc> = {}
-        if (parsed.Mfg !== undefined) updates.mfg = String(parsed.Mfg ?? '').trim()
-        else if (parsed.mfg !== undefined) updates.mfg = String(parsed.mfg ?? '').trim()
+        if (source.Mfg !== undefined) updates.mfg = String(source.Mfg ?? '').trim()
+        else if (source.mfg !== undefined) updates.mfg = String(source.mfg ?? '').trim()
 
-        if (parsed.EqType !== undefined) updates.eqtype = String(parsed.EqType ?? '').trim()
-        else if (parsed.eqtype !== undefined) updates.eqtype = String(parsed.eqtype ?? '').trim()
+        if (source.EqType !== undefined) updates.eqtype = String(source.EqType ?? '').trim()
+        else if (source.eqtype !== undefined) updates.eqtype = String(source.eqtype ?? '').trim()
 
-        if (parsed.ProdNo !== undefined) updates.prodno = String(parsed.ProdNo ?? '').trim()
-        else if (parsed.prodno !== undefined) updates.prodno = String(parsed.prodno ?? '').trim()
+        if (source.ProdNo !== undefined) updates.prodno = String(source.ProdNo ?? '').trim()
+        else if (source.prodno !== undefined) updates.prodno = String(source.prodno ?? '').trim()
 
-        if (parsed.MoreInfo !== undefined) updates.moreinfo = String(parsed.MoreInfo ?? '').trim()
-        else if (parsed.moreinfo !== undefined) updates.moreinfo = String(parsed.moreinfo ?? '').trim()
+        if (source.MoreInfo !== undefined) updates.moreinfo = String(source.MoreInfo ?? '').trim()
+        else if (source.moreinfo !== undefined) updates.moreinfo = String(source.moreinfo ?? '').trim()
 
-        void onSaveTicket?.(ticketId, updates)
+        if (source.Status !== undefined) updates.status = String(source.Status ?? '').trim()
+        else if (source.status !== undefined) updates.status = String(source.status ?? '').trim()
+
+        if (source.Subscription !== undefined) updates.subscription = String(source.Subscription ?? '').trim()
+        else if (source.subscription !== undefined) updates.subscription = String(source.subscription ?? '').trim()
+
+        await onSaveTicket?.(ticketId, updates)
     }
 
     if (!ticket) {

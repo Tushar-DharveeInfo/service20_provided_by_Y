@@ -75,9 +75,8 @@ function parseActivityDate(value: unknown, row?: Record<string, unknown>): numbe
 const MyActivities = (myActivitiesProps: IMyActivities) => {
     const headerTitle = myActivitiesProps.headerText ?? "My Activities";
     const mainAppContext = useMainAppContext();
-    const userInfo = mainAppContext.userInfoAndSubscription?.userInfo;
     const bid = String(mainAppContext.authSession?.bid ?? '').trim();
-    const cid = String(mainAppContext.authSession?.cid?? '').trim();
+    const cid = String(mainAppContext.authSession?.cid ?? '').trim();
     const { activities, loading, error, getActivities } = useActivities(bid);
     const gridRef = useRef<AgGridReact>(null);
 

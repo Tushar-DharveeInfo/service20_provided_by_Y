@@ -4,7 +4,7 @@ import { IAppContextWrapper } from "../allinterface/IAppContextWrapper";
 import { IServiceData, IServiceSelection, ITicketFilterValues } from "../allinterface/IServiceData";
 import { useMainAppContext } from "../hooks/MainAppHooks";
 import { FnNormalizeTicket } from "../../../features/services/myrequests/tickets/FnNormalizeTicket";
-import {useLoadRemoteJson, type IUseLoadRemoteJsonOptions } from "../../allcommon/LoadRemoteJsonHooks";
+import { useLoadRemoteJson, type IUseLoadRemoteJsonOptions } from "../../allcommon/LoadRemoteJsonHooks";
 
 const DEFAULT_TICKET_FILTER: ITicketFilterValues = {
     showAll: true,
@@ -80,7 +80,7 @@ function ServiceDataProvider({ children }: IAppContextWrapper) {
     const [isTicketsLoading, setIsTicketsLoading] = useState(false);
     const [ticketsError, setTicketsError] = useState<string | null>(null);
 
-////////////////////////////////////////////load eqid vs stencils
+    ////////////////////////////////////////////load eqid vs stencils
     const [eqidVsStencils, setEqidVsStencils] = useState<IEqidVsStencils>([]);
     const [eqidVsStencilsError, setEqidVsStencilsError] = useState<string | null>(null);
 
@@ -100,10 +100,10 @@ function ServiceDataProvider({ children }: IAppContextWrapper) {
     };
 
     useLoadRemoteJson(options);
-//////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
     const bid = mainAppContext.authSession?.bid ?? "";
     const cid = mainAppContext.authSession?.cid ?? "";
-// console.log("Y-in ServiceDataProvider - Retrieved from authSession - Current bid:", bid, "cid:", cid);
+    // console.log("Y-in ServiceDataProvider - Retrieved from authSession - Current bid:", bid, "cid:", cid);
 
     const { getTickets } = useBusinessTickets(bid);
 
@@ -129,11 +129,11 @@ function ServiceDataProvider({ children }: IAppContextWrapper) {
     useEffect(() => {
 
         setBidCid(mainAppContext.authSession?.bid, mainAppContext.authSession?.cid);
-    }, [mainAppContext.userInfoAndSubscription, setBidCid]);
+    }, [mainAppContext.authSession, setBidCid]);
 
     useEffect(() => {
         if (!bid) {
-            if (mainAppContext.userInfoAndSubscription?.userInfo) {
+            if (mainAppContext.authSession) {
                 setTickets([]);
                 setTicketsError(null);
                 setIsTicketsLoaded(true);
@@ -169,7 +169,7 @@ function ServiceDataProvider({ children }: IAppContextWrapper) {
         return () => {
             cancelled = true;
         };
-    }, [bid, cid, getTickets, mainAppContext.userInfoAndSubscription]);
+    }, [bid, cid, getTickets, mainAppContext.authSession]);
 
     const updateTickets = useCallback((records: ITicketDoc[]) => {
         setTickets(records);
@@ -178,22 +178,56 @@ function ServiceDataProvider({ children }: IAppContextWrapper) {
         setTicketsError(null);
     }, []);
 
+    const reloadTickets = useCallback(async (): Promise<ITicketDoc[]> => {
+        if (!bid) {
+            setTickets([]);
+            setTicketsError(null);
+            setIsTicketsLoaded(true);
+            setIsTicketsLoading(false);
+            return [];
+        }
+
+        setIsTicketsLoading(true);
+        setTicketsError(null);
+
+        const filters = cid
+            ? [{ field: "cid", op: "==" as const, value: cid }]
+            : undefined;
+
+        try {
+            const rows = await getTickets(filters);
+            if (rows == null) {
+                setTickets([]);
+                setTicketsError("Failed to load tickets");
+                return [];
+            } else {
+                const normalized = rows.map((row) => FnNormalizeTicket(row));
+                setTickets(normalized);
+                setTicketsError(null);
+                return normalized;
+            }
+        } catch (error: any) {
+            setTicketsError(error?.message || "Failed to load tickets");
+            return [];
+        } finally {
+            setIsTicketsLoaded(true);
+            setIsTicketsLoading(false);
+        }
+    }, [bid, cid, getTickets]);
+
     const getStencilName = useCallback((EQID: string): string | null => {
-    //   console.log("Y-ServiceData: Getting stencil name for EQID:", EQID);
-        try 
-        {
-          if (!EQID || !Array.isArray(eqidVsStencils) || eqidVsStencils.length == 0) 
-          {
+        //   console.log("Y-ServiceData: Getting stencil name for EQID:", EQID);
+        try {
+            if (!EQID || !Array.isArray(eqidVsStencils) || eqidVsStencils.length == 0) {
+                return null;
+            }
+            const match = eqidVsStencils.find((item) => item.EQID === EQID);
+            return match?.StencilName ?? null;
+        }
+        catch (error) {
+            console.log("Y-ServiceData: Error occurred while getting stencil name for EQID:", EQID, "Error:", error);
+
             return null;
-          }
-          const match = eqidVsStencils.find((item) => item.EQID === EQID);
-          return match?.StencilName ?? null;
-        } 
-        catch (error) 
-        {
-          console.log("Y-ServiceData: Error occurred while getting stencil name for EQID:", EQID, "Error:", error);
-          
-          return null;
         }
     }, [eqidVsStencils]);
 
@@ -212,6 +246,7 @@ function ServiceDataProvider({ children }: IAppContextWrapper) {
         setBidCid,
         setFilterJson: setFilterJsonValue,
         updateTickets,
+        reloadTickets,
         getStencilName,
     }), [
         selection,
@@ -223,6 +258,7 @@ function ServiceDataProvider({ children }: IAppContextWrapper) {
         setBidCid,
         setFilterJsonValue,
         updateTickets,
+        reloadTickets,
         getStencilName,
     ]);
 

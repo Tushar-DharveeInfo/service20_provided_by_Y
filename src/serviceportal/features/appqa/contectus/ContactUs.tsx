@@ -4,7 +4,7 @@ import { handleContainerKeyDown } from '../../../shared/allcommon/basic/FnHandle
 import { Notes } from "@n20a/libavnotes"
 import type { INote } from "@n20a/libavnotes"
 import { Attach24x24, Delete24x24, Info24x24 } from "@n20a/libicon"
-import './AppQaContactUs.css'
+import './ContactUs.css'
 import '../../../shared/sidebar/notes/FqaNotes.css'
 import '@n20a/libavnotes/style.css'
 import { Label } from "../../../shared/basic/label/Label.tsx"
@@ -707,7 +707,7 @@ const ContactUsNotes = ({ uniqueName, selectedNode, onSelectNote, selectedNoteIt
                         {notesItems.map((item, index) => {
                             const isSelected = editingItem
                                 ? editingItem === item ||
-                                  (Boolean(editingItem.ticketid) && item.ticketid === editingItem.ticketid)
+                                (Boolean(editingItem.ticketid) && item.ticketid === editingItem.ticketid)
                                 : isAppQa
                                     ? false
                                     : selectedNoteItem

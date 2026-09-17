@@ -174,10 +174,9 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
     const statusBarContextRef = useRef(statusBarContext);
     statusBarContextRef.current = statusBarContext;
 
-    const userInfo = mainAppContext.userInfoAndSubscription?.userInfo;
     const authSession = mainAppContext.authSession;
-    const bid = String(userInfo?.bid ?? authSession?.bid ?? '').trim();
-    const cid = String(userInfo?.cid ?? authSession?.cid ?? '').trim();
+    const bid = String(authSession?.bid ?? '').trim();
+    const cid = String(authSession?.cid ?? '').trim();
 
     const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
     const [enteredSubsid, setEnteredSubsid] = useState<string>('');

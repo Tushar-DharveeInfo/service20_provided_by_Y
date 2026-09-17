@@ -25,7 +25,7 @@ const FnFormatDateWithAppFormat = (
       } else if (typeof obj._seconds === "number") {
         date = new Date(obj._seconds * 1000);
       } else {
-        date = new Date(dateInput as string);
+        date = new Date(dateInput as any);
       }
     } else if (typeof dateInput === "number") {
       date = new Date(dateInput < 1e11 ? dateInput * 1000 : dateInput);

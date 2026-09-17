@@ -388,7 +388,7 @@ const PropertyFormContainer = (propertyFormContainerProps: IPropertyFormContaine
                 },
                 kebabData,
                 statusBarContext,
-                mainAppContext.refTableRecords,
+                [],
                 "", // getMuForSite(), 
                 getDiagnosticLevelData(),
                 isReadOnly,

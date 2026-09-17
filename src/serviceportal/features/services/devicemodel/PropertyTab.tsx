@@ -9,8 +9,7 @@ import { ViewContainer } from '../viewcontainer/ViewContainer';
 import { BasicGrid } from '../../../shared/tablegrid/BasicGrid'
 import { IBasicGridColDef } from '../../../shared/allinterface/tablegrid/IBasicGrid'
 import { Label } from '../../../shared/basic/label/Label'
-import { IView } from '../../../shared/allinterface/deviceview/IView'
-
+import { IView } from '../../allinterface/deviceview/IView'
 /** Raw property field parsed from a Properties JSON string. */
 interface IRawPropertyField {
     PName: string;
@@ -50,6 +49,7 @@ interface IPropertyTab {
     selectedRadio?: string;
     views?: IView[];
     selectedTabName?: string;
+    hideDeviceView?: boolean;
 }
 
 /* Returns true when property data uses pre-formatted DescriptionObj sections. */

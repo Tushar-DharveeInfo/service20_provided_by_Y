@@ -4,7 +4,7 @@ import { IDataset, ITableFormMeta } from "../../allinterface/sidebar/IPropertyFo
 import { IRefData } from "../../allinterface/basic/IRefData";
 import { FnGetRefList } from "../basic/FnGetRefList";
 import { IStatusBar } from "../../context/allinterface/IStatusBar";
-import { IRefItem } from "../../context/allinterface/IMainApp";
+import { IRefItem } from "../basic/FnGetRefList";
 import { DELIMITER } from "../../alldefaultprops/basic/DefaultPropsChekedListBoxControl";
 import { FnConvertDateToUtcOrUtcToDate } from "../../../appcontainer/allcommon/FnConvertDateToUtcOrUtcToDate";
 import { hideGridData } from "../../alldefaultprops/tablegrid/DefaultPropsBasicGrid";
@@ -244,9 +244,9 @@ const FnBuildFormElementsFromDataset = (
                         if (cleanString.length > 0) {
                             const spinObject = cleanString.split(DELIMITER.separator);
                             if (spinObject.length > 1) {
-                                start = spinObject[0] ?? 0;
-                                end = spinObject[1] ?? 100;
-                                step = spinObject.length > 2 ? spinObject[2] : 1;
+                                start = Number(spinObject[0]) ?? 0;
+                                end = Number(spinObject[1]) ?? 100;
+                                step = Number(spinObject.length > 2 ? spinObject[2] : 1);
                             }
                         }
                     }

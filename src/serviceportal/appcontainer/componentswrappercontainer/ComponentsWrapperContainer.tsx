@@ -72,16 +72,7 @@ const ComponentsWrapperContainer = (props: IComponentsWrapperContainer) => {
         );
     }
 
-    const handleMouseDown = (e: React.MouseEvent) => {
-        if (!props.overlayContainer?.isVisible) return;
 
-        setIsDragging(true);
-        const rect = e.currentTarget.getBoundingClientRect();
-        setDragOffset({
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        });
-    };
 
     const handleMouseMove = (e: React.MouseEvent) => {
 

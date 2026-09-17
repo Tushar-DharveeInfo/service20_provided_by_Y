@@ -63,11 +63,7 @@ const DynamicRouteComponent = () => {
         setStableFeatureId(featureId);
     }, [featureId]);
 
-    useEffect(() => {
-        if (mainAppContext && mainAppContext.apRecords) {
 
-        }
-    }, [mainAppContext])
 
     useEffect(() => {
         const feature = location?.state?._Feature;

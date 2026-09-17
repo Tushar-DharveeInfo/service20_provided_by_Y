@@ -52,7 +52,7 @@ const FeaturesWithOwnLayout: string[] = [
   ProfileEnums.MyActivities,
   ProfileEnums.MySubscriptions,
   BuyEnums.EULA,
-  BuyEnums.Purchase,  BuyEnums.Reorder,
+  BuyEnums.Purchase, BuyEnums.Reorder,
   BuyEnums.NetZoom,
   BuyEnums.VisioStencils,
   PurchaseEnums.Cart,
@@ -81,11 +81,11 @@ function FeatureRenderContainer(featureRenderContainerProps: IFeatureRenderConta
   } = featureRenderContainerProps;
 
   const mainAppContext = useMainAppContext();
-  const userInfoAndSubscription = mainAppContext?.userInfoAndSubscription;
-  const purchaseBid = userInfoAndSubscription?.userInfo.tenantNickname?.trim();
-  const purchaseCid = userInfoAndSubscription?.userInfo.username?.trim();
+  // const userInfoAndSubscription = mainAppContext?.userInfoAndSubscription;
+  // const purchaseBid = userInfoAndSubscription?.userInfo.tenantNickname?.trim();
+  // const purchaseCid = userInfoAndSubscription?.userInfo.username?.trim();
 
-  void userInfoAndSubscription;
+  // void userInfoAndSubscription;
 
   const shouldRender = allowFeatureToRender ?? doNotRenderExplorerTree ?? true;
   if (!shouldRender) {

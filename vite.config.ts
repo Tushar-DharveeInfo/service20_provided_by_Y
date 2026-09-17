@@ -100,9 +100,6 @@ export default defineConfig({
                         if (id.includes('@n20a/libflippdf')) {
                             return 'vendor-libflippdf';
                         }
-                        if (id.includes('@n20a/libreport')) {
-                            return 'vendor-libreport';
-                        }
                         if (id.includes('@n20a/libform')) {
                             return 'vendor-libform';
                         }

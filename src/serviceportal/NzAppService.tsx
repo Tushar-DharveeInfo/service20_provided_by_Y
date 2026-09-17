@@ -14,8 +14,6 @@ import { IDeploymentEnv } from './shared/allinterface/IApiResponse';
 import { AppContainer } from './appcontainer/AppContainer';
 
 import type { IFeatureItem, IUserAuthSession } from './shared/context/allinterface/IMainApp';
-import { FnGetAuthDisplayName } from './appcontainer/allcommon/FnGetLoggedInStatusMessage';
-
 import { FirestoreProvider, FirebaseStorageProvider, type IFirebaseStorageDeps } from '@n20a/libfsdb'
 import { ServiceDataProvider } from './shared/context/contextandprovider/ServiceData'
 import type { IAxiosInterceptorDeps } from '@n20a/libaxios'
