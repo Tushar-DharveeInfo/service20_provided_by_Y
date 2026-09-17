@@ -1,6 +1,6 @@
 
 import { AuthSession } from "@n20a/libauth";
-import type { ISession } from "../libserviceportal";
+import type { ISession } from "../serviceportal";
 type Stage = 1 | 2;
 interface IAuthorizeResult {
     sessionId: string;

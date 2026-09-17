@@ -2,11 +2,13 @@
 # Sm20
 
 # donot forget to change it to client's shortname and displayname, else login will not work
+# these are licensee shortname and display name
 VITE_TENANT_NICKNAME="netzoom-uhjpe"
 VITE_TENANT_DISPLAY_NAME="NetZoom"
 
 VITE_AUTH_TYPE="fb"
 VITE_API_AT="n20api"
+
 # VITE_NODE_ENV="development"
 VITE_NODE_ENV="production"
 
@@ -20,8 +22,9 @@ VITE_FIREBASE_APP_ID="1:608261150760:web:6d7e0eb75515a000657d1d"
 CLOUDRUN_URL=https://n20-storage-cloudrun-mkvwooi2sa-uc.a.run.app
 VALIDATION_CODE=test123
 
-# bucket, folder, smdb
+# bucket, basefolder, folder, and firestoredb: smdb
 VITE_FIREBASE_BUCKET="n20-bucket-01"
+VITE_FIREBASE_BASEFOLDER="sm"
 VITE_FIREBASE_LIBFOLDER="libfolder-01"
 VITE_FIREBASE_VSSFOLDER="vssfolder-01"
 VITE_FIREBASE_FSDB="default"

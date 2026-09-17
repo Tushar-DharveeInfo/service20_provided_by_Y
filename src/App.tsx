@@ -13,9 +13,9 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { Stage } from './stages/IAuthorization';
 import { SplashLoader } from './stages/SplashLoader';
 import { Authentication } from './stages/Authentication';
-import ErrorBoundary from './libserviceportal/shared/errorboundary/ErrorBoundary';
+import ErrorBoundary from './serviceportal/shared/errorboundary/ErrorBoundary';
 
-import NzAppService from './libserviceportal/NzAppService';
+import NzAppService from './serviceportal/NzAppService';
 
 function App() {
   const [isNewParam] = useState(() => new URLSearchParams(window.location.search).get("isnew"));
@@ -59,7 +59,6 @@ function App() {
   }, []);
 
   const handleAuthenticationSuccess = async (user: AuthSession) => {
-    debugger
     await callEnvToGetData();
     setUserData(user);
     setLoginUserName(user.displayName || user.username);

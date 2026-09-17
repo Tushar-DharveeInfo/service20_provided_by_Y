@@ -1,0 +1,37 @@
+[
+  {
+    "ProductKey": "netzoom",
+    "GroupName": "NetZoom",
+    "Topic": "Brochure",
+    "Markdown": "### This is NetZoom Brochure",
+    "Filename": "netzoomdownloadfiles/brochure-netzoom.pdf"
+  },
+  {
+    "ProductKey": "netzoom",
+    "GroupName": "NetZoom",
+    "Topic": "Brochure",
+    "Markdown": "### This is NetZoom Brochure",
+    "Filename": "netzoomdownloadfiles/brochure-netzoom.pdf"
+  },
+  {
+    "ProductKey": "netzoom",
+    "GroupName": "NetZoom",
+    "Topic": "Brochure",
+    "Markdown": "### This is NetZoom Brochure",
+    "Filename": "netzoomdownloadfiles/brochure-netzoom.pdf"
+  },
+  {
+    "ProductKey": "visiostencils",
+    "GroupName": "Visio Stencils",
+    "Topic": "Brochure",
+    "Markdown": "### This is visio Stencils Brochure",
+    "Filename": "netzoomdownloadfiles/brochure-visiostencils.pdf"
+  },
+    {
+    "ProductKey": "visiostencils",
+    "GroupName": "Visio Stencils",
+    "Topic": "Brochure",
+    "Markdown": "### This is visio Stencils Brochure",
+    "Filename": "netzoomdownloadfiles/brochure-visiostencils.pdf"
+  }
+]

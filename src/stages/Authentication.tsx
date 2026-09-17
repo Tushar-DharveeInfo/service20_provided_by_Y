@@ -24,7 +24,7 @@ const Authentication = (authenticationProps: IAuthentication) => {
             <AppAuthRoot
                 authType={AUTH_TYPE}
                 onAuthenticated={(user: AuthSession) => {
-                    console.log('authenticatedUser', JSON.stringify(user))
+                    // console.log('authenticatedUser', JSON.stringify(user))
                     if (scheduledRef.current) return;
                     scheduledRef.current = true;
 

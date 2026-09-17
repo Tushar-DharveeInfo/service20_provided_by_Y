@@ -5,9 +5,9 @@ import './index.css'
 import { App } from './App'
 
 const queryParams = new URLSearchParams(window.location.search)
-console.log('queryParams', queryParams.toString())
+console.log('Y-queryParams', queryParams.toString())
 
-const hasExternalLaunchParams = queryParams.has('bid') && queryParams.has('cid')
+const hasExternalLaunchParams = queryParams.has('bid') && queryParams.has('cid') && queryParams.has('tenantid')
 document.title = hasExternalLaunchParams ? 'SM-Service' : 'Service'
 
 const rootElement = document.getElementById('root')
