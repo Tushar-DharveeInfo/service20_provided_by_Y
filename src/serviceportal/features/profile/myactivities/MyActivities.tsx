@@ -78,6 +78,8 @@ const MyActivities = (myActivitiesProps: IMyActivities) => {
     const bid = String(mainAppContext.authSession?.bid ?? '').trim();
     const cid = String(mainAppContext.authSession?.cid ?? '').trim();
     const { activities, loading, error, getActivities } = useActivities(bid);
+
+    console.log('activities', activities)
     const gridRef = useRef<AgGridReact>(null);
 
     useEffect(() => {

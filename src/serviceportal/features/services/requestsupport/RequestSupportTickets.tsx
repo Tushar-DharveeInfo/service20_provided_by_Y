@@ -15,12 +15,14 @@ import { useMainAppContext } from '../../../shared/context/hooks/MainAppHooks';
 import { useStatusBarContext } from '../../../shared/context/hooks/StatusBarHooks';
 import type { IImage } from '../../../shared/allinterface/basic/IImage';
 import { useUploadRemoteFile } from '../../../shared/allcommon/UploadRemoteFileHooks';
+import { FnGetCloudFilePublicUrl } from '../../allcommon/FnGetCloudFilePublicUrl';
 import './RequestSupport.css';
 
 export interface IRequestSupportTicketsProps {
     uniqueName: string;
     onSelectTicket?: (ticket: ITicketDoc | null) => void;
     selectedTicket?: ITicketDoc | null;
+    deletedTicketId?: string | null;
 }
 
 /**
@@ -133,6 +135,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
     uniqueName,
     onSelectTicket,
     selectedTicket,
+    deletedTicketId,
 }) => {
     const mainAppContext = useMainAppContext();
     const statusBarContext = useStatusBarContext();
@@ -161,7 +164,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
 
     // Firebase storage hooks
     const { upload: uploadRemoteFile, uploading: remoteUploading, progress: uploadProgress, error: remoteUploadError } = useUploadRemoteFile();
-    const { downloadSingleFile, downloading } = useFileDownload();
+    const { downloadSingleFile, getDownloadUrl, downloading } = useFileDownload();
     const { deleteFiles, deleting } = useFileDelete();
     const [fileUploading, setFileUploading] = useState(false);
 
@@ -171,7 +174,6 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
         statusBarContext?.setIsLoading?.(isBusy);
         return () => {
             statusBarContext?.setIsLoading?.(false);
-            statusBarContext?.setLoadingLabel?.('');
         };
     }, [loading, remoteUploading, fileUploading, downloading, deleting, statusBarContext]);
 
@@ -204,9 +206,17 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
     const [deleteItem, setDeleteItem] = useState<ITicketDoc | null>(null);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [confirmMessage, setConfirmMessage] = useState('');
+    const [dialogTitle, setDialogTitle] = useState('Information');
     const [showOkButton, setShowOkButton] = useState(false);
     const [refreshToken, setRefreshToken] = useState(0);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    const showFileNotFoundAlert = useCallback(() => {
+        setDialogTitle('Information');
+        setConfirmMessage('File not found.');
+        setShowOkButton(true);
+        setDeleteOpen(true);
+    }, []);
 
     // Auto-scroll to bottom when tickets list changes so newly added ticket is visible
     useEffect(() => {
@@ -237,38 +247,132 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
     const handleDownloadFile = useCallback(async (ticket: ITicketDoc, e?: React.MouseEvent) => {
         e?.stopPropagation?.();
         const rawFileName = String(ticket.prodno || (ticket as Record<string, any>).filename || '').trim();
-        if (!rawFileName) return;
+        if (!rawFileName) {
+            showFileNotFoundAlert();
+            return;
+        }
 
+        const cleanName = getCleanFileName(rawFileName) || 'attachment';
         const storagePath = getStoragePath(rawFileName);
         statusBarContext?.setIsLoading?.(true);
         statusBarContext?.setLoadingLabel?.('Downloading attachment...');
+
         try {
-            const res = await downloadSingleFile(storagePath);
-            if (!res?.success) {
-                console.error("RequestSupportTickets: downloadSingleFile failed", res?.error, res?.message);
+            let finalDownloadUrl: string | undefined;
+
+            // Strategy 1: getDownloadUrl via Firebase Storage
+            try {
+                const urlRes = await getDownloadUrl(storagePath);
+                if (urlRes?.success && urlRes.downloadUrl) {
+                    finalDownloadUrl = urlRes.downloadUrl;
+                }
+            } catch (err) {
+                console.warn('RequestSupportTickets: getDownloadUrl failed', err);
+            }
+
+            // Strategy 2: FnGetCloudFilePublicUrl via CloudRun API
+            if (!finalDownloadUrl) {
+                try {
+                    finalDownloadUrl = await FnGetCloudFilePublicUrl(rawFileName, {
+                        bucketName,
+                        baseFolder,
+                        folder: 'smfiles/tickets',
+                    });
+                } catch (err) {
+                    console.warn('RequestSupportTickets: FnGetCloudFilePublicUrl failed', err);
+                }
+            }
+
+            // Strategy 3: downloadSingleFile (Blob URL)
+            if (!finalDownloadUrl) {
+                try {
+                    const res = await downloadSingleFile(storagePath);
+                    if (res?.success && res.blobUrl) {
+                        finalDownloadUrl = res.blobUrl;
+                    }
+                } catch (err) {
+                    console.warn('RequestSupportTickets: downloadSingleFile failed', err);
+                }
+            }
+
+            if (!finalDownloadUrl) {
+                showFileNotFoundAlert();
                 return;
             }
 
-            const downloadUrl = res?.blobUrl;
-            if (downloadUrl) {
-                const cleanName = getCleanFileName(rawFileName);
-                const link = document.createElement("a");
-                link.href = downloadUrl;
-                link.download = cleanName || "download";
+            let downloadSuccess = false;
+
+            // If finalDownloadUrl is already a blob URL (e.g. from Strategy 3)
+            if (finalDownloadUrl.startsWith('blob:')) {
+                const link = document.createElement('a');
+                link.href = finalDownloadUrl;
+                link.download = cleanName;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+                setTimeout(() => URL.revokeObjectURL(finalDownloadUrl!), 1000);
+                downloadSuccess = true;
             } else {
-                console.error("RequestSupportTickets: downloadSingleFile returned no blobUrl", res?.error);
+                try {
+                    const resp = await fetch(finalDownloadUrl);
+                    if (resp.ok) {
+                        const contentType = resp.headers.get('content-type') || '';
+                        const blob = await resp.blob();
+                        // Check if returned XML error payload instead of real file
+                        if (contentType.includes('xml') && blob.size < 1000) {
+                            const text = await blob.text();
+                            if (text.includes('<Error>') || text.includes('NoSuchKey') || text.includes('AccessDenied')) {
+                                showFileNotFoundAlert();
+                                return;
+                            }
+                        }
+                        const blobUrl = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = blobUrl;
+                        link.download = cleanName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+                        downloadSuccess = true;
+                    } else {
+                        console.warn('RequestSupportTickets: fetch returned non-ok status', resp.status);
+                    }
+                } catch (fetchErr) {
+                    console.warn('RequestSupportTickets: direct blob fetch failed', fetchErr);
+                }
+
+                // If fetch was not successful, try downloadSingleFile before giving up
+                if (!downloadSuccess) {
+                    try {
+                        const res = await downloadSingleFile(storagePath);
+                        if (res?.success && res.blobUrl) {
+                            const link = document.createElement('a');
+                            link.href = res.blobUrl;
+                            link.download = cleanName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            setTimeout(() => URL.revokeObjectURL(res.blobUrl!), 1000);
+                            downloadSuccess = true;
+                        }
+                    } catch (singleErr) {
+                        console.warn('RequestSupportTickets: fallback downloadSingleFile failed', singleErr);
+                    }
+                }
+            }
+
+            if (!downloadSuccess) {
+                showFileNotFoundAlert();
             }
         } catch (err) {
-            console.error("RequestSupportTickets: handleDownloadFile error", err);
+            console.error('RequestSupportTickets: handleDownloadFile error', err);
+            showFileNotFoundAlert();
         } finally {
             statusBarContext?.setIsLoading?.(false);
-            statusBarContext?.setLoadingLabel?.('');
+            statusBarContext?.setLoadingLabel?.(undefined);
         }
-    }, [downloadSingleFile, getStoragePath, statusBarContext]);
+    }, [downloadSingleFile, getDownloadUrl, getStoragePath, statusBarContext, bucketName, baseFolder, showFileNotFoundAlert]);
 
     // Select a ticket card to view & edit
     const handleSelectTicketToEdit = useCallback(async (ticket: ITicketDoc) => {
@@ -299,42 +403,77 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             statusBarContext?.setLoadingLabel?.('Loading attachment...');
             let downloadUrl: string | undefined;
             try {
-                const res = await downloadSingleFile(storagePath);
-                if (!res?.success) {
-                    console.error("RequestSupportTickets: downloadSingleFile failed", res?.error, res?.message);
-                    return;
+                // Strategy 1: getDownloadUrl
+                try {
+                    const urlRes = await getDownloadUrl(storagePath);
+                    if (urlRes?.success && urlRes.downloadUrl) {
+                        downloadUrl = urlRes.downloadUrl;
+                    }
+                } catch (e) {
+                    console.warn('RequestSupportTickets: getDownloadUrl failed for editor', e);
                 }
 
-                downloadUrl = res?.blobUrl;
+                // Strategy 2: FnGetCloudFilePublicUrl
+                if (!downloadUrl) {
+                    try {
+                        downloadUrl = await FnGetCloudFilePublicUrl(rawFileName, {
+                            bucketName,
+                            baseFolder,
+                            folder: 'smfiles/tickets',
+                        });
+                    } catch (e) {
+                        console.warn('RequestSupportTickets: FnGetCloudFilePublicUrl failed for editor', e);
+                    }
+                }
+
+                // Strategy 3: downloadSingleFile
+                if (!downloadUrl) {
+                    try {
+                        const res = await downloadSingleFile(storagePath);
+                        if (res?.success && res.blobUrl) {
+                            downloadUrl = res.blobUrl;
+                        }
+                    } catch (e) {
+                        console.warn('RequestSupportTickets: downloadSingleFile failed for editor', e);
+                    }
+                }
+
+                let fileBlob: Blob | undefined;
                 if (downloadUrl) {
-                    const response = await fetch(downloadUrl);
-                    const fileBlob = await response.blob();
-
-                    setNoteDetails({
-                        maxAudioRecordingTime: 60000,
-                        maxVideoRecordingTime: 60000,
-                        noteId: ticket.ticketid || `${Date.now()}`,
-                        noteTitle: ticket.tickettype || 'Support',
-                        notecontent: ticket.moreinfo || '',
-                        notefile: fileBlob,
-                        notefileName: cleanName,
-                        noteaudio: undefined,
-                        notevideo: undefined,
-                        noteCreatedAt: new Date(),
-                    });
-                    setRefreshToken((v) => v + 1);
+                    try {
+                        const response = await fetch(downloadUrl);
+                        if (response.ok) {
+                            fileBlob = await response.blob();
+                        }
+                    } catch (fetchErr) {
+                        console.warn('RequestSupportTickets: failed to fetch blob from downloadUrl', fetchErr);
+                    }
                 }
+
+                if (!fileBlob) {
+                    fileBlob = new File([''], cleanName, { type: 'application/octet-stream' });
+                }
+
+                setNoteDetails({
+                    maxAudioRecordingTime: 60000,
+                    maxVideoRecordingTime: 60000,
+                    noteId: ticket.ticketid || `${Date.now()}`,
+                    noteTitle: ticket.tickettype || 'Support',
+                    notecontent: ticket.moreinfo || '',
+                    notefile: fileBlob,
+                    notefileName: cleanName,
+                    noteaudio: undefined,
+                    notevideo: undefined,
+                    noteCreatedAt: new Date(),
+                });
+                setRefreshToken((v) => v + 1);
             } catch (err) {
                 console.error("RequestSupportTickets: failed to fetch attached file for note editor", err);
             } finally {
-                if (downloadUrl) {
-                    URL.revokeObjectURL(downloadUrl);
-                }
                 statusBarContext?.setIsLoading?.(false);
-                statusBarContext?.setLoadingLabel?.('');
             }
         }
-    }, [downloadSingleFile, getStoragePath, statusBarContext]);
+    }, [downloadSingleFile, getDownloadUrl, getStoragePath, statusBarContext, bucketName, baseFolder]);
 
     // Initial fetch on mount or bid change
     useEffect(() => {
@@ -395,6 +534,20 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
         });
     }, [selectedTicket]);
 
+    // Remove ticket if deleted from external details form
+    useEffect(() => {
+        if (!deletedTicketId) return;
+        setTicketList((prev) => prev.filter((item) => item.ticketid !== deletedTicketId));
+        setOriginalTicketList((prev) => prev.filter((item) => item.ticketid !== deletedTicketId));
+        setEditingTicket((curr) => {
+            if (curr && curr.ticketid === deletedTicketId) {
+                resetEditor();
+                return null;
+            }
+            return curr;
+        });
+    }, [deletedTicketId, resetEditor]);
+
     // Delete attachment from editor
     const handleDeleteAttachment = useCallback(
         (objectType: 'file' | 'audio' | 'video', _objectData?: Blob | File) => {
@@ -422,6 +575,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
         const text = note.notecontent?.trim() ?? '';
         if (!text) {
             setNoteDetails(note);
+            setDialogTitle('Information');
             setConfirmMessage('Please enter a description for the support request before saving.');
             setShowOkButton(true);
             setDeleteOpen(true);
@@ -470,7 +624,6 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                 } finally {
                     setFileUploading(false);
                     statusBarContext?.setIsLoading?.(false);
-                    statusBarContext?.setLoadingLabel?.('');
                 }
             }
         }
@@ -492,7 +645,6 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                     console.warn('RequestSupportTickets: error deleting previous attachment', err);
                 } finally {
                     statusBarContext?.setIsLoading?.(false);
-                    statusBarContext?.setLoadingLabel?.('');
                 }
             }
 
@@ -525,7 +677,11 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                 }
                 const result = await updateTicket(ticketIdToUpdate, updatePayload);
                 if (result && result.success !== false) {
-                    await createActivityLogRef.current?.(`${cid} of ${bid} updated ticket ${ticketIdToUpdate} successfully.`);
+                    try {
+                        await createActivityLogRef.current?.(`${cid} of ${bid} updated ticket ${ticketIdToUpdate} successfully.`);
+                    } catch (logErr) {
+                        console.error('RequestSupportTickets: createActivityLog failed on update', logErr);
+                    }
                 } else {
                     console.error('RequestSupportTickets: updateTicket failed', result?.error);
                 }
@@ -563,7 +719,11 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
 
         const result = await createTicket(newTicket as unknown as Record<string, unknown>);
         if (result && result.success !== false) {
-            await createActivityLogRef.current?.(`${cid} of ${bid} created ticket ${ticketid} successfully.`);
+            try {
+                await createActivityLogRef.current?.(`${cid} of ${bid} created ticket ${ticketid} successfully.`);
+            } catch (logErr) {
+                console.error('RequestSupportTickets: createActivityLog failed on create', logErr);
+            }
         } else {
             console.error('RequestSupportTickets: createTicket failed', result?.error);
         }
@@ -591,30 +751,47 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
     // Delete ticket
     const handleDeleteClick = (ticket: ITicketDoc) => {
         setDeleteItem(ticket);
+        setDialogTitle('Information');
         setConfirmMessage(`Are you sure you want to delete ticket ${ticket.ticketid || ''}?`);
         setShowOkButton(false);
         setDeleteOpen(true);
     };
 
     const handleConfirmDeleteYes = async () => {
-        if (deleteItem) {
-            const ticketIdToDelete = deleteItem.ticketid;
-            const rawFileName = String(deleteItem.prodno || (deleteItem as Record<string, any>).filename || '').trim();
+        const itemToDelete = deleteItem;
+        setDeleteItem(null);
+        setDeleteOpen(false);
 
-            setTicketList((prev) => prev.filter((item) => item.ticketid !== ticketIdToDelete));
-            setOriginalTicketList((prev) => prev.filter((item) => item.ticketid !== ticketIdToDelete));
-            if (editingTicket?.ticketid === ticketIdToDelete) {
+        if (itemToDelete) {
+            const ticketIdToDelete = itemToDelete.ticketid;
+            const rawFileName = String(itemToDelete.prodno || (itemToDelete as Record<string, any>).filename || '').trim();
+
+            setTicketList((prev) => prev.filter((item) => item.ticketid !== ticketIdToDelete && item !== itemToDelete));
+            setOriginalTicketList((prev) => prev.filter((item) => item.ticketid !== ticketIdToDelete && item !== itemToDelete));
+            if (editingTicket?.ticketid === ticketIdToDelete || editingTicket === itemToDelete) {
                 resetEditor();
             }
-            if (selectedTicketRef.current?.ticketid === ticketIdToDelete && onSelectTicketRef.current) {
+            if ((selectedTicketRef.current?.ticketid === ticketIdToDelete || selectedTicketRef.current === itemToDelete) && onSelectTicketRef.current) {
                 onSelectTicketRef.current(null);
             }
 
             statusBarContext?.setIsLoading?.(true);
             statusBarContext?.setLoadingLabel?.('Deleting ticket...');
             try {
-                // 1. Delete attached file from cloud storage if present
-                if (rawFileName) {
+                // 1. Delete ticket document from Firestore
+                let ticketDeleted = false;
+                if (ticketIdToDelete) {
+                    statusBarContext?.setLoadingLabel?.('Deleting ticket...');
+                    const result = await deleteTicket(ticketIdToDelete);
+                    if (result && result.success !== false) {
+                        ticketDeleted = true;
+                    } else {
+                        console.error('RequestSupportTickets: deleteTicket failed', result?.error);
+                    }
+                }
+
+                // 2. Delete attached file from cloud storage if present
+                if (rawFileName && !rawFileName.startsWith('sample-file-')) {
                     try {
                         statusBarContext?.setLoadingLabel?.('Deleting attachment...');
                         const storagePath = getStoragePath(rawFileName);
@@ -624,25 +801,20 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                     }
                 }
 
-                // 2. Delete ticket document from Firestore
-                if (ticketIdToDelete) {
-                    statusBarContext?.setLoadingLabel?.('Deleting ticket...');
-                    const result = await deleteTicket(ticketIdToDelete);
-                    if (result && result.success !== false) {
+                // 3. Create activity log for deleting ticket
+                if (ticketDeleted && ticketIdToDelete) {
+                    try {
                         await createActivityLogRef.current?.(`${cid} of ${bid} deleted ticket ${ticketIdToDelete} successfully.`);
-                    } else {
-                        console.error('RequestSupportTickets: deleteTicket failed', result?.error);
+                    } catch (logErr) {
+                        console.error('RequestSupportTickets: createActivityLog failed on delete', logErr);
                     }
                 }
             } catch (err) {
                 console.error('RequestSupportTickets: delete operation failed', err);
             } finally {
                 statusBarContext?.setIsLoading?.(false);
-                statusBarContext?.setLoadingLabel?.('');
             }
         }
-        setDeleteItem(null);
-        setDeleteOpen(false);
     };
 
     const deleteIcon: IImage = {
@@ -749,6 +921,9 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                                                     e.stopPropagation();
                                                     void handleDownloadFile(item, e);
                                                 }}
+                                                onMouseDown={(e) => {
+                                                    e.stopPropagation();
+                                                }}
                                             >
                                                 <Image
                                                     uniqueName={`${uniqueName}-attach-${index}`}
@@ -792,7 +967,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
                     </div>
 
                     {/* Ticket Note / Message Editor */}
-                    <div className="nz-notes-container">
+                    <div className="nz-notes-container" style={{ position: 'relative' }}>
                         {editingTicket && (
                             <button
                                 type="button"
@@ -831,6 +1006,7 @@ const RequestSupportTickets: React.FC<IRequestSupportTicketsProps> = ({
             <YesNoFormContainer
                 isOpen={deleteOpen}
                 uniqueName={`${uniqueName}-confirm`}
+                dialogTitle={dialogTitle}
                 message={confirmMessage}
                 showOkButton={showOkButton}
                 handleYesButtonClick={handleConfirmDeleteYes}

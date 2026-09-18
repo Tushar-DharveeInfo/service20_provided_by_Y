@@ -142,6 +142,7 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
     };
 
     const [selectedTicket, setSelectedTicket] = useState<ITicketDoc | null>(null);
+    const [deletedTicketId, setDeletedTicketId] = useState<string | null>(null);
 
     const handleSelectTicket = useCallback((ticket: ITicketDoc | null): void => {
         setSelectedTicket(ticket);
@@ -149,6 +150,11 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
 
     const handleTicketUpdated = useCallback((ticket: ITicketDoc): void => {
         setSelectedTicket(ticket);
+    }, []);
+
+    const handleTicketDeleted = useCallback((ticketId: string): void => {
+        setSelectedTicket(null);
+        setDeletedTicketId(ticketId);
     }, []);
 
     return (
@@ -192,6 +198,7 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
                                 uniqueName={`${uniqueName}-tickets`}
                                 onSelectTicket={handleSelectTicket}
                                 selectedTicket={selectedTicket}
+                                deletedTicketId={deletedTicketId}
                             />
                         </SplitterPanel>
                         <SplitterPanel tabIndex={-1} size={50} minSize={20} className="nz-d-flex-column nz-align-center nz-layout-with-sidebar-pane nz-pane-2">
@@ -200,6 +207,7 @@ const RequestSupport = (props: IRequestSupportProps = {}) => {
                                     uniqueName={`${uniqueName}-details-form`}
                                     selectedTicket={selectedTicket}
                                     onTicketUpdated={handleTicketUpdated}
+                                    onTicketDeleted={handleTicketDeleted}
                                 />
                             </div>
                         </SplitterPanel>

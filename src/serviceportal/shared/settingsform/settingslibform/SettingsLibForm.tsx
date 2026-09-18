@@ -94,6 +94,7 @@ interface ISettingsLibForm {
         payload?: string | unknown
     ) => void;
     handleShowMessage?: (message: string, isShowOkOnly?: boolean) => Promise<boolean> | void;
+    headerActions?: React.ReactNode;
 }
 
 interface IEnabledApiResult {
@@ -191,7 +192,7 @@ const parseSessionEditPermissionKey = (key: string): Record<ISessionEditPermissi
     });
     return values;
 };
-const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSectionHeader, isDisableForm, allowHelp, testApiJson, featureId, isAutoSave, allowTestIcon, allowShowHeader, controls, isAddressFormRequired, profileString, headerText, isFormValueChangedExternal, handleSaveForm, handleActionImageClick, handleShowMessage, handleValueChange, handleValueChangeExternal }: ISettingsLibForm) => {
+const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSectionHeader, isDisableForm, allowHelp, testApiJson, featureId, isAutoSave, allowTestIcon, allowShowHeader, controls, isAddressFormRequired, profileString, headerText, isFormValueChangedExternal, handleSaveForm, handleActionImageClick, handleShowMessage, handleValueChange, handleValueChangeExternal, headerActions }: ISettingsLibForm) => {
     const [formElements, setFormElements] = useState<IFormElements>();
     const [selectedProfile, setSelectedProfile] = useState<Record<string, unknown>>();
     const [groupNames, setGroupNames] = useState<string[]>();
@@ -1064,6 +1065,7 @@ const SettingsLibForm = ({ id, container, refDataObject, uniqueName, allowShowSe
                             image={testApiImageData} w={'var(--node_height)'}
                             h={'var(--node_height)'}
                             handleMouse={handleActionClick} actionCode={'testapi'} />}
+                    {headerActions}
                 </div>
             </div>}
             <div className={'nz-settings-lib-form-content' + (controlsToRenderExternal?.length ? " nz-setting-lib-form-external-scroll" : "")}>

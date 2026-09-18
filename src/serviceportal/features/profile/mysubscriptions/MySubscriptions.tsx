@@ -376,6 +376,12 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
         return [];
     }, [subs]);
 
+    const isSubValidated = Boolean(
+        foundSub &&
+        enteredSubsid.trim() &&
+        foundSub.subsid?.trim().toLowerCase() === enteredSubsid.trim().toLowerCase()
+    );
+
     const handleFindSub = async (targetSubsid?: string): Promise<ISubDoc | null> => {
         const query = (targetSubsid ?? enteredSubsid).trim();
         if (!query) {
@@ -750,7 +756,18 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                     >
                         {/* subsid with focus out (onBlur) lookup */}
                         <div
+                            onInput={(e) => {
+                                const input = e.currentTarget.querySelector('input');
+                                const val = (input?.value ?? '').trim();
+                                if (foundSub && (!val || foundSub.subsid?.trim().toLowerCase() !== val.toLowerCase())) {
+                                    setFoundSub(null);
+                                }
+                            }}
                             onBlur={(e) => {
+                                const related = e.relatedTarget as HTMLElement | null;
+                                if (related && (related.closest('.nz-dialog-footer') || related.closest('.nz-sub-header'))) {
+                                    return;
+                                }
                                 const input = e.currentTarget.querySelector('input');
                                 const val = (input?.value ?? enteredSubsid).trim();
                                 if (val && (!foundSub || foundSub.subsid?.toLowerCase() !== val.toLowerCase())) {
@@ -766,16 +783,17 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                                 placeholder="Enter Subscription ID..."
                                 onChange={(val) => {
                                     setEnteredSubsid(val);
-                                    setFoundSub(null);
                                     const trimmed = val.trim();
                                     if (trimmed && (!foundSub || foundSub.subsid?.toLowerCase() !== trimmed.toLowerCase())) {
                                         void handleFindSub(trimmed);
+                                    } else if (!trimmed) {
+                                        setFoundSub(null);
                                     }
                                 }}
                             />
                         </div>
 
-                        {/* All 13 read-only controls from ISubDoc */}
+                        {/* Read-only controls from ISubDoc */}
                         <EditTextControl
                             id="product"
                             name="product"
@@ -797,14 +815,6 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                             name="purchaser"
                             label="Purchaser"
                             value={foundSub?.purchaser ?? ''}
-                            disabled={true}
-                            readOnly={true}
-                        />
-                        <EditTextControl
-                            id="status"
-                            name="status"
-                            label="Status"
-                            value={foundSub?.status ?? ''}
                             disabled={true}
                             readOnly={true}
                         />
@@ -840,46 +850,6 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                             disabled={true}
                             readOnly={true}
                         />
-                        <EditTextControl
-                            id="statusupdatedby"
-                            name="statusupdatedby"
-                            label="Status Updated By"
-                            value={foundSub?.statusupdatedby ?? ''}
-                            disabled={true}
-                            readOnly={true}
-                        />
-                        <EditTextControl
-                            id="statusreason"
-                            name="statusreason"
-                            label="Status Reason"
-                            value={foundSub?.statusreason ?? ''}
-                            disabled={true}
-                            readOnly={true}
-                        />
-                        <EditTextControl
-                            id="datecreated"
-                            name="datecreated"
-                            label="Date Created"
-                            value={foundSub?.datecreated ? formatSubDate(foundSub.datecreated) : ''}
-                            disabled={true}
-                            readOnly={true}
-                        />
-                        <EditTextControl
-                            id="monitor"
-                            name="monitor"
-                            label="Monitor"
-                            value={foundSub ? String(foundSub.monitor ?? false) : ''}
-                            disabled={true}
-                            readOnly={true}
-                        />
-                        <EditTextControl
-                            id="monitorupdated"
-                            name="monitorupdated"
-                            label="Monitor Updated"
-                            value={foundSub?.monitorupdated ? formatSubDate(foundSub.monitorupdated) : ''}
-                            disabled={true}
-                            readOnly={true}
-                        />
                     </div>
                 </DialogContent>
                 <div className="nz-dialog-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '10px 16px', borderTop: '1px solid var(--borderandscrollbar, #e0e0e0)' }}>
@@ -904,7 +874,7 @@ const MySubscriptions = (mySubscriptionsProps: IMySubscriptions) => {
                         type="button"
                         className="nz-add-subscription-btn"
                         onClick={() => void handleSaveSubscription()}
-                        disabled={isSaving}
+                        disabled={!isSubValidated || isSaving || isSearching}
                         style={{ height: '30px', padding: '0 16px' }}
                     >
                         {isSaving ? 'Saving...' : 'Add Subscription'}

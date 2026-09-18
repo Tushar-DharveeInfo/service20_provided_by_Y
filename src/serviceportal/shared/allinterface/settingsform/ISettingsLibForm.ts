@@ -70,6 +70,7 @@ interface ISettingsLibForm {
         payload?: string | unknown
     ) => void;
     handleShowMessage?: (message: string, isShowOkOnly?: boolean) => Promise<boolean> | void;
+    headerActions?: React.ReactNode;
 }
 interface IEnabledApiResult {
     success: boolean;
